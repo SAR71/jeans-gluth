@@ -1,0 +1,10 @@
+/* ***************************** KUNDENKONTO OPTION NEWSLETTER UND MARKETINGMAILS AUSBLENDEN ********* */
+/* Newsletter Option ausblenden */
+#_wc_other\/hostinger-reach\/newsletter-optin_field{
+    display:none !important;
+}
+
+/* Marketing E-Mail Option ausblenden */
+#wd_email_subscription_consent_field{
+    display:none !important;
+}

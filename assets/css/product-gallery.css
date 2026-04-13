@@ -1,0 +1,47 @@
+/* =========================================================
+   Woodmart Wishlist (Loop) – stabil:
+   - Herz immer sichtbar
+   - Default: #dcdcdc
+   - Added:   #761611
+   - kein blauer Kreis/Haken
+   - kein Focus-Flackern
+   ========================================================= */
+
+/* =========================================================
+   Woodmart Wishlist – sauber & schnell (mit JS-Klasse)
+   ========================================================= */
+
+/* Haken-Kreis weg */
+.wd-product .wd-check-icon{ display:none !important; }
+
+/* evt. Badge-Pseudo weg */
+.wd-product .wd-wishlist-btn::after,
+.wd-product .wd-wishlist-btn a::after,
+.wd-product .wd-wishlist-btn .wd-action-icon::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* Solid Heart (Font Awesome) + Default grau */
+.wd-product .wd-wishlist-btn .wd-action-icon::before{
+  content:"\f004" !important;
+  font-family:"Font Awesome 6 Free","Font Awesome 5 Free","Font Awesome 5 Pro" !important;
+  font-weight:900 !important;
+  color:#dcdcdc !important;
+  display:inline-block !important;
+  line-height:1 !important;
+  transition: color 0.12s linear;
+}
+
+/* Added = rot */
+.wd-product .wd-wishlist-btn a.added .wd-action-icon::before{
+  color:#761611 !important;
+}
+
+/* Sofort-Feedback (kommt von JS) */
+.wd-product .wd-wishlist-btn a.wd-pending-add .wd-action-icon::before{
+  color:#761611 !important;
+}
+.wd-product .wd-wishlist-btn a.wd-pending-remove .wd-action-icon::before{
+  color:#dcdcdc !important;
+}

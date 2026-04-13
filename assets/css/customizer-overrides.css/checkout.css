@@ -1,0 +1,141 @@
+/* ****** PayPal Button ***** */
+/* ************************************ PayPal Button ********************************* */
+/* Abstand zwischen Add-to-Cart und PayPal – sauber & stabil */
+.single-product form.cart {
+    margin-bottom: 32px !important;
+}
+
+/* Sicherheit gegen Elementor Flex/Gap */
+.single-product .elementor-widget-wd_single_product_add_to_cart {
+    display: block !important;
+}
+.single-product .elementor-widget-wd_single_product_add_to_cart .elementor-widget-container {
+    display: block !important;
+}
+
+/* ************** LAGERBDAGE IN BESTELLÜBERSICHT AUSBLENDEN ************** */
+/* =========================================================
+   Checkout – Bestellübersicht bereinigen
+   - Lager-Info ("x vorrätig") entfernen
+   - linke Einzelpreis-Zeile entfernen
+   ========================================================= */
+
+body.woocommerce-checkout{
+  outline: 5px solid red !important;
+}
+/* 1) Lager-Badge / Stock-Badge entfernen (alle Varianten) */
+body.woocommerce-checkout .wc-block-components-order-summary
+.wc-block-components-product-badge,
+body.woocommerce-checkout .wc-block-components-order-summary
+.wc-block-components-product-stock-badge,
+body.woocommerce-checkout .wc-block-components-order-summary
+.wc-block-components-product-low-stock-badge,
+body.woocommerce-checkout .wc-block-components-order-summary
+[class*="product-stock-badge"],
+body.woocommerce-checkout .wc-block-components-order-summary
+[class*="low-stock-badge"]{
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 2) Linke Preiszeile (unter dem Produktnamen) entfernen */
+body.woocommerce-checkout .wc-block-components-order-summary
+p.wc-block-components-order-summary-item__individual-prices,
+body.woocommerce-checkout .wc-block-components-order-summary
+.wc-block-components-order-summary-item__individual-prices{
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+/* Checkout – Mengenanzeige nicht rund sondern eckig (8px) */
+
+body.woocommerce-checkout .wc-block-components-order-summary-item__quantity,
+body.woocommerce-checkout .wc-block-components-order-summary-item__quantity::before,
+body.woocommerce-checkout .wc-block-components-order-summary-item__quantity::after{
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  border-radius: 5px !important;
+}
+
+/* ************** GutscheinButton immer volle Farbe ************** */
+/* Checkout Gutschein: Button "Anwenden" immer volle Optik */
+body.woocommerce-checkout
+#wc-block-components-totals-coupon__form
+button.wc-block-components-totals-coupon__button{
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* disabled/aria-disabled Zustand auch ohne Grauschleier */
+body.woocommerce-checkout
+#wc-block-components-totals-coupon__form
+button.wc-block-components-totals-coupon__button:disabled,
+body.woocommerce-checkout
+#wc-block-components-totals-coupon__form
+button.wc-block-components-totals-coupon__button[aria-disabled="true"],
+body.woocommerce-checkout
+#wc-block-components-totals-coupon__form
+button.wc-block-components-totals-coupon__button.disabled{
+  opacity: 1 !important;
+  filter: none !important;
+}
+/* Gutschein Button "Anwenden" – Text nicht ausgrauen */
+body.woocommerce-checkout 
+.wp-block-woocommerce-checkout-order-summary-coupon-form-block
+.wc-block-components-button__text{
+    opacity: 1 !important;
+    color: inherit !important;
+}
+/* Chevron (Pfeil) beim Gutschein entfernen */
+body.woocommerce-checkout 
+.wp-block-woocommerce-checkout-order-summary-coupon-form-block 
+.wc-block-components-panel__button-icon{
+    display: none !important;
+}
+
+/* Schriftart Bestellübersicht */
+body.woocommerce-checkout 
+.wc-block-components-checkout-order-summary__title{
+    font-family: "BebasNeue Regular", Arial, Helvetica, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 400 !important;
+    line-height: 1.2 !important;
+    text-transform: none !important;
+}
+
+/* Schrifart Zwischensumme + Versandart */
+
+body.woocommerce-checkout 
+.wc-block-components-totals-item__label,
+body.woocommerce-checkout 
+.wc-block-components-shipping-method-option-title,
+body.woocommerce-checkout 
+.wc-block-components-totals-shipping__label{
+
+    font-family: "Jost", Arial, Helvetica, sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #767676 !important;
+    text-transform: none !important;
+}
+
+
+
+/* ******************** Gesamtsumme wie H2 ******************************** */
+body.woocommerce-checkout 
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__label{
+
+    font-family: "Bebas Neue", sans-serif !important;
+        font-family: "BebasNeue Regular", Arial, Helvetica, sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 400 !important;
+    line-height: 1.2 !important;
+    text-transform: none !important;
+}
+ 

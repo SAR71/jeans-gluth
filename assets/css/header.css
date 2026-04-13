@@ -1,0 +1,80 @@
+/* =========================================================
+   JG Top Bar Infinite Marquee – stabil, ohne Lücke
+   ========================================================= */
+
+:root{
+  --jg-marquee-text-a: "Kostenloser Versand";
+  --jg-marquee-text-b: "Wir lieben Besuch! 10% zusätzlich auf alles bei Abholung vor Ort.";
+  --jg-marquee-speed: 120s; /* je kleiner desto schneller */
+}
+
+/* Container */
+header .wd-header-text.jg-top-banner{
+  position: relative;
+  overflow: hidden;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+/* Originalen Text ausblenden */
+header .wd-header-text.jg-top-banner p{
+  margin: 0 !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* EIN durchgehendes Band mit 2 EXAKT IDENTISCHEN HÄLFTEN */
+header .wd-header-text.jg-top-banner::before{
+  content:
+    /* Hälfte 1 */
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+
+    /* Hälfte 2 – exakt identisch */
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0"
+    var(--jg-marquee-text-a) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0" var(--jg-marquee-text-b) " \00A0\00A0\00A0\00A0\00A0•\00A0\00A0\00A0\00A0\00A0";
+
+  position: absolute;
+  left: 0;
+  top: 50%;
+  white-space: nowrap;
+  width: max-content;
+  transform: translateY(-50%);
+
+  font-family: "Jost", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.3px !important;
+  color: #fbf0d8 !important; 			/* <----------- Farbe Text */
+
+  will-change: transform;
+  animation: jg-marquee-single var(--jg-marquee-speed) linear infinite;
+}
+
+/* zweites Pseudo-Element deaktivieren */
+header .wd-header-text.jg-top-banner::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* Animation */
+@keyframes jg-marquee-single{
+  0%{
+    transform: translate(0, -50%);
+  }
+  100%{
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Hover Pause */
+header .wd-header-text.jg-top-banner:hover::before{
+  animation-play-state: paused;
+}

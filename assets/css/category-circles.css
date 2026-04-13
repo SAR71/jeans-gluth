@@ -1,0 +1,272 @@
+/* =========================================================
+   JG Subkategorie-Kreisleiste (Snippet)
+   ---------------------------------------------------------
+   Ziel & Fixes:
+   1) Ring immer sichtbar – auch MIT Thumbnail
+      -> Ring wird am IMG gezeichnet (kann nicht übermalt werden)
+   2) Ring-Dicke identisch: Klick = Aktiv (2px)
+   3) Chevrons nur auf Tablet/Handy
+   4) Hover-Zoom nur auf Geräten mit Hover
+   5) NEU + SALE optional als Kreise in derselben Reihe
+   ========================================================= */
+
+
+/* =============================
+   Carousel-Hülle
+   ============================= */
+.jg-subcat-carousel{
+  position: relative;
+}
+
+
+/* =============================
+   Wrapper der Kreise
+   - eine Reihe, zentriert
+   - horizontales Scrollen intern
+   ============================= */
+.jg-subcat-circles{
+  display: flex;
+  justify-content: center;
+  gap: 5px; 		/* <----- Abstand zwischen den Kreisen */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;      /* wichtig: kein Smooth-Jump beim Seitenwechsel */
+  padding: 0 44px;            /* Platz für Chevrons (nur mobile sichtbar) */
+}
+
+/* Scrollbars ausblenden */
+.jg-subcat-circles::-webkit-scrollbar{ height: 0; }
+.jg-subcat-circles{ scrollbar-width: none; -ms-overflow-style: none; }
+
+
+/* =============================
+   Einzelnes Item (Link)
+   ============================= */
+.jg-subcat-item{
+  flex: 0 0 110px;
+  max-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+}
+
+
+/* =============================
+   Kreis (Thumb / Hintergrund)
+   ============================= */
+.jg-subcat-thumb{
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+
+/* =============================
+   Bild im Kreis
+   - füllt den Kreis komplett
+   - Ring wird AM BILD gezeichnet (Fix #1)
+   ============================= */
+.jg-subcat-thumb img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
+
+  /* Default: kein Ring */
+  box-shadow: inset 0 0 0 0 rgba(0,0,0,0) !important;
+
+  /* Hover Zoom Transition */
+  transform: scale(1);
+  transition: transform 0.35s ease;
+  will-change: transform;
+}
+
+
+/* =============================
+   Filter-Kreise (NEU / SALE)
+   ============================= */
+.jg-subcat-item--filter .jg-subcat-thumb{
+  background: #f6f1e7;
+  box-shadow: inset 0 0 0 0 rgba(0,0,0,0);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.jg-subcat-thumb-label{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  text-align: center;
+  text-transform: uppercase;
+  font-family: var(--wd-entities-title-font, inherit);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: #000000;
+}
+
+
+/* =============================
+   Hover-Zoom nur Desktop
+   ============================= */
+@media (hover: hover) and (pointer: fine){
+  .jg-subcat-item:hover .jg-subcat-thumb img{
+    transform: scale(1.18);
+  }
+
+  .jg-subcat-item--filter:hover .jg-subcat-thumb{
+    transform: scale(1.04);
+  }
+}
+
+
+/* =============================
+   Titel unter dem Kreis
+   ============================= */
+.jg-subcat-title{
+  margin-top: 10px;
+  font-size: 20px; /* <-------------------- Schriftgröße*/
+  line-height: 1.2;
+  letter-spacing: 0.06em;              /* besonderer Zeichenabstand: JA */
+  text-align: center;
+  text-transform: uppercase;
+
+  /* NEU (minimal): Entities names font + Farbe nutzen (mit Fallback) */
+  font-family: var(--wd-entities-title-font, inherit);
+  font-weight: var(--wd-entities-title-font-weight, inherit);
+  color: var(--wd-entities-title-color, inherit);
+
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  white-space: normal;
+  word-break: normal;
+}
+
+/* NEU (minimal): Hoverfarbe wie Entities hover (mit Fallback) */
+.jg-subcat-item:hover .jg-subcat-title{
+  color: var(--wd-entities-title-color, inherit);
+}
+
+/* Aktive Kategorie: Titel fett (Fix #2) + Farbe */
+.jg-subcat-item.is-active .jg-subcat-title{
+  font-weight: 700;
+  color: #000000;
+  text-decoration: underline;        /* <-- NEU */
+  text-decoration-thickness: 2px;    /* <-- optional: Strichstärke */
+  text-underline-offset: 4px;        /* <-- optional: Abstand zum Text */
+}
+
+
+/* =================================================
+   Ring-Logik (Fix #1 + #2)
+   -------------------------------------------------
+   - Ring wird als inset box-shadow AM IMG gezeichnet
+   - Aktiv = Klick = 2px
+   ================================================= */
+
+/* Ring bleibt auf Zielseite (aktive Kategorie) */
+.jg-subcat-item.is-active .jg-subcat-thumb img{
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18) !important;
+}
+
+/* Ring sofort beim Klick (JS setzt .is-clicked vor Navigation) */
+.jg-subcat-item.is-clicked .jg-subcat-thumb img{
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18) !important;
+}
+
+/* Ring-Logik für Filter-Kreise ohne Bild */
+.jg-subcat-item--filter.is-active .jg-subcat-thumb{
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18) !important;
+}
+
+.jg-subcat-item--filter.is-clicked .jg-subcat-thumb{
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18) !important;
+}
+
+/* Tastatur-Fokus (BFSG/WCAG): sichtbar, etwas stärker */
+.jg-subcat-item:focus,
+.jg-subcat-item:focus-visible{
+  outline: none;
+}
+.jg-subcat-item:focus .jg-subcat-thumb img,
+.jg-subcat-item:focus-visible .jg-subcat-thumb img{
+  box-shadow: inset 0 0 0 3px rgba(0,0,0,0.22) !important;
+}
+
+.jg-subcat-item--filter:focus .jg-subcat-thumb,
+.jg-subcat-item--filter:focus-visible .jg-subcat-thumb{
+  box-shadow: inset 0 0 0 3px rgba(0,0,0,0.22) !important;
+}
+
+
+/* =============================
+   Reduced Motion
+   ============================= */
+@media (prefers-reduced-motion: reduce){
+  .jg-subcat-thumb img{ transition: none; }
+  .jg-subcat-item--filter .jg-subcat-thumb{ transition: none; }
+}
+
+
+/* =================================================
+   Chevrons
+   - Standard: AUS (Desktop)
+   - NUR auf Tablet/Handy EIN
+   ================================================= */
+
+/* Desktop: nie anzeigen */
+.jg-subcat-nav{
+  display: none !important;
+}
+
+/* Tablet/Handy: anzeigen */
+@media (max-width: 1023px){
+  .jg-subcat-nav{
+    all: unset;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.92);
+    cursor: pointer;
+    z-index: 10;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jg-subcat-nav.jg-prev{ left: 6px; }
+  .jg-subcat-nav.jg-next{ right: 6px; }
+
+  .jg-subcat-nav::before{
+    content: "<";
+    font-size: 18px;
+    line-height: 1;
+    color: rgba(0,0,0,0.55);
+    font-weight: 700;
+  }
+
+  .jg-subcat-nav.jg-next::before{
+    content: ">";
+  }
+
+  /* JS blendet Buttons aus, wenn nicht nötig */
+  .jg-subcat-nav[hidden]{ display: none !important; }
+}

@@ -1,0 +1,104 @@
+/* =========================================================
+   Ebene 3 – Sub-Subkategorien als Pills
+   ========================================================= */
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+   ZENTRALE TYPO-EINSTELLUNG
+   HIER EINSTELLEN:
+   - Schriftgröße
+   - Zeichenabstand
+   - Schriftgewicht
+   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+
+:root{
+  --jg-pill-font-size: 20px;       /* HIER Schriftgröße ändern */
+  --jg-pill-letter-spacing: 0.06em;/* HIER Zeichenabstand ändern */
+  --jg-pill-font-weight: 400;      /* HIER Standard-Dicke ändern */
+}
+
+/* ========================================================= */
+
+
+/* Wrapper */
+.jg-subsub-pills{
+  display:flex;
+  align-items:center;
+  justify-content:center;   /* bleibt mittig wie zuvor geändert */
+  gap:14px;
+
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+
+  margin:0 !important;
+  padding:6px 0 !important;
+  width:100%;
+}
+
+/* Scrollbar optisch entfernen */
+.jg-subsub-pills::-webkit-scrollbar{
+  height:0;
+}
+
+/* ==============================
+   Alle Einträge = Pill (Basis)
+   ============================== */
+.jg-subsub-link,
+.jg-subsub-pill{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-radius:999px;
+
+  padding:10px 18px;
+}
+
+/* ==============================
+   Text (Typo jetzt zentral gesteuert)
+   ============================== */
+.jg-subsub-text{
+  font-family: var(--wd-entities-title-font, "Bebas Neue", sans-serif);
+
+  font-size: var(--jg-pill-font-size);             /* ZENTRAL */
+  line-height:1.2;
+  letter-spacing: var(--jg-pill-letter-spacing);   /* ZENTRAL */
+  font-weight: var(--jg-pill-font-weight);         /* ZENTRAL */
+
+  text-transform:uppercase;
+  white-space:nowrap;
+  color:#000000;
+}
+
+/* ==============================
+   Aktiver Eintrag
+   ============================== */
+.jg-subsub-pill.is-active{
+  background:#02294e;
+  border-color:#02294e;
+}
+
+.jg-subsub-pill.is-active .jg-subsub-text{
+  color:#ffffff;
+  font-weight: var(--jg-pill-font-weight);         /* ZENTRAL */
+}
+
+/* ==============================
+   Hover – nur Desktop
+   ============================== */
+@media (hover: hover) and (pointer: fine){
+  .jg-subsub-link,
+  .jg-subsub-pill{
+    transition: transform .2s ease, border-color .2s ease;
+  }
+
+  .jg-subsub-link:hover,
+  .jg-subsub-pill:hover{
+    transform: scale(1.04);
+  }
+}

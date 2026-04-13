@@ -1,0 +1,16 @@
+/* ************* CHECKOUT OPTION NEWSLETTER AUSBLENDEN *************** */
+/* Hostinger Reach Newsletter Opt-in im Checkout ausblenden */
+.wc-block-components-address-form__hostinger-reach-newsletter-optin{
+    display: none !important;
+}
+/* FIX FILTERBAR TEXT */
+.jg-filterbar .jg-filterbar-label,
+.jg-filterbar .jg-filterbtn,
+.jg-filterbar .jg-filterbtn .jg-filtertext,
+.jg-filterbar .jg-filterbtn .jg-count,
+.jg-filterbar .jg-toggle-label,
+.jg-filterbar .jg-chev,
+.jg-filterbar .jg-filterbtn span{
+  color: #ffffff !important;
+}
+

@@ -1,0 +1,21 @@
+/* ******* HINTERGRUND DER AUSGEWÄHLTE GRÖSSE ************* */
+
+/* Aktive Größe (Swatch) */
+.wd-swatches-product .wd-swatch.wd-active {
+    background-color: #62a0c0 !important;
+    color: #ffffff !important;
+    border-color: #62a0c0 !important;
+}
+
+/* Optional: Hover gleich halten */
+.wd-swatches-product .wd-swatch.wd-enabled:hover {
+    background-color: #62a0c0;
+    color: #ffffff;
+    border-color: #62a0c0;
+}
+
+/* *************** TITEL GÜRTEL GRÖSSENHINWEISE AUSBLENDEN ************** */
+/* Size Guide Titel komplett ausblenden */
+.wd-sizeguide-title {
+    display: none !important;
+}
