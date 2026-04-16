@@ -46,62 +46,25 @@ add_filter('request_filesystem_credentials', '__return_true');
 function woodmart_child_styles() {
 
 	$theme_version = wp_get_theme()->get( 'Version' );
-
-	wp_enqueue_style(
-		'woodmart-child-account',
-		get_stylesheet_directory_uri() . '/assets/css/account.css',
-		array(),
-		$theme_version
+	$styles = array(
+		'woodmart-child-account' => 'assets/css/account.css',
+		'woodmart-child-category-circles' => 'assets/css/category-circles.css',
+		'woodmart-child-category-pills' => 'assets/css/category-pills.css',
+		'woodmart-child-checkout' => 'assets/css/checkout.css',
+		'woodmart-child-filterbar' => 'assets/css/filterbar.css',
+		'woodmart-child-header' => 'assets/css/header.css',
+		'woodmart-child-product-gallery' => 'assets/css/product-gallery.css',
+		'woodmart-child-single-product-page' => 'assets/css/single-product-page.css',
 	);
 
-	wp_enqueue_style(
-		'woodmart-child-category-circles',
-		get_stylesheet_directory_uri() . '/assets/css/category-circles.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-category-pills',
-		get_stylesheet_directory_uri() . '/assets/css/category-pills.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-checkout',
-		get_stylesheet_directory_uri() . '/assets/css/checkout.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-filterbar',
-		get_stylesheet_directory_uri() . '/assets/css/filterbar.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-header',
-		get_stylesheet_directory_uri() . '/assets/css/header.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-product-gallery',
-		get_stylesheet_directory_uri() . '/assets/css/product-gallery.css',
-		array(),
-		$theme_version
-	);
-
-	wp_enqueue_style(
-		'woodmart-child-single-product-page',
-		get_stylesheet_directory_uri() . '/assets/css/single-product-page.css',
-		array(),
-		$theme_version
-	);
+	foreach ( $styles as $handle => $path ) {
+		wp_enqueue_style(
+			$handle,
+			get_stylesheet_directory_uri() . '/' . $path,
+			array(),
+			$theme_version
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'woodmart_child_styles', 20 );
 
@@ -112,30 +75,21 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_styles', 20 );
 function woodmart_child_scripts() {
 
 	$theme_version = wp_get_theme()->get( 'Version' );
-
-	wp_enqueue_script(
-		'woodmart-child-category-circle',
-		get_stylesheet_directory_uri() . '/assets/js/category-circle.js',
-		array(),
-		$theme_version,
-		true
+	$scripts = array(
+		'woodmart-child-category-circle' => 'assets/js/category-circle.js',
+		'woodmart-child-filterbar' => 'assets/js/filterbar.js',
+		'woodmart-child-product-gallery' => 'assets/js/product-gallery.js',
 	);
 
-	wp_enqueue_script(
-		'woodmart-child-filterbar',
-		get_stylesheet_directory_uri() . '/assets/js/filterbar.js',
-		array(),
-		$theme_version,
-		true
-	);
-
-	wp_enqueue_script(
-		'woodmart-child-product-gallery',
-		get_stylesheet_directory_uri() . '/assets/js/product-gallery.js',
-		array(),
-		$theme_version,
-		true
-	);
+	foreach ( $scripts as $handle => $path ) {
+		wp_enqueue_script(
+			$handle,
+			get_stylesheet_directory_uri() . '/' . $path,
+			array(),
+			$theme_version,
+			true
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'woodmart_child_scripts', 20 );
 
@@ -143,12 +97,18 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_scripts', 20 );
 /* ===============================
    PHP MODULE LADEN
    =============================== */
-require_once get_stylesheet_directory() . '/inc/account.php';
-require_once get_stylesheet_directory() . '/inc/category-pills.php';
-require_once get_stylesheet_directory() . '/inc/checkout.php';
-require_once get_stylesheet_directory() . '/inc/filterbar.php';
-require_once get_stylesheet_directory() . '/inc/single-product-layout.php';
-require_once get_stylesheet_directory() . '/inc/subcategory-circles.php';
+$child_modules = array(
+	'account',
+	'category-pills',
+	'checkout',
+	'filterbar',
+	'single-product-layout',
+	'subcategory-circles',
+);
+
+foreach ( $child_modules as $module ) {
+	require_once get_stylesheet_directory() . '/inc/' . $module . '.php';
+}
 
 /* ===============================
    ADDITIONAL CSS (Customizer)
