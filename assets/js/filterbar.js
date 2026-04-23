@@ -1,5 +1,6 @@
-// LastChanged: 2026-04-23 22:52:00
-document.addEventListener('DOMContentLoaded', function () {
+// LastChanged: 2026-04-23 23:05:16
+(function () {
+  function initFilterbar() {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
   if (!bar) return;
 
@@ -384,5 +385,29 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!openBtn || !openPanelEl) return;
     positionPanel(openPanelEl, openBtn);
   }, { passive: true });
+  }
 
-});
+  function runWhenIdle() {
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(initFilterbar, { timeout: 1200 });
+      return;
+    }
+
+    setTimeout(initFilterbar, 120);
+  }
+
+  function boot() {
+    if (document.readyState === 'complete') {
+      runWhenIdle();
+      return;
+    }
+
+    window.addEventListener('load', runWhenIdle, { once: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
