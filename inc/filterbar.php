@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-04-23 22:52:00
+// LastChanged: 2026-04-23 23:01:28
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -92,6 +92,27 @@ if ( ! function_exists( 'jg_get_saved_filter_args' ) ) {
 	}
 }
 
+if ( ! function_exists( 'jg_wc_get_product_cached' ) ) {
+	function jg_wc_get_product_cached( $product_id ) {
+		if ( ! function_exists( 'wc_get_product' ) ) {
+			return null;
+		}
+
+		$id = (int) $product_id;
+		if ( $id <= 0 ) {
+			return null;
+		}
+
+		static $product_cache = [];
+
+		if ( ! array_key_exists( $id, $product_cache ) ) {
+			$product_cache[ $id ] = wc_get_product( $id );
+		}
+
+		return $product_cache[ $id ];
+	}
+}
+
 if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 	function jg_product_matches_selected_sizes_instock( $product, $selected_sizes ) {
 		if ( ! $product || empty( $selected_sizes ) ) {
@@ -104,15 +125,25 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 			return false;
 		}
 
+		$product_id = (int) $product->get_id();
+		$cache_key  = $product_id . '|' . implode( ',', $selected_sizes );
+		static $match_cache = [];
+
+		if ( array_key_exists( $cache_key, $match_cache ) ) {
+			return $match_cache[ $cache_key ];
+		}
+
 		if ( $product->is_type( 'simple' ) ) {
 			if ( ! $product->is_in_stock() ) {
+				$match_cache[ $cache_key ] = false;
 				return false;
 			}
 
 			$terms = wc_get_product_terms( $product->get_id(), 'pa_groessen', [ 'fields' => 'slugs' ] );
 			$terms = array_map( 'sanitize_title', (array) $terms );
 
-			return ! empty( array_intersect( $selected_sizes, $terms ) );
+			$match_cache[ $cache_key ] = ! empty( array_intersect( $selected_sizes, $terms ) );
+			return $match_cache[ $cache_key ];
 		}
 
 		if ( $product->is_type( 'variable' ) ) {
@@ -123,7 +154,7 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 			}
 
 			foreach ( $children as $child_id ) {
-				$variation = wc_get_product( $child_id );
+				$variation = jg_wc_get_product_cached( $child_id );
 
 				if ( ! $variation || ! $variation->exists() ) {
 					continue;
@@ -141,13 +172,16 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 				$variation_size = sanitize_title( $variation_size );
 
 				if ( $variation_size && in_array( $variation_size, $selected_sizes, true ) ) {
+					$match_cache[ $cache_key ] = true;
 					return true;
 				}
 			}
 
+			$match_cache[ $cache_key ] = false;
 			return false;
 		}
 
+		$match_cache[ $cache_key ] = false;
 		return false;
 	}
 }
@@ -158,24 +192,33 @@ if ( ! function_exists( 'jg_get_instock_size_slugs_for_product' ) ) {
 			return [];
 		}
 
+		$product_id = (int) $product->get_id();
+		static $size_cache = [];
+
+		if ( array_key_exists( $product_id, $size_cache ) ) {
+			return $size_cache[ $product_id ];
+		}
+
 		$size_slugs = [];
 
 		if ( $product->is_type( 'simple' ) ) {
 			if ( ! $product->is_in_stock() ) {
+				$size_cache[ $product_id ] = [];
 				return [];
 			}
 
 			$terms = wc_get_product_terms( $product->get_id(), 'pa_groessen', [ 'fields' => 'slugs' ] );
 			$terms = array_map( 'sanitize_title', (array) $terms );
 
-			return array_values( array_unique( array_filter( $terms ) ) );
+			$size_cache[ $product_id ] = array_values( array_unique( array_filter( $terms ) ) );
+			return $size_cache[ $product_id ];
 		}
 
 		if ( $product->is_type( 'variable' ) ) {
 			$children = $product->get_children();
 
 			foreach ( $children as $child_id ) {
-				$variation = wc_get_product( $child_id );
+				$variation = jg_wc_get_product_cached( $child_id );
 
 				if ( ! $variation || ! $variation->exists() ) {
 					continue;
@@ -197,7 +240,9 @@ if ( ! function_exists( 'jg_get_instock_size_slugs_for_product' ) ) {
 			}
 		}
 
-		return array_values( array_unique( array_filter( $size_slugs ) ) );
+		$size_cache[ $product_id ] = array_values( array_unique( array_filter( $size_slugs ) ) );
+
+		return $size_cache[ $product_id ];
 	}
 }
 
@@ -226,6 +271,22 @@ if ( ! function_exists( 'jg_get_current_archive_tax_query' ) ) {
 if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 	function jg_get_filtered_product_ids_for_context( $exclude_filter_keys = [] ) {
 		$exclude_filter_keys = array_map( 'strval', (array) $exclude_filter_keys );
+
+		$term = get_queried_object();
+		$cache_payload = [
+			'exclude' => $exclude_filter_keys,
+			'args'    => jg_get_filter_args_from_request(),
+			'shop'    => (int) is_shop(),
+			'tax'     => is_object( $term ) && ! empty( $term->taxonomy ) ? (string) $term->taxonomy : '',
+			'term'    => is_object( $term ) && ! empty( $term->term_id ) ? (int) $term->term_id : 0,
+		];
+
+		$cache_key = md5( wp_json_encode( $cache_payload ) );
+		static $ids_cache = [];
+
+		if ( array_key_exists( $cache_key, $ids_cache ) ) {
+			return $ids_cache[ $cache_key ];
+		}
 
 		$selected_marke    = jg_get_list_param( 'jg_filter_marke' );
 		$selected_farben   = jg_get_list_param( 'jg_filter_farben' );
@@ -266,7 +327,7 @@ if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 			'fields'                 => 'ids',
 			'posts_per_page'         => -1,
 			'no_found_rows'          => true,
-			'cache_results'          => false,
+			'cache_results'          => true,
 			'update_post_meta_cache' => false,
 			'update_post_term_cache' => false,
 			'meta_query'             => [
@@ -306,7 +367,7 @@ if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 			$matched_ids = [];
 
 			foreach ( $product_ids as $product_id ) {
-				$product = wc_get_product( $product_id );
+				$product = jg_wc_get_product_cached( $product_id );
 
 				if ( jg_product_matches_selected_sizes_instock( $product, $selected_groessen ) ) {
 					$matched_ids[] = (int) $product_id;
@@ -316,7 +377,9 @@ if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 			$product_ids = $matched_ids;
 		}
 
-		return array_values( array_unique( array_filter( $product_ids ) ) );
+		$ids_cache[ $cache_key ] = array_values( array_unique( array_filter( $product_ids ) ) );
+
+		return $ids_cache[ $cache_key ];
 	}
 }
 
@@ -371,7 +434,7 @@ if ( ! function_exists( 'jg_get_size_terms_for_filtered_products' ) ) {
 		$size_slugs = [];
 
 		foreach ( $product_ids as $product_id ) {
-			$product = wc_get_product( $product_id );
+			$product = jg_wc_get_product_cached( $product_id );
 
 			if ( ! $product ) {
 				continue;
@@ -472,7 +535,7 @@ if ( ! function_exists( 'jg_filterbar_pre_get_posts' ) ) {
 			$allowed_ids = [];
 
 			foreach ( $base_ids as $product_id ) {
-				$product = wc_get_product( $product_id );
+				$product = jg_wc_get_product_cached( $product_id );
 
 				if ( jg_product_matches_selected_sizes_instock( $product, $selected_groessen ) ) {
 					$allowed_ids[] = (int) $product_id;

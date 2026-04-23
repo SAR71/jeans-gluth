@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-04-23 22:52:00
+// LastChanged: 2026-04-23 23:01:28
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -53,6 +53,7 @@ add_action('wp_footer', function () {
     (function () {
       const FROM = 'my wishlist';
       const TO   = 'Meine Favoriten';
+      const MAX_RUNTIME_MS = 12000;
 
       function norm(s){
         return (s || '')
@@ -73,40 +74,69 @@ add_action('wp_footer', function () {
       }
 
       function run(){
-        let changed = false;
+        // Primärer Treffer: nur relevante Wishlist-Überschriften durchsuchen.
+        const directTargets = document.querySelectorAll(
+          '.wd-wishlist-group-title h4.title, .wd-wishlist-group-title .title, h4.title'
+        );
 
-        // 1) exakt dein Element aus dem Screenshot
-        document.querySelectorAll('.wd-wishlist-group-title h4.title, h4.title').forEach(el=>{
-          changed = replaceNodeText(el) || changed;
-        });
-
-        // 2) Fallback: überall dort, wo exakt "My wishlist" steht
-        // (wichtig, falls das Markup anders ist als erwartet)
-        document.querySelectorAll('h1,h2,h3,h4,h5,div,span,p,a').forEach(el=>{
-          // nur kleine Elemente prüfen (Performance)
-          if (el.children.length === 0 && (el.textContent || '').length <= 50) {
-            changed = replaceNodeText(el) || changed;
+        for (const el of directTargets) {
+          if (replaceNodeText(el)) {
+            return true;
           }
-        });
+        }
 
-        return changed;
+        // Fallback in engem Scope statt kompletter Dokument-Iteration.
+        const scopedRoots = document.querySelectorAll(
+          '.wd-wishlist-content, .wd-wishlist-group, .woocommerce-MyAccount-content'
+        );
+
+        for (const root of scopedRoots) {
+          const nodes = root.querySelectorAll('h1,h2,h3,h4,h5,span,p,a,div');
+          for (const el of nodes) {
+            if (el.children.length === 0 && (el.textContent || '').length <= 50 && replaceNodeText(el)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
       }
 
       function start(){
-        // initial
-        run();
+        const startedAt = Date.now();
+        if (run()) return;
 
-        // Observer: wenn das Plugin nachlädt/neu rendert, ersetzen wir sofort wieder
-        const obs = new MutationObserver(() => run());
-        obs.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+        let rafQueued = false;
+        const obs = new MutationObserver(() => {
+          if (Date.now() - startedAt > MAX_RUNTIME_MS) {
+            obs.disconnect();
+            return;
+          }
 
-        // Fallback: manche Skripte überschreiben per Timer – wir “gewinnen” trotzdem
-        let i = 0;
+          if (rafQueued) return;
+          rafQueued = true;
+
+          requestAnimationFrame(() => {
+            rafQueued = false;
+            if (run()) {
+              obs.disconnect();
+            }
+          });
+        });
+
+        const observerRoot = document.querySelector('.woocommerce-MyAccount-content') || document.body;
+        if (observerRoot) {
+          obs.observe(observerRoot, { childList: true, subtree: true, characterData: true });
+        }
+
+        let attempts = 0;
         const timer = setInterval(() => {
-          run();
-          i++;
-          if (i > 30) clearInterval(timer); // nach ~30s stoppen
-        }, 1000);
+          attempts++;
+          if (run() || attempts >= 12 || Date.now() - startedAt > MAX_RUNTIME_MS) {
+            clearInterval(timer);
+            obs.disconnect();
+          }
+        }, 500);
       }
 
       if (document.readyState === 'loading') {

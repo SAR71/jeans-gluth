@@ -1,4 +1,4 @@
-// LastChanged: 2026-04-23 22:52:00
+// LastChanged: 2026-04-23 23:01:28
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -38,6 +38,16 @@
     const scroller = getScroller();
     if (!scroller) return;
 
+    let lastSaved = null;
+    let rafPending = false;
+
+    function saveScrollLeft(force = false) {
+      const value = String(scroller.scrollLeft);
+      if (!force && value === lastSaved) return;
+      lastSaved = value;
+      sessionStorage.setItem(KEY, value);
+    }
+
     scroller.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.jg-subcat-item');
       if (!item) return;
@@ -47,7 +57,7 @@
       item.classList.add('is-clicked');
 
       // horizontale Position speichern -> nahtlos nach Navigation
-      sessionStorage.setItem(KEY, String(scroller.scrollLeft));
+      saveScrollLeft(true);
 
       // welche Kategorie geklickt wurde
       const termId = item.getAttribute('data-term-id');
@@ -56,7 +66,13 @@
 
     // falls jemand per Keyboard navigiert: aktuelle Scrollposition merken
     scroller.addEventListener('scroll', () => {
-      sessionStorage.setItem(KEY, String(scroller.scrollLeft));
+      if (rafPending) return;
+      rafPending = true;
+
+      requestAnimationFrame(() => {
+        rafPending = false;
+        saveScrollLeft();
+      });
     }, { passive: true });
   }
 
