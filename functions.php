@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-04-23 22:52:00
+// LastChanged: 2026-04-23 22:55:04
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
@@ -10,6 +10,86 @@ if ( !defined( 'ABSPATH' ) ) exit;
 
 /* ****************************************** XTEMOS ***************************** */
 add_filter('request_filesystem_credentials', '__return_true');
+
+/* ===============================
+   BASIS-STYLES LADEN (OHNE PARENT-PFAD)
+   =============================== */
+function woodmart_child_base_styles() {
+
+	$theme_version = wp_get_theme()->get( 'Version' );
+	$woodmart_base_handles = array(
+		'wd-style-base',
+		'wd-helpers-wpb-elem',
+		'wd-lazy-loading',
+		'wd-elementor-base',
+		'wd-elementor-pro-base',
+		'wd-woocommerce-base',
+		'wd-mod-star-rating',
+		'wd-woocommerce-block-notices',
+		'wd-wp-blocks',
+		'wd-header-banner',
+		'wd-header-base',
+		'wd-mod-tools',
+		'wd-header-elements-base',
+		'wd-social-icons',
+		'wd-header-search',
+		'wd-wd-search-form',
+		'wd-wd-search-results',
+		'wd-wd-search-dropdown',
+		'wd-header-cart-side',
+		'wd-woo-mod-quantity',
+		'wd-header-cart',
+		'wd-widget-shopping-cart',
+		'wd-widget-product-list',
+		'wd-header-my-account',
+		'wd-header-mobile-nav-dropdown',
+		'wd-swiper',
+		'wd-slider',
+		'wd-mod-animations-transform-base',
+		'wd-mod-animations-transform',
+		'wd-mod-transform',
+		'wd-text-block',
+		'wd-button',
+		'wd-swiper-arrows',
+		'wd-swiper-pagin',
+		'wd-banner',
+		'wd-banner-style-bg-and-border',
+		'wd-section-title',
+		'wd-section-title-style-simple-and-brd',
+		'wd-el-subtitle-style',
+		'wd-tabs',
+		'wd-product-tabs',
+		'wd-sticky-loader',
+		'wd-product-loop',
+		'wd-woo-loop-prod-el-base',
+		'wd-woo-loop-prod-builder',
+		'wd-product-arrows',
+		'wd-woo-mod-product-labels',
+		'wd-woo-mod-product-labels-round',
+		'wd-instagram',
+		'wd-brands',
+		'wd-brands-style-bordered',
+		'wd-widget-collapse',
+		'wd-footer-base',
+		'wd-map',
+		'wd-el-open-street-map',
+		'wd-list',
+		'wd-el-list',
+		'wd-scroll-top',
+		'wd-header-mod-content-calc',
+		'wd-page-wishlist-popup',
+		'wd-mfp-popup',
+		'wd-bottom-toolbar',
+	);
+
+	wp_enqueue_style(
+		'woodmart-child-base-style',
+		get_stylesheet_uri(),
+		$woodmart_base_handles,
+		$theme_version
+	);
+}
+add_action( 'wp_enqueue_scripts', 'woodmart_child_base_styles', 10 );
 
 /* ===============================
    CSS DATEIEN LADEN
@@ -32,7 +112,7 @@ function woodmart_child_styles() {
 		wp_enqueue_style(
 			$handle,
 			get_stylesheet_directory_uri() . '/' . $path,
-			array(),
+			array( 'woodmart-child-base-style' ),
 			$theme_version
 		);
 	}
