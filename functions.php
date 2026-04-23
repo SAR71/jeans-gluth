@@ -1,4 +1,5 @@
 <?php
+// LastChanged: 2026-04-23 22:52:00
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 

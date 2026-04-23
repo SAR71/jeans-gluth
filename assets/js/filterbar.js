@@ -1,3 +1,4 @@
+// LastChanged: 2026-04-23 22:52:00
 document.addEventListener('DOMContentLoaded', function () {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
   if (!bar) return;
