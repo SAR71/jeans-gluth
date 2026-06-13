@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-13 23:09:51
+// LastChanged: 2026-06-13 23:23:13
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
@@ -162,7 +162,7 @@ function woodmart_child_styles() {
 		wp_enqueue_style(
 			$handle,
 			get_stylesheet_directory_uri() . '/' . $path,
-			array( 'woodmart-child-base-style' ),
+			array(),
 			$asset_version
 		);
 	}
@@ -243,31 +243,31 @@ function woodmart_child_additional_css() {
 		array(
 			'handle' => 'woodmart-child-customizer-overrides-header',
 			'file'   => 'header.css',
-			'deps'   => array( 'woodmart-child-header' ),
+			'deps'   => array(),
 			'load'   => true,
 		),
 		array(
 			'handle' => 'woodmart-child-customizer-overrides-account',
 			'file'   => 'account.css',
-			'deps'   => array( 'woodmart-child-account' ),
+			'deps'   => array(),
 			'load'   => function_exists( 'is_account_page' ) && is_account_page(),
 		),
 		array(
 			'handle' => 'woodmart-child-customizer-overrides-checkout',
 			'file'   => 'checkout.css',
-			'deps'   => array( 'woodmart-child-checkout' ),
+			'deps'   => array(),
 			'load'   => function_exists( 'is_checkout' ) && is_checkout(),
 		),
 		array(
 			'handle' => 'woodmart-child-customizer-overrides-product-gallery',
 			'file'   => 'product-gallery.css',
-			'deps'   => array( 'woodmart-child-product-gallery' ),
+			'deps'   => array(),
 			'load'   => function_exists( 'is_product' ) && is_product(),
 		),
 		array(
 			'handle' => 'woodmart-child-customizer-overrides-single-product',
 			'file'   => 'single-product.css',
-			'deps'   => array( 'woodmart-child-single-product-page' ),
+			'deps'   => array(),
 			'load'   => function_exists( 'is_product' ) && is_product(),
 		),
 	);
