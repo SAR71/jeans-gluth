@@ -49,10 +49,10 @@
     return document.querySelectorAll(selector);
   }
 
-  function getSummaryWidth() {
-    var summary = document.querySelector('.single-product .summary');
-    if (!summary) return 0;
-    var width = Math.round(summary.getBoundingClientRect().width);
+  function getWidth(el) {
+    if (!el) return 0;
+    var rect = el.getBoundingClientRect();
+    var width = Math.round(rect.width);
     return width > 0 ? width : 0;
   }
 
@@ -85,9 +85,6 @@
     var summary = document.querySelector('.single-product .summary');
     if (!summary) return;
 
-    var width = getSummaryWidth();
-    if (!width) return;
-
     var addToCartTargets = queryAll([
       '.single-product .summary form.cart',
       '.single-product .summary .single_add_to_cart_button',
@@ -112,10 +109,32 @@
       '.single-product .summary iframe[src*="paypal.com"]'
     ].join(','));
 
+    var summaryWidth = getWidth(summary);
+    var addToCartWidth = addToCartTargets.length ? getWidth(addToCartTargets[0]) : 0;
+    var paypalWidth = paypalTargets.length ? getWidth(paypalTargets[0]) : 0;
+
+    var width = 0;
+    if (addToCartWidth && paypalWidth) {
+      width = Math.min(addToCartWidth, paypalWidth);
+    } else if (paypalWidth) {
+      width = paypalWidth;
+    } else if (addToCartWidth) {
+      width = addToCartWidth;
+    } else {
+      width = summaryWidth;
+    }
+
+    if (!width) return;
+
     for (var i = 0; i < paypalTargets.length; i++) {
       var target = paypalTargets[i];
       setExactWidth(target, width);
       lockAncestorsToSummaryWidth(target, summary, width);
+    }
+
+    for (var a = 0; a < addToCartTargets.length; a++) {
+      setExactWidth(addToCartTargets[a], width);
+      lockAncestorsToSummaryWidth(addToCartTargets[a], summary, width);
     }
   }
 
