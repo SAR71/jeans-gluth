@@ -45,62 +45,77 @@
     return document.body && document.body.classList.contains('single-product');
   }
 
-  function getReferenceWidth() {
-    var addToCartBtn = document.querySelector(
-      '.single-product .summary .single_add_to_cart_button, .single-product .summary button.single_add_to_cart_button'
-    );
-    if (addToCartBtn) {
-      var btnWidth = Math.round(addToCartBtn.getBoundingClientRect().width);
-      if (btnWidth > 0) return btnWidth;
-    }
-
-    var cartForm = document.querySelector('.single-product .summary form.cart');
-    if (cartForm) {
-      var formWidth = Math.round(cartForm.getBoundingClientRect().width);
-      if (formWidth > 0) return formWidth;
-    }
-
-    var summary = document.querySelector('.single-product .summary');
-    if (summary) {
-      var summaryWidth = Math.round(summary.getBoundingClientRect().width);
-      if (summaryWidth > 0) return summaryWidth;
-    }
-
-    return 0;
+  function queryAll(selector) {
+    return document.querySelectorAll(selector);
   }
 
-  function getPaypalTargets() {
-    return document.querySelectorAll([
+  function getSummaryWidth() {
+    var summary = document.querySelector('.single-product .summary');
+    if (!summary) return 0;
+    var width = Math.round(summary.getBoundingClientRect().width);
+    return width > 0 ? width : 0;
+  }
+
+  function setExactWidth(el, width) {
+    if (!el || !width) return;
+    el.style.width = width + 'px';
+    el.style.maxWidth = width + 'px';
+    el.style.minWidth = width + 'px';
+    el.style.boxSizing = 'border-box';
+    el.style.marginLeft = '0';
+    el.style.marginRight = '0';
+    el.style.display = 'block';
+  }
+
+  function lockAncestorsToSummaryWidth(el, summary, width) {
+    if (!el || !summary || !width) return;
+
+    var current = el.parentElement;
+    var hops = 0;
+    while (current && current !== summary && hops < 8) {
+      setExactWidth(current, width);
+      current = current.parentElement;
+      hops++;
+    }
+  }
+
+  function syncButtonWidths() {
+    if (!isSingleProduct()) return;
+
+    var summary = document.querySelector('.single-product .summary');
+    if (!summary) return;
+
+    var width = getSummaryWidth();
+    if (!width) return;
+
+    var addToCartTargets = queryAll([
+      '.single-product .summary form.cart',
+      '.single-product .summary .single_add_to_cart_button',
+      '.single-product .summary button.single_add_to_cart_button'
+    ].join(','));
+
+    for (var a = 0; a < addToCartTargets.length; a++) {
+      setExactWidth(addToCartTargets[a], width);
+    }
+
+    var paypalTargets = queryAll([
+      '.single-product .summary .woocommerce-paypal-payments',
       '.single-product .summary .woocommerce-paypal-payments-buttons',
       '.single-product .summary .woocommerce-paypal-payments-buttons > div',
       '.single-product .summary .ppc-button-wrapper',
       '.single-product .summary .paypal-buttons',
       '.single-product .summary .paypal-buttons > div',
       '.single-product .summary [id^="paypal-button"]',
-      '.single-product .summary iframe[src*="paypal.com"]',
       '.single-product .summary .wcpay-payment-request-wrapper',
       '.single-product .summary .wcpay-payment-request-button',
-      '.single-product .summary .wcpay-express-checkout-button'
+      '.single-product .summary .wcpay-express-checkout-button',
+      '.single-product .summary iframe[src*="paypal.com"]'
     ].join(','));
-  }
 
-  function syncButtonWidths() {
-    if (!isSingleProduct()) return;
-
-    var width = getReferenceWidth();
-    if (!width) return;
-
-    var targets = getPaypalTargets();
-    if (!targets.length) return;
-
-    for (var i = 0; i < targets.length; i++) {
-      var el = targets[i];
-      el.style.width = width + 'px';
-      el.style.maxWidth = width + 'px';
-      el.style.minWidth = width + 'px';
-      el.style.boxSizing = 'border-box';
-      el.style.marginLeft = '0';
-      el.style.marginRight = '0';
+    for (var i = 0; i < paypalTargets.length; i++) {
+      var target = paypalTargets[i];
+      setExactWidth(target, width);
+      lockAncestorsToSummaryWidth(target, summary, width);
     }
   }
 
@@ -120,6 +135,14 @@
   window.addEventListener('resize', scheduleSync);
   window.addEventListener('orientationchange', scheduleSync);
 
+  if (window.ResizeObserver) {
+    var summary = document.querySelector('.single-product .summary');
+    if (summary) {
+      var resizeObserver = new ResizeObserver(scheduleSync);
+      resizeObserver.observe(summary);
+    }
+  }
+
   var summaryRoot = document.querySelector('.single-product .summary');
   if (summaryRoot && window.MutationObserver) {
     var observer = new MutationObserver(scheduleSync);
@@ -130,7 +153,7 @@
   var retryTimer = setInterval(function () {
     retries++;
     scheduleSync();
-    if (retries >= 30) {
+    if (retries >= 40) {
       clearInterval(retryTimer);
     }
   }, 250);
