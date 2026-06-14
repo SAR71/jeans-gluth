@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-13 23:23:13
+// LastChanged: 2026-06-14 00:00:00
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
@@ -282,11 +282,13 @@ function woodmart_child_additional_css() {
 			continue;
 		}
 
+		$asset_version = (string) filemtime( $file_path );
+
 		wp_enqueue_style(
 			$item['handle'],
 			$base_uri . $item['file'],
 			$item['deps'],
-			$theme_version
+			$asset_version
 		);
 	}
 

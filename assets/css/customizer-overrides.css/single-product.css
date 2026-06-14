@@ -26,3 +26,28 @@
 .single-product .summary button.single_add_to_cart_button {
 	display: block !important;
 }
+
+/* PayPal rendert oft als iframe mit eigener Breite: hier hart auf gleiche Breite ziehen */
+.single-product .summary .woocommerce-paypal-payments-buttons,
+.single-product .summary .woocommerce-paypal-payments-buttons > div,
+.single-product .summary .ppc-button-wrapper,
+.single-product .summary .paypal-buttons,
+.single-product .summary .paypal-buttons > div,
+.single-product .summary [id^="paypal-button"] {
+	width: 100% !important;
+	max-width: none !important;
+	min-width: 0 !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+}
+
+.single-product .summary .woocommerce-paypal-payments-buttons iframe,
+.single-product .summary .ppc-button-wrapper iframe,
+.single-product .summary .paypal-buttons iframe,
+.single-product .summary [id^="paypal-button"] iframe,
+.single-product .summary iframe[src*="paypal.com"] {
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	display: block !important;
+}
