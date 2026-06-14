@@ -45,34 +45,97 @@
     return document.body && document.body.classList.contains('single-product');
   }
 
-  function queryAll(selector) {
-    return document.querySelectorAll(selector);
-  }
-
   function getWidth(el) {
     if (!el) return 0;
-    var rect = el.getBoundingClientRect();
-    var width = Math.round(rect.width);
+    var width = Math.round(el.getBoundingClientRect().width);
     return width > 0 ? width : 0;
+  }
+
+  function setImportantStyle(el, prop, value) {
+    if (!el || !el.style) return;
+    el.style.setProperty(prop, value, 'important');
   }
 
   function setExactWidth(el, width) {
     if (!el || !width) return;
-    el.style.width = width + 'px';
-    el.style.maxWidth = width + 'px';
-    el.style.minWidth = width + 'px';
-    el.style.boxSizing = 'border-box';
-    el.style.marginLeft = '0';
-    el.style.marginRight = '0';
-    el.style.display = 'block';
+    var px = width + 'px';
+    setImportantStyle(el, 'width', px);
+    setImportantStyle(el, 'max-width', px);
+    setImportantStyle(el, 'min-width', px);
+    setImportantStyle(el, 'box-sizing', 'border-box');
+    setImportantStyle(el, 'margin-left', '0');
+    setImportantStyle(el, 'margin-right', '0');
+    setImportantStyle(el, 'display', 'block');
   }
 
-  function lockAncestorsToSummaryWidth(el, summary, width) {
-    if (!el || !summary || !width) return;
+  function collectAddToCartTargets(summary) {
+    return summary.querySelectorAll([
+      'form.cart',
+      'form.cart .single_add_to_cart_button',
+      'form.cart button.single_add_to_cart_button',
+      'form.cart button[type="submit"]'
+    ].join(','));
+  }
 
+  function collectPaypalTargets(summary) {
+    var direct = summary.querySelectorAll([
+      '.woocommerce-paypal-payments',
+      '.woocommerce-paypal-payments-buttons',
+      '.woocommerce-paypal-payments-buttons > div',
+      '.ppc-button-wrapper',
+      '.paypal-buttons',
+      '.paypal-buttons > div',
+      '[id^="paypal-button"]',
+      '.wcpay-payment-request-wrapper',
+      '.wcpay-payment-request-button',
+      '.wcpay-express-checkout-button',
+      'iframe[src*="paypal.com"]'
+    ].join(','));
+
+    var fuzzy = [];
+    var all = summary.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      var id = (el.id || '').toLowerCase();
+      var cls = (el.className || '').toString().toLowerCase();
+      var dataFunding = (el.getAttribute('data-funding-source') || '').toLowerCase();
+      var aria = (el.getAttribute('aria-label') || '').toLowerCase();
+      var src = (el.getAttribute('src') || '').toLowerCase();
+
+      var isPaypalLike =
+        id.indexOf('paypal') !== -1 ||
+        id.indexOf('ppc') !== -1 ||
+        cls.indexOf('paypal') !== -1 ||
+        cls.indexOf('ppc') !== -1 ||
+        dataFunding.indexOf('paypal') !== -1 ||
+        aria.indexOf('paypal') !== -1 ||
+        src.indexOf('paypal.com') !== -1;
+
+      if (isPaypalLike) {
+        fuzzy.push(el);
+      }
+    }
+
+    var out = [];
+    var seen = [];
+    for (var d = 0; d < direct.length; d++) {
+      out.push(direct[d]);
+      seen.push(direct[d]);
+    }
+    for (var f = 0; f < fuzzy.length; f++) {
+      if (seen.indexOf(fuzzy[f]) === -1) {
+        out.push(fuzzy[f]);
+        seen.push(fuzzy[f]);
+      }
+    }
+    return out;
+  }
+
+  function lockAncestorsToWidth(el, stopAt, width) {
+    if (!el || !stopAt || !width) return;
     var current = el.parentElement;
     var hops = 0;
-    while (current && current !== summary && hops < 8) {
+    while (current && current !== stopAt && hops < 10) {
       setExactWidth(current, width);
       current = current.parentElement;
       hops++;
@@ -85,56 +148,26 @@
     var summary = document.querySelector('.single-product .summary');
     if (!summary) return;
 
-    var addToCartTargets = queryAll([
-      '.single-product .summary form.cart',
-      '.single-product .summary .single_add_to_cart_button',
-      '.single-product .summary button.single_add_to_cart_button'
-    ].join(','));
+    var addToCartTargets = collectAddToCartTargets(summary);
+    var paypalTargets = collectPaypalTargets(summary);
 
-    for (var a = 0; a < addToCartTargets.length; a++) {
-      setExactWidth(addToCartTargets[a], width);
-    }
+    if (!addToCartTargets.length || !paypalTargets.length) return;
 
-    var paypalTargets = queryAll([
-      '.single-product .summary .woocommerce-paypal-payments',
-      '.single-product .summary .woocommerce-paypal-payments-buttons',
-      '.single-product .summary .woocommerce-paypal-payments-buttons > div',
-      '.single-product .summary .ppc-button-wrapper',
-      '.single-product .summary .paypal-buttons',
-      '.single-product .summary .paypal-buttons > div',
-      '.single-product .summary [id^="paypal-button"]',
-      '.single-product .summary .wcpay-payment-request-wrapper',
-      '.single-product .summary .wcpay-payment-request-button',
-      '.single-product .summary .wcpay-express-checkout-button',
-      '.single-product .summary iframe[src*="paypal.com"]'
-    ].join(','));
-
+    var addToCartWidth = getWidth(addToCartTargets[0]);
+    var paypalWidth = getWidth(paypalTargets[0]);
     var summaryWidth = getWidth(summary);
-    var addToCartWidth = addToCartTargets.length ? getWidth(addToCartTargets[0]) : 0;
-    var paypalWidth = paypalTargets.length ? getWidth(paypalTargets[0]) : 0;
+    var targetWidth = Math.min(addToCartWidth || summaryWidth, paypalWidth || summaryWidth);
 
-    var width = 0;
-    if (addToCartWidth && paypalWidth) {
-      width = Math.min(addToCartWidth, paypalWidth);
-    } else if (paypalWidth) {
-      width = paypalWidth;
-    } else if (addToCartWidth) {
-      width = addToCartWidth;
-    } else {
-      width = summaryWidth;
-    }
-
-    if (!width) return;
-
-    for (var i = 0; i < paypalTargets.length; i++) {
-      var target = paypalTargets[i];
-      setExactWidth(target, width);
-      lockAncestorsToSummaryWidth(target, summary, width);
-    }
+    if (!targetWidth) return;
 
     for (var a = 0; a < addToCartTargets.length; a++) {
-      setExactWidth(addToCartTargets[a], width);
-      lockAncestorsToSummaryWidth(addToCartTargets[a], summary, width);
+      setExactWidth(addToCartTargets[a], targetWidth);
+      lockAncestorsToWidth(addToCartTargets[a], summary, targetWidth);
+    }
+
+    for (var p = 0; p < paypalTargets.length; p++) {
+      setExactWidth(paypalTargets[p], targetWidth);
+      lockAncestorsToWidth(paypalTargets[p], summary, targetWidth);
     }
   }
 
