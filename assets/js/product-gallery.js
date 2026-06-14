@@ -82,10 +82,16 @@
       '.woocommerce-paypal-payments',
       '.woocommerce-paypal-payments-buttons',
       '.woocommerce-paypal-payments-buttons > div',
+      '.paypal-button-container',
+      '.paypal-button',
+      '.paypal-button-row',
+      '.paypal-button-label-container',
       '.ppc-button-wrapper',
       '.paypal-buttons',
       '.paypal-buttons > div',
       '[id^="paypal-button"]',
+      '[class*="paypal-button"]',
+      '[aria-label*="PayPal"]',
       '.wcpay-payment-request-wrapper',
       '.wcpay-payment-request-button',
       '.wcpay-express-checkout-button',
@@ -156,7 +162,26 @@
     var addToCartWidth = getWidth(addToCartTargets[0]);
     var paypalWidth = getWidth(paypalTargets[0]);
     var summaryWidth = getWidth(summary);
-    var targetWidth = Math.min(addToCartWidth || summaryWidth, paypalWidth || summaryWidth);
+
+    var paypalWidths = [];
+    for (var w = 0; w < paypalTargets.length; w++) {
+      var ww = getWidth(paypalTargets[w]);
+      if (ww >= 200) {
+        paypalWidths.push(ww);
+      }
+    }
+
+    var paypalVisualWidth = 0;
+    if (paypalWidths.length) {
+      paypalVisualWidth = paypalWidths[0];
+      for (var pw = 1; pw < paypalWidths.length; pw++) {
+        if (paypalWidths[pw] < paypalVisualWidth) {
+          paypalVisualWidth = paypalWidths[pw];
+        }
+      }
+    }
+
+    var targetWidth = paypalVisualWidth || paypalWidth || addToCartWidth || summaryWidth;
 
     if (!targetWidth) return;
 
