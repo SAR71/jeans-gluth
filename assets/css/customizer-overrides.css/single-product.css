@@ -1,1 +1,28 @@
-/* LastChanged: 2026-04-23 22:52:00 */
+/* LastChanged: 2026-06-14 00:00:00 */
+
+/* Gleich breite Buttons auf Produktseiten (Add-to-Cart + PayPal) */
+.single-product .elementor-widget-wd_single_product_add_to_cart,
+.single-product .elementor-widget-wd_single_product_add_to_cart .elementor-widget-container,
+.single-product .summary form.cart,
+.single-product .summary .single_add_to_cart_button,
+.single-product .summary button.single_add_to_cart_button,
+.single-product .summary #wc-stripe-payment-request-wrapper,
+.single-product .summary .wc-stripe-product-checkout-container,
+.single-product .summary .woocommerce-paypal-payments,
+.single-product .summary .woocommerce-paypal-payments-buttons,
+.single-product .summary .ppc-button-wrapper,
+.single-product .summary [id^="paypal-button"],
+.single-product .summary [data-funding-source],
+.single-product .summary .paypal-buttons,
+.single-product .summary .wcpay-payment-request-wrapper,
+.single-product .summary .wcpay-payment-request-button,
+.single-product .summary .wcpay-express-checkout-button {
+	width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box;
+}
+
+.single-product .summary .single_add_to_cart_button,
+.single-product .summary button.single_add_to_cart_button {
+	display: block !important;
+}
