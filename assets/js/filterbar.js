@@ -110,12 +110,10 @@
 
   function removeLegacyWooFilterParams(url) {
     url.searchParams.delete('filter_farben');
-    url.searchParams.delete('filter_farbgruppe');
     url.searchParams.delete('filter_colorgroup');
     url.searchParams.delete('filter_groessen');
     url.searchParams.delete('filter_marke');
     url.searchParams.delete('query_type_farben');
-    url.searchParams.delete('query_type_farbgruppe');
     url.searchParams.delete('query_type_colorgroup');
     url.searchParams.delete('query_type_groessen');
     url.searchParams.delete('query_type_marke');
