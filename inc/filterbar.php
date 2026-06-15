@@ -705,6 +705,22 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		$terms_farben   = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
 		$terms_groessen = jg_get_size_terms_for_filtered_products( [ 'jg_filter_groessen' ] );
 
+		$terms_farben = array_values(
+			array_filter(
+				$terms_farben,
+				static function( $term ) {
+					if ( ! ( $term instanceof WP_Term ) ) {
+						return false;
+					}
+
+					$slug_key = sanitize_title( (string) $term->slug );
+					$name_key = sanitize_title( (string) $term->name );
+
+					return $slug_key !== 'unbestimmt' && $name_key !== 'unbestimmt';
+				}
+			)
+		);
+
 		$extract_swatch_color = null;
 		$extract_swatch_color = static function( $raw ) use ( &$extract_swatch_color ) {
 			if ( is_array( $raw ) ) {
