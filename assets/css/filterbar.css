@@ -13,6 +13,7 @@
 
   --jg-filterbar-padding-y: 2px;
   --jg-filterbar-gap: 28px;
+  --jg-focus-ring-color: #111111;
 }
 
 .jg-filterbar{
@@ -115,7 +116,7 @@
 }
 
 .jg-filterbtn:focus-visible{
-  outline: 3px solid rgba(90,31,51,.35);
+  outline: 3px solid var(--jg-focus-ring-color);
   outline-offset: 4px;
   border-radius: 6px;
 }
@@ -182,7 +183,7 @@
 }
 
 .jg-switch-input:focus-visible + .jg-switch-ui{
-  outline: 3px solid rgba(90,31,51,.35);
+  outline: 3px solid var(--jg-focus-ring-color);
   outline-offset: 4px;
 }
 
@@ -323,7 +324,7 @@
 
 .jg-close:focus-visible,
 .jg-reset:focus-visible{
-  outline: 3px solid rgba(90,31,51,.35);
+  outline: 3px solid var(--jg-focus-ring-color);
   outline-offset: 4px;
   border-radius: 8px;
 }
@@ -445,7 +446,7 @@
 }
 
 .jg-color-item:focus-visible{
-  outline: 3px solid rgba(90,31,51,.35);
+  outline: 3px solid var(--jg-focus-ring-color);
   outline-offset: 4px;
   border-radius: 50%;
 }
@@ -515,6 +516,12 @@
   background: transparent;
   outline: 3px solid rgba(0,0,0,.35);
   outline-offset: 0;
+}
+
+.jg-check:focus-visible + .jg-checkbox-ui,
+.jg-checkrow:focus-within .jg-checkbox-ui{
+  outline: 3px solid var(--jg-focus-ring-color);
+  outline-offset: 3px;
 }
 
 .jg-check{

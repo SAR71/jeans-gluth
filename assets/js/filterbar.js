@@ -12,6 +12,9 @@
     bar.querySelectorAll('.jg-panel')
   );
 
+  var liveRegion = bar.querySelector('[data-jg-filter-live-region]');
+  var lastOpenButton = null;
+
   var state = {
     jg_filter_farben: new Set(),
     jg_filter_groessen: new Set()
@@ -50,9 +53,41 @@
     return null;
   }
 
-  function closeAll() {
+  function announce(message) {
+    if (!liveRegion || !message) return;
+    liveRegion.textContent = '';
+    window.setTimeout(function () {
+      liveRegion.textContent = message;
+    }, 20);
+  }
+
+  function getFocusableElements(container) {
+    if (!container) return [];
+
+    var selectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled]):not([type="hidden"])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+
+    return Array.prototype.slice.call(container.querySelectorAll(selectors)).filter(function (el) {
+      return !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true';
+    });
+  }
+
+  function focusFirstInPanel(panel) {
+    var focusables = getFocusableElements(panel);
+    if (!focusables.length) return;
+    focusables[0].focus();
+  }
+
+  function closeAll(restoreFocus) {
     panels.forEach(function (panel) {
       panel.setAttribute('aria-hidden', 'true');
+      panel.setAttribute('aria-modal', 'false');
       panel.style.left = '';
       panel.style.top = '';
     });
@@ -60,6 +95,10 @@
     buttons.forEach(function (btn) {
       btn.setAttribute('aria-expanded', 'false');
     });
+
+    if (restoreFocus && lastOpenButton) {
+      lastOpenButton.focus();
+    }
   }
 
   function positionPanel(panel, btn) {
@@ -100,15 +139,24 @@
     var panel = document.getElementById(panelId);
     if (!panel) return;
 
-    closeAll();
+    closeAll(false);
 
     panel.setAttribute('aria-hidden', 'false');
+    panel.setAttribute('aria-modal', 'true');
     btn.setAttribute('aria-expanded', 'true');
+    lastOpenButton = btn;
 
     positionPanel(panel, btn);
 
     if (panelId === 'jg-panel-farbe') {
       refreshColorTooltipPlacement();
+    }
+
+    focusFirstInPanel(panel);
+
+    var label = btn.querySelector('.jg-filtertext');
+    if (label) {
+      announce(label.textContent.trim() + ' geöffnet');
     }
   }
 
@@ -134,6 +182,7 @@
   function applyListParam(key, selectedSet) {
     var url = new URL(window.location.href);
     var out = Array.from(selectedSet);
+    announce('Filter werden angewendet');
     setQueryParam(url, key, out.length ? out.join(',') : null);
     url.searchParams.delete('paged');
     removeLegacyWooFilterParams(url);
@@ -149,6 +198,7 @@
       .filter(function (c) { return c.checked; })
       .map(function (c) { return c.value; });
 
+    announce('Filter werden angewendet');
     setQueryParam(markeUrl, 'jg_filter_marke', selected.length ? selected.join(',') : null);
     markeUrl.searchParams.delete('paged');
     removeLegacyWooFilterParams(markeUrl);
@@ -214,6 +264,11 @@
     if (!countEl) return;
 
     countEl.textContent = count > 0 ? ' (' + count + ')' : '';
+
+    var labelEl = btn.querySelector('.jg-filtertext');
+    var name = labelEl ? labelEl.textContent.trim() : 'Filter';
+    var suffix = count > 0 ? ', ' + count + ' ausgewählt' : ', keine Auswahl';
+    btn.setAttribute('aria-label', name + suffix);
   }
 
   function updateBrandRowHighlights() {
@@ -256,7 +311,7 @@
   refreshColorTooltipPlacement();
   updateBrandRowHighlights();
   updateAllCounts();
-  closeAll();
+  closeAll(false);
 
   document.addEventListener('change', function (e) {
     var t = e.target;
@@ -306,7 +361,24 @@
       if (commitPendingPanelCloseIfNeeded(panelId)) return;
 
       clearPendingCommitFlagByPanelId(panelId);
-      closeAll();
+      closeAll(true);
+      announce('Dialog geschlossen');
+      return;
+    }
+
+    var sortOption = e.target.closest('.jg-sort-option[data-jg-orderby]');
+    if (sortOption) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var orderValue = sortOption.getAttribute('data-jg-orderby');
+      var sortUrl = new URL(window.location.href);
+
+      setQueryParam(sortUrl, 'orderby', orderValue || null);
+      sortUrl.searchParams.delete('paged');
+      removeLegacyWooFilterParams(sortUrl);
+      announce('Sortierung wird angewendet');
+      window.location.href = sortUrl.toString();
       return;
     }
 
@@ -358,6 +430,16 @@
         return;
       }
 
+      if (resetKey === 'orderby') {
+        var resetUrl = new URL(window.location.href);
+        setQueryParam(resetUrl, 'orderby', null);
+        resetUrl.searchParams.delete('paged');
+        removeLegacyWooFilterParams(resetUrl);
+        announce('Sortierung zurückgesetzt');
+        window.location.href = resetUrl.toString();
+        return;
+      }
+
       return;
     }
 
@@ -393,9 +475,49 @@
         if (commitPendingPanelCloseIfNeeded(openPanelId)) return;
 
         clearPendingCommitFlagByPanelId(openPanelId);
-        closeAll();
+        closeAll(true);
+        announce('Dialog geschlossen');
         return;
       }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var openPanelEl = getOpenPanel();
+    if (!openPanelEl) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      clearPendingCommitFlagByPanelId(openPanelEl.id);
+      closeAll(true);
+      announce('Dialog geschlossen');
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+
+    var focusables = getFocusableElements(openPanelEl);
+    if (!focusables.length) return;
+
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+    var active = document.activeElement;
+
+    if (!openPanelEl.contains(active)) {
+      e.preventDefault();
+      first.focus();
+      return;
+    }
+
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+      return;
+    }
+
+    if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
     }
   });
 

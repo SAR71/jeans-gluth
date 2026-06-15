@@ -291,6 +291,7 @@ if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 		$selected_marke    = jg_get_list_param( 'jg_filter_marke' );
 		$selected_farben   = jg_get_list_param( 'jg_filter_farben' );
 		$selected_groessen = jg_get_list_param( 'jg_filter_groessen' );
+		$selected_orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['orderby'] ) ) : '';
 
 		$tax_query  = jg_get_current_archive_tax_query();
 		$meta_query = [
@@ -1019,20 +1020,21 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		?>
 		<div class="jg-filterbar" data-jg-filterbar="1" role="navigation" aria-label="Filter">
 			<span class="jg-filterbar-label" aria-hidden="true">FILTER</span>
+			<span class="jg-sr-only" aria-live="polite" aria-atomic="true" data-jg-filter-live-region></span>
 
-			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-marke" aria-haspopup="dialog" aria-expanded="false">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-marke" aria-haspopup="dialog" aria-controls="jg-panel-marke" aria-expanded="false" aria-label="Marke Filter öffnen">
 				<span class="jg-filtertext">MARKE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-farbe" aria-haspopup="dialog" aria-expanded="false">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-farbe" aria-haspopup="dialog" aria-controls="jg-panel-farbe" aria-expanded="false" aria-label="Farbe Filter öffnen">
 				<span class="jg-filtertext">FARBE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-groesse" aria-haspopup="dialog" aria-expanded="false">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-groesse" aria-haspopup="dialog" aria-controls="jg-panel-groesse" aria-expanded="false" aria-label="Größe Filter öffnen">
 				<span class="jg-filtertext">GRÖSSE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-sort" aria-haspopup="dialog" aria-expanded="false">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-sort" aria-haspopup="dialog" aria-controls="jg-panel-sort" aria-expanded="false" aria-label="Sortierung öffnen">
 				<span class="jg-filtertext">SORTIEREN</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
@@ -1041,7 +1043,7 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				<div class="jg-filter-toggle" aria-label="Sale">
 					<span class="jg-toggle-label">SALE</span>
 					<label class="jg-switch">
-						<input type="checkbox" class="jg-switch-input" data-jg-toggle-query="jg_sale" <?php checked( $sale_on ); ?> />
+						<input type="checkbox" class="jg-switch-input" aria-label="Sale" data-jg-toggle-query="jg_sale" <?php checked( $sale_on ); ?> />
 						<span class="jg-switch-ui" aria-hidden="true"></span>
 					</label>
 				</div>
@@ -1049,15 +1051,16 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				<div class="jg-filter-toggle" aria-label="Neu">
 					<span class="jg-toggle-label">NEU</span>
 					<label class="jg-switch">
-						<input type="checkbox" class="jg-switch-input" data-jg-toggle-query="jg_new" <?php checked( $new_on ); ?> />
+						<input type="checkbox" class="jg-switch-input" aria-label="Neu" data-jg-toggle-query="jg_new" <?php checked( $new_on ); ?> />
 						<span class="jg-switch-ui" aria-hidden="true"></span>
 					</label>
 				</div>
 			</div>
 			<?php endif; ?>
 
-			<div class="jg-panel jg-panel--wide" id="jg-panel-marke" role="dialog" aria-label="Marke" aria-hidden="true">
+			<div class="jg-panel jg-panel--wide" id="jg-panel-marke" role="dialog" aria-labelledby="jg-panel-marke-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
+					<h2 class="jg-sr-only" id="jg-panel-marke-title">Marke</h2>
 					<div class="jg-brand-list">
 						<?php foreach ( $terms_marke as $t ) : ?>
 							<?php
@@ -1080,8 +1083,9 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				</div>
 			</div>
 
-			<div class="jg-panel jg-panel--narrow" id="jg-panel-farbe" role="dialog" aria-label="Farbe" aria-hidden="true">
+			<div class="jg-panel jg-panel--narrow" id="jg-panel-farbe" role="dialog" aria-labelledby="jg-panel-farbe-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
+					<h2 class="jg-sr-only" id="jg-panel-farbe-title">Farbe</h2>
 					<div class="jg-color-grid">
 						<?php foreach ( $color_items as $item ) : ?>
 							<?php
@@ -1114,8 +1118,9 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				</div>
 			</div>
 
-			<div class="jg-panel jg-panel--wide" id="jg-panel-groesse" role="dialog" aria-label="Größe" aria-hidden="true">
+			<div class="jg-panel jg-panel--wide" id="jg-panel-groesse" role="dialog" aria-labelledby="jg-panel-groesse-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
+					<h2 class="jg-sr-only" id="jg-panel-groesse-title">Größe</h2>
 					<div class="jg-size-grid">
 						<?php foreach ( $terms_groessen as $t ) : ?>
 							<?php
@@ -1142,13 +1147,14 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				</div>
 			</div>
 
-			<div class="jg-panel jg-panel--narrow jg-panel--sort" id="jg-panel-sort" role="dialog" aria-label="Sortieren" aria-hidden="true">
+			<div class="jg-panel jg-panel--narrow jg-panel--sort" id="jg-panel-sort" role="dialog" aria-labelledby="jg-panel-sort-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
-					<div class="jg-sort-list" role="listbox" aria-label="Sortieroptionen">
-						<button type="button" class="jg-sort-option" data-jg-orderby="price" role="option" aria-selected="false">
+					<h2 class="jg-sr-only" id="jg-panel-sort-title">Sortieren</h2>
+					<div class="jg-sort-list" aria-label="Sortieroptionen">
+						<button type="button" class="jg-sort-option" data-jg-orderby="price" aria-pressed="<?php echo $selected_orderby === 'price' ? 'true' : 'false'; ?>">
 							PREIS AUFSTEIGEND
 						</button>
-						<button type="button" class="jg-sort-option" data-jg-orderby="price-desc" role="option" aria-selected="false">
+						<button type="button" class="jg-sort-option" data-jg-orderby="price-desc" aria-pressed="<?php echo $selected_orderby === 'price-desc' ? 'true' : 'false'; ?>">
 							PREIS ABSTEIGEND
 						</button>
 					</div>
