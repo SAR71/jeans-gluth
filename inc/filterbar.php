@@ -313,7 +313,7 @@ if ( ! function_exists( 'jg_get_filtered_product_ids_for_context' ) ) {
 
 		if ( ! in_array( 'jg_filter_farben', $exclude_filter_keys, true ) && ! empty( $selected_farben ) ) {
 			$tax_query[] = [
-				'taxonomy'         => 'pa_farben',
+				'taxonomy'         => 'pa_farbgruppe',
 				'field'            => 'slug',
 				'terms'            => $selected_farben,
 				'operator'         => 'IN',
@@ -521,7 +521,7 @@ if ( ! function_exists( 'jg_filterbar_pre_get_posts' ) ) {
 
 		if ( ! empty( $selected_farben ) ) {
 			$tax_query[] = [
-				'taxonomy'         => 'pa_farben',
+				'taxonomy'         => 'pa_farbgruppe',
 				'field'            => 'slug',
 				'terms'            => $selected_farben,
 				'operator'         => 'IN',
@@ -683,7 +683,7 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		}
 
 		$tax_marke    = 'pa_marke';
-		$tax_farben   = 'pa_farben';
+		$tax_farben   = 'pa_farbgruppe';
 		$tax_groessen = 'pa_groessen';
 
 		$selected_marke    = jg_get_list_param( 'jg_filter_marke' );
