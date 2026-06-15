@@ -126,7 +126,7 @@ add_action('wp_footer', function () {
 
         const observerRoot = document.querySelector('.woocommerce-MyAccount-content') || document.body;
         if (observerRoot) {
-          obs.observe(observerRoot, { childList: true, subtree: true, characterData: true });
+          obs.observe(observerRoot, { childList: true, subtree: true });
         }
 
         let attempts = 0;

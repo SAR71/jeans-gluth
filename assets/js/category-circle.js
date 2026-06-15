@@ -60,17 +60,24 @@
       if (termId) sessionStorage.setItem(KEY_CLICKED, termId);
     }
 
+    let lastPointerdownItem = null;
+
     scroller.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.jg-subcat-item');
       if (!item) return;
 
+      lastPointerdownItem = item;
       rememberSelection(item);
     }, { passive: true });
 
-    // Fallback für Geräte/Interaktionen ohne Pointer-Events.
+    // Fallback für Geräte ohne Pointer-Events; verhindert Doppel-Aufruf nach pointerdown.
     scroller.addEventListener('click', (e) => {
       const item = e.target.closest('.jg-subcat-item');
       if (!item) return;
+      if (item === lastPointerdownItem) {
+        lastPointerdownItem = null;
+        return;
+      }
       rememberSelection(item);
     });
 

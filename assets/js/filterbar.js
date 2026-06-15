@@ -191,10 +191,7 @@
 
   function applyMarkeParam() {
     var markeUrl = new URL(window.location.href);
-    var checks = Array.prototype.slice.call(
-      document.querySelectorAll('.jg-check[data-jg-filter="jg_filter_marke"]')
-    );
-    var selected = checks
+    var selected = getMarkeChecks()
       .filter(function (c) { return c.checked; })
       .map(function (c) { return c.value; });
 
@@ -249,11 +246,14 @@
     });
   }
 
-  function getMarkeCountFromCheckboxes() {
-    var checks = Array.prototype.slice.call(
+  function getMarkeChecks() {
+    return Array.prototype.slice.call(
       document.querySelectorAll('.jg-check[data-jg-filter="jg_filter_marke"]')
     );
-    return checks.filter(function (c) { return c.checked; }).length;
+  }
+
+  function getMarkeCountFromCheckboxes() {
+    return getMarkeChecks().filter(function (c) { return c.checked; }).length;
   }
 
   function setBtnCount(panelId, count) {
@@ -421,7 +421,7 @@
       }
 
       if (resetKey === 'jg_filter_marke') {
-        document.querySelectorAll('.jg-check[data-jg-filter="jg_filter_marke"]').forEach(function (c) {
+        getMarkeChecks().forEach(function (c) {
           c.checked = false;
         });
         pendingCommitOnClose.jg_filter_marke = true;
@@ -521,20 +521,29 @@
     }
   });
 
+  var resizeRaf = null;
   window.addEventListener('resize', function () {
-    refreshColorTooltipPlacement();
-
-    var openBtn = getOpenButton();
-    var openPanelEl = getOpenPanel();
-    if (!openBtn || !openPanelEl) return;
-    positionPanel(openPanelEl, openBtn);
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(function () {
+      resizeRaf = null;
+      refreshColorTooltipPlacement();
+      var openBtn = getOpenButton();
+      var openPanelEl = getOpenPanel();
+      if (!openBtn || !openPanelEl) return;
+      positionPanel(openPanelEl, openBtn);
+    });
   });
 
+  var scrollRaf = null;
   window.addEventListener('scroll', function () {
-    var openBtn = getOpenButton();
-    var openPanelEl = getOpenPanel();
-    if (!openBtn || !openPanelEl) return;
-    positionPanel(openPanelEl, openBtn);
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(function () {
+      scrollRaf = null;
+      var openBtn = getOpenButton();
+      var openPanelEl = getOpenPanel();
+      if (!openBtn || !openPanelEl) return;
+      positionPanel(openPanelEl, openBtn);
+    });
   }, { passive: true });
   }
 

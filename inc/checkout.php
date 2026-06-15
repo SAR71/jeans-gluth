@@ -35,7 +35,7 @@ add_action('wp_footer', function () {
 
       // Wiederholt versuchen (React rendert oft später)
       let tries = 0;
-      const maxTries = 60; // ~6 Sekunden
+      const maxTries = 30; // ~6 Sekunden
       const iv = setInterval(() => {
         tries++;
         if (document.documentElement.getAttribute('data-coupon-opened') === '1') {
@@ -45,7 +45,7 @@ add_action('wp_footer', function () {
         if (openCouponPanelOnce() || tries >= maxTries) {
           clearInterval(iv);
         }
-      }, 100);
+      }, 200);
 
       // Zusätzlich DOM-Observer (sehr zuverlässig)
       const obs = new MutationObserver(() => {
