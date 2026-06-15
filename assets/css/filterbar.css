@@ -354,22 +354,37 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  max-width: 46px !important;
+  max-height: 46px !important;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px !important;
+  box-sizing: border-box;
+  flex: 0 0 46px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 
 .jg-color-dot{
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  display: block;
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  max-width: 46px !important;
+  max-height: 46px !important;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px !important;
   background: var(--jg-swatch);
   border: 1px solid rgba(0,0,0,.18);
   box-sizing: border-box;
+  flex: 0 0 46px;
 }
 
 .jg-color-name{
