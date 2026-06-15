@@ -820,6 +820,172 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			return '#d9d9d9';
 		};
 
+		$color_to_rgb = static function( $color_value ) {
+			$color = trim( (string) $color_value );
+			if ( $color === '' ) {
+				return null;
+			}
+
+			if ( strpos( $color, 'gradient(' ) !== false ) {
+				if ( preg_match( '/(#[0-9a-fA-F]{3,8}|rgba?\([^\)]+\)|hsla?\([^\)]+\))/', $color, $m ) ) {
+					$color = $m[1];
+				}
+			}
+
+			if ( preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/', $color, $m ) ) {
+				$hex = $m[1];
+				if ( strlen( $hex ) === 3 ) {
+					$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+				} elseif ( strlen( $hex ) === 8 ) {
+					$hex = substr( $hex, 0, 6 );
+				}
+
+				return [
+					hexdec( substr( $hex, 0, 2 ) ),
+					hexdec( substr( $hex, 2, 2 ) ),
+					hexdec( substr( $hex, 4, 2 ) ),
+				];
+			}
+
+			if ( preg_match( '/^rgba?\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})/i', $color, $m ) ) {
+				return [
+					max( 0, min( 255, (int) $m[1] ) ),
+					max( 0, min( 255, (int) $m[2] ) ),
+					max( 0, min( 255, (int) $m[3] ) ),
+				];
+			}
+
+			if ( preg_match( '/^hsla?\(\s*(-?[0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)%\s*,\s*([0-9]+(?:\.[0-9]+)?)%/i', $color, $m ) ) {
+				$h = fmod( (float) $m[1], 360.0 );
+				if ( $h < 0 ) {
+					$h += 360.0;
+				}
+				$s = max( 0.0, min( 1.0, (float) $m[2] / 100.0 ) );
+				$l = max( 0.0, min( 1.0, (float) $m[3] / 100.0 ) );
+
+				$c = ( 1 - abs( 2 * $l - 1 ) ) * $s;
+				$x = $c * ( 1 - abs( fmod( $h / 60.0, 2 ) - 1 ) );
+				$m0 = $l - $c / 2;
+
+				$r1 = 0.0;
+				$g1 = 0.0;
+				$b1 = 0.0;
+
+				if ( $h < 60 ) {
+					$r1 = $c; $g1 = $x;
+				} elseif ( $h < 120 ) {
+					$r1 = $x; $g1 = $c;
+				} elseif ( $h < 180 ) {
+					$g1 = $c; $b1 = $x;
+				} elseif ( $h < 240 ) {
+					$g1 = $x; $b1 = $c;
+				} elseif ( $h < 300 ) {
+					$r1 = $x; $b1 = $c;
+				} else {
+					$r1 = $c; $b1 = $x;
+				}
+
+				return [
+					(int) round( ( $r1 + $m0 ) * 255 ),
+					(int) round( ( $g1 + $m0 ) * 255 ),
+					(int) round( ( $b1 + $m0 ) * 255 ),
+				];
+			}
+
+			return null;
+		};
+
+		$rgb_to_hsl = static function( $rgb ) {
+			$r = max( 0.0, min( 1.0, ( (float) $rgb[0] ) / 255.0 ) );
+			$g = max( 0.0, min( 1.0, ( (float) $rgb[1] ) / 255.0 ) );
+			$b = max( 0.0, min( 1.0, ( (float) $rgb[2] ) / 255.0 ) );
+
+			$max = max( $r, $g, $b );
+			$min = min( $r, $g, $b );
+			$delta = $max - $min;
+
+			$l = ( $max + $min ) / 2.0;
+			$s = 0.0;
+			$h = 0.0;
+
+			if ( $delta > 0 ) {
+				$s = $delta / ( 1 - abs( 2 * $l - 1 ) );
+
+				if ( $max === $r ) {
+					$h = 60 * fmod( ( ( $g - $b ) / $delta ), 6 );
+				} elseif ( $max === $g ) {
+					$h = 60 * ( ( ( $b - $r ) / $delta ) + 2 );
+				} else {
+					$h = 60 * ( ( ( $r - $g ) / $delta ) + 4 );
+				}
+
+				if ( $h < 0 ) {
+					$h += 360;
+				}
+			}
+
+			return [
+				'h' => $h,
+				's' => $s,
+				'l' => $l,
+			];
+		};
+
+		$color_items = [];
+		$to_lower = static function( $value ) {
+			$string = (string) $value;
+			if ( function_exists( 'mb_strtolower' ) ) {
+				return mb_strtolower( $string );
+			}
+
+			return strtolower( $string );
+		};
+
+		foreach ( $terms_farben as $term ) {
+			if ( ! ( $term instanceof WP_Term ) ) {
+				continue;
+			}
+
+			$swatch = $swatch_for_term( $term );
+			$rgb = $color_to_rgb( $swatch );
+			$hsl = is_array( $rgb ) ? $rgb_to_hsl( $rgb ) : null;
+
+			if ( is_array( $hsl ) ) {
+				$is_neutral = $hsl['s'] < 0.14;
+				$sort = [
+					$is_neutral ? 1 : 0,
+					round( $hsl['h'], 4 ),
+					round( $hsl['l'], 4 ),
+					round( $hsl['s'], 4 ) * -1,
+					$to_lower( $term->name ),
+				];
+			} else {
+				$sort = [ 2, 999.0, 999.0, 999.0, $to_lower( $term->name ) ];
+			}
+
+			$color_items[] = [
+				'term'   => $term,
+				'swatch' => $swatch,
+				'sort'   => $sort,
+			];
+		}
+
+		usort(
+			$color_items,
+			static function( $a, $b ) {
+				$len = min( count( $a['sort'] ), count( $b['sort'] ) );
+				for ( $i = 0; $i < $len; $i++ ) {
+					if ( $a['sort'][ $i ] === $b['sort'][ $i ] ) {
+						continue;
+					}
+
+					return ( $a['sort'][ $i ] < $b['sort'][ $i ] ) ? -1 : 1;
+				}
+
+				return 0;
+			}
+		);
+
 		ob_start();
 		?>
 		<div class="jg-filterbar" data-jg-filterbar="1" role="navigation" aria-label="Filter">
@@ -888,10 +1054,11 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			<div class="jg-panel jg-panel--narrow" id="jg-panel-farbe" role="dialog" aria-label="Farbe" aria-hidden="true">
 				<div class="jg-panel-inner">
 					<div class="jg-color-grid">
-						<?php foreach ( $terms_farben as $t ) : ?>
+						<?php foreach ( $color_items as $item ) : ?>
 							<?php
+							$t         = $item['term'];
 							$slug      = sanitize_title( $t->slug );
-							$hex       = $swatch_for_term( $t );
+							$hex       = $item['swatch'];
 							$is_active = in_array( $slug, $selected_farben, true );
 							?>
 							<button
@@ -899,10 +1066,13 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 								class="jg-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
 								data-jg-toggle="jg_filter_farben"
 								data-jg-value="<?php echo esc_attr( $slug ); ?>"
+								title="<?php echo esc_attr( $t->name ); ?>"
+								aria-label="<?php echo esc_attr( $t->name ); ?>"
 								aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
 								style="--jg-swatch: <?php echo esc_attr( $hex ); ?>;"
 							>
 								<span class="jg-color-dot" aria-hidden="true"></span>
+								<span class="jg-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
 								<span class="jg-sr-only"><?php echo esc_html( $t->name ); ?></span>
 							</button>
 						<?php endforeach; ?>

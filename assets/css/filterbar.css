@@ -388,7 +388,27 @@
 }
 
 .jg-color-name{
-  display: none !important;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translate(-50%, 4px);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(0,0,0,.82);
+  color: #ffffff;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+  z-index: 5;
+}
+
+.jg-color-item:hover .jg-color-name,
+.jg-color-item:focus-visible .jg-color-name{
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
 }
 
 .jg-color-item.is-active .jg-color-dot{
