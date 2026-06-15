@@ -705,39 +705,100 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		$terms_farben   = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
 		$terms_groessen = jg_get_size_terms_for_filtered_products( [ 'jg_filter_groessen' ] );
 
-		$color_map = [
-			'schwarz' => '#0a0a0a',
-			'black'   => '#0a0a0a',
-			'grau'    => '#7a7a7a',
-			'gray'    => '#7a7a7a',
-			'grey'    => '#7a7a7a',
-			'weiss'   => '#ffffff',
-			'weiß'    => '#ffffff',
-			'white'   => '#ffffff',
-			'beige'   => '#b8a99a',
-			'blau'    => '#1f355d',
-			'blue'    => '#1f355d',
-			'braun'   => '#4a3a33',
-			'brown'   => '#4a3a33',
-			'gruen'   => '#455a4f',
-			'grün'    => '#455a4f',
-			'green'   => '#455a4f',
-			'rot'     => '#b33a46',
-			'red'     => '#b33a46',
-			'gelb'    => '#f2d79b',
-			'yellow'  => '#f2d79b',
-		];
+		$extract_swatch_color = null;
+		$extract_swatch_color = static function( $raw ) use ( &$extract_swatch_color ) {
+			if ( is_array( $raw ) ) {
+				foreach ( $raw as $value ) {
+					$found = $extract_swatch_color( $value );
+					if ( $found !== '' ) {
+						return $found;
+					}
+				}
 
-		$swatch_for_term = function( $term ) use ( $color_map ) {
-			$key = sanitize_title( $term->slug ? $term->slug : $term->name );
-
-			if ( isset( $color_map[ $key ] ) ) {
-				return $color_map[ $key ];
+				return '';
 			}
 
-			$name_key = sanitize_title( $term->name );
-			if ( isset( $color_map[ $name_key ] ) ) {
-				return $color_map[ $name_key ];
+			if ( is_object( $raw ) ) {
+				return $extract_swatch_color( (array) $raw );
+			}
+
+			if ( ! is_scalar( $raw ) ) {
+				return '';
+			}
+
+			$value = trim( (string) $raw );
+			if ( $value === '' ) {
+				return '';
+			}
+
+			if ( preg_match( '/^(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8})$/', $value ) ) {
+				return $value;
+			}
+
+			if ( preg_match( '/^(rgba?|hsla?)\([^\n]+\)$/', $value ) ) {
+				return $value;
+			}
+
+			if ( preg_match( '/^(linear-gradient|radial-gradient)\([^\n]+\)$/', $value ) ) {
+				return $value;
+			}
+
+			if ( $value[0] === '{' || $value[0] === '[' ) {
+				$decoded = json_decode( $value, true );
+				if ( is_array( $decoded ) ) {
+					return $extract_swatch_color( $decoded );
+				}
+			}
+
+			if ( preg_match( '/(#[0-9a-fA-F]{3,8}|rgba?\([^\)]+\)|hsla?\([^\)]+\)|(linear-gradient|radial-gradient)\([^\)]+\))/', $value, $m ) ) {
+				return $m[1];
+			}
+
+			return '';
+		};
+
+		$swatch_for_term = static function( $term ) use ( $extract_swatch_color ) {
+			if ( ! ( $term instanceof WP_Term ) ) {
+				return '#d9d9d9';
+			}
+
+			$term_id = (int) $term->term_id;
+			if ( $term_id <= 0 ) {
+				return '#d9d9d9';
+			}
+
+			$preferred_meta_keys = [
+				'color',
+				'colour',
+				'swatch_color',
+				'sw_color',
+				'product_attribute_color',
+				'wd_color',
+				'term_color',
+				'colorgroup_color',
+			];
+
+			foreach ( $preferred_meta_keys as $meta_key ) {
+				$raw = get_term_meta( $term_id, $meta_key, true );
+				$hex = $extract_swatch_color( $raw );
+				if ( $hex !== '' ) {
+					return $hex;
+				}
+			}
+
+			$all_meta = get_term_meta( $term_id );
+			if ( is_array( $all_meta ) ) {
+				foreach ( $all_meta as $meta_key => $meta_values ) {
+					$key = strtolower( (string) $meta_key );
+					if ( strpos( $key, 'color' ) === false && strpos( $key, 'colour' ) === false && strpos( $key, 'swatch' ) === false ) {
+						continue;
+					}
+
+					$hex = $extract_swatch_color( $meta_values );
+					if ( $hex !== '' ) {
+						return $hex;
+					}
+				}
 			}
 
 			return '#d9d9d9';
