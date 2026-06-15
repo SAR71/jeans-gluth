@@ -14,19 +14,17 @@ add_action('wp_footer', function () {
     <script>
     (function () {
       function openCouponPanelOnce() {
+        const active = document.activeElement;
+        if (active && /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(active.tagName)) {
+          return false;
+        }
+
         const btn = document.querySelector(
           '.wp-block-woocommerce-checkout-order-summary-coupon-form-block .wc-block-components-panel__button[aria-expanded="false"]'
         );
         if (btn) {
-   btn.click();
-document.documentElement.setAttribute('data-coupon-opened', '1');
-
-// Fokus entfernen (kein blinkender Cursor)
-setTimeout(function(){
-  if (document.activeElement) {
-    document.activeElement.blur();
-  }
-}, 50);;
+          btn.click();
+          document.documentElement.setAttribute('data-coupon-opened', '1');
           return true;
         }
         return false;

@@ -48,21 +48,49 @@
       sessionStorage.setItem(KEY, value);
     }
 
+    function rememberSelection(item) {
+      if (!item) return;
+
+      clearClicked();
+      item.classList.add('is-clicked');
+
+      saveScrollLeft(true);
+
+      const termId = item.getAttribute('data-term-id');
+      if (termId) sessionStorage.setItem(KEY_CLICKED, termId);
+    }
+
     scroller.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.jg-subcat-item');
       if (!item) return;
 
-      // Ring sofort sichtbar (ohne auf Seitenwechsel zu warten)
-      clearClicked();
-      item.classList.add('is-clicked');
-
-      // horizontale Position speichern -> nahtlos nach Navigation
-      saveScrollLeft(true);
-
-      // welche Kategorie geklickt wurde
-      const termId = item.getAttribute('data-term-id');
-      if (termId) sessionStorage.setItem(KEY_CLICKED, termId);
+      rememberSelection(item);
     }, { passive: true });
+
+    // Fallback für Geräte/Interaktionen ohne Pointer-Events.
+    scroller.addEventListener('click', (e) => {
+      const item = e.target.closest('.jg-subcat-item');
+      if (!item) return;
+      rememberSelection(item);
+    });
+
+    // Keyboard-Support: Auswahl auch bei Enter/Space merken.
+    scroller.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+
+      const item = e.target.closest('.jg-subcat-item');
+      if (!item) return;
+
+      if (e.key === ' ') {
+        e.preventDefault();
+      }
+
+      rememberSelection(item);
+
+      if (e.key === ' ') {
+        item.click();
+      }
+    });
 
     // falls jemand per Keyboard navigiert: aktuelle Scrollposition merken
     scroller.addEventListener('scroll', () => {

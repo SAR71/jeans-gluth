@@ -21,9 +21,6 @@
    - linke Einzelpreis-Zeile entfernen
    ========================================================= */
 
-body.woocommerce-checkout{
-  outline: 5px solid red !important;
-}
 /* 1) Lager-Badge / Stock-Badge entfernen (alle Varianten) */
 body.woocommerce-checkout .wc-block-components-order-summary
 .wc-block-components-product-badge,

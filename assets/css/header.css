@@ -79,3 +79,23 @@ header .wd-header-text.jg-top-banner::after{
 header .wd-header-text.jg-top-banner:hover::before{
   animation-play-state: paused;
 }
+
+/* Keyboard-Fokus pausiert die Animation ebenfalls */
+header .wd-header-text.jg-top-banner:focus-within::before{
+  animation-play-state: paused;
+}
+
+/* Bewegung reduzieren bei OS-Einstellung */
+@media (prefers-reduced-motion: reduce){
+  header .wd-header-text.jg-top-banner::before{
+    animation: none !important;
+    position: static;
+    transform: none !important;
+    white-space: normal;
+    display: block;
+  }
+
+  header .wd-header-text.jg-top-banner{
+    min-height: auto;
+  }
+}

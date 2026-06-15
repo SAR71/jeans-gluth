@@ -124,6 +124,7 @@ add_shortcode('jg_top_subcats', function($atts) {
           ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $new_active ? ' is-active' : ''; ?>"
                href="<?php echo esc_url($new_link); ?>"
+                    aria-label="<?php echo esc_attr( $new_active ? 'Neu Filter, aktiv' : 'Neu Filter' ); ?>"
                <?php echo $new_active ? 'aria-current="page"' : ''; ?>
                data-has-thumb="0">
               <span class="jg-subcat-thumb">
@@ -139,6 +140,7 @@ add_shortcode('jg_top_subcats', function($atts) {
           ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $sale_active ? ' is-active' : ''; ?>"
                href="<?php echo esc_url($sale_link); ?>"
+                    aria-label="<?php echo esc_attr( $sale_active ? 'Sale Filter, aktiv' : 'Sale Filter' ); ?>"
                <?php echo $sale_active ? 'aria-current="page"' : ''; ?>
                data-has-thumb="0">
               <span class="jg-subcat-thumb">
@@ -163,6 +165,7 @@ add_shortcode('jg_top_subcats', function($atts) {
           ?>
           <a class="jg-subcat-item<?php echo $is_active ? ' is-active' : ''; ?>"
              href="<?php echo esc_url($link); ?>"
+                 aria-label="<?php echo esc_attr( $is_active ? ( $child->name . ', aktuell ausgewählt' ) : $child->name ); ?>"
              <?php echo $is_active ? 'aria-current="page"' : ''; ?>
              data-term-id="<?php echo (int) $child->term_id; ?>"
              data-has-thumb="<?php echo $thumb_id ? '1' : '0'; ?>">

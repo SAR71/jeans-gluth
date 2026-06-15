@@ -65,6 +65,7 @@ add_shortcode('jg_subsub_pills', function() {
       ?>
         <a class="<?php echo esc_attr($cls); ?>"
            href="<?php echo esc_url($link); ?>"
+              aria-label="<?php echo esc_attr( $is_active ? ( $p->name . ', aktuell ausgewählt' ) : $p->name ); ?>"
            <?php echo $is_active ? 'aria-current="page"' : ''; ?>>
           <span class="jg-subsub-text"><?php echo esc_html($p->name); ?></span>
         </a>
