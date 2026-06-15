@@ -941,6 +941,31 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			return strtolower( $string );
 		};
 
+		$color_family_keywords = [
+			0 => [ 'schwarz', 'black', 'weiss', 'weiß', 'white', 'grau', 'gray', 'grey', 'beige', 'cream', 'ivory', 'nude', 'taupe', 'silber', 'silver' ],
+			1 => [ 'rot', 'red', 'rosa', 'pink', 'magenta', 'bordeaux', 'weinrot', 'burgundy' ],
+			2 => [ 'orange', 'apricot', 'peach', 'koralle', 'coral' ],
+			3 => [ 'gelb', 'yellow', 'gold', 'mustard', 'senf' ],
+			4 => [ 'gruen', 'grün', 'green', 'olive', 'khaki', 'mint', 'lime' ],
+			5 => [ 'tuerkis', 'türk', 'turquoise', 'cyan', 'petrol', 'teal', 'blau', 'blue', 'navy', 'indigo' ],
+			6 => [ 'lila', 'violett', 'violet', 'purple', 'flieder' ],
+			7 => [ 'braun', 'brown', 'cognac', 'camel', 'tan', 'choco', 'schoko' ],
+		];
+
+		$detect_family_rank = static function( $name, $slug ) use ( $color_family_keywords ) {
+			$haystack = strtolower( trim( (string) $name . ' ' . (string) $slug ) );
+
+			foreach ( $color_family_keywords as $rank => $keywords ) {
+				foreach ( $keywords as $keyword ) {
+					if ( strpos( $haystack, strtolower( (string) $keyword ) ) !== false ) {
+						return (int) $rank;
+					}
+				}
+			}
+
+			return 99;
+		};
+
 		foreach ( $terms_farben as $term ) {
 			if ( ! ( $term instanceof WP_Term ) ) {
 				continue;
@@ -949,18 +974,22 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			$swatch = $swatch_for_term( $term );
 			$rgb = $color_to_rgb( $swatch );
 			$hsl = is_array( $rgb ) ? $rgb_to_hsl( $rgb ) : null;
+			$name_sort = $to_lower( $term->name );
+			$family_rank = $detect_family_rank( $name_sort, $term->slug );
 
 			if ( is_array( $hsl ) ) {
-				$is_neutral = $hsl['s'] < 0.14;
+				$is_neutral = $hsl['s'] < 0.14 || $family_rank === 0;
+				$family_sort_rank = ( $family_rank === 99 ) ? ( $is_neutral ? 0 : 50 ) : $family_rank;
 				$sort = [
-					$is_neutral ? 1 : 0,
+					$family_sort_rank,
+					$is_neutral ? 0 : 1,
 					round( $hsl['h'], 4 ),
 					round( $hsl['l'], 4 ),
 					round( $hsl['s'], 4 ) * -1,
-					$to_lower( $term->name ),
+					$name_sort,
 				];
 			} else {
-				$sort = [ 2, 999.0, 999.0, 999.0, $to_lower( $term->name ) ];
+				$sort = [ ( $family_rank === 99 ? 98 : $family_rank ), 1, 999.0, 999.0, 999.0, $name_sort ];
 			}
 
 			$color_items[] = [
