@@ -1095,7 +1095,6 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 								class="jg-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
 								data-jg-toggle="jg_filter_farben"
 								data-jg-value="<?php echo esc_attr( $slug ); ?>"
-								title="<?php echo esc_attr( $t->name ); ?>"
 								aria-label="<?php echo esc_attr( $t->name ); ?>"
 								aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
 								style="--jg-swatch: <?php echo esc_attr( $hex ); ?>;"

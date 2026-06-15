@@ -411,6 +411,17 @@
   transform: translate(-50%, 0);
 }
 
+.jg-color-item.jg-tooltip-below .jg-color-name{
+  top: calc(100% + 8px);
+  bottom: auto;
+  transform: translate(-50%, 4px);
+}
+
+.jg-color-item.jg-tooltip-below:hover .jg-color-name,
+.jg-color-item.jg-tooltip-below:focus-visible .jg-color-name{
+  transform: translate(-50%, 0);
+}
+
 .jg-color-item:hover,
 .jg-color-item:focus-visible{
   z-index: 8;

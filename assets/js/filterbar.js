@@ -106,6 +106,10 @@
     btn.setAttribute('aria-expanded', 'true');
 
     positionPanel(panel, btn);
+
+    if (panelId === 'jg-panel-farbe') {
+      refreshColorTooltipPlacement();
+    }
   }
 
   function removeLegacyWooFilterParams(url) {
@@ -226,9 +230,30 @@
     setBtnCount('jg-panel-marke', getMarkeCountFromCheckboxes());
   }
 
+  function refreshColorTooltipPlacement() {
+    var colorPanel = document.getElementById('jg-panel-farbe');
+    if (!colorPanel) return;
+
+    var swatches = Array.prototype.slice.call(
+      colorPanel.querySelectorAll('.jg-color-item')
+    );
+
+    if (!swatches.length) return;
+
+    var firstRowTop = Math.min.apply(null, swatches.map(function (item) {
+      return item.offsetTop;
+    }));
+
+    swatches.forEach(function (item) {
+      var isFirstRow = Math.abs(item.offsetTop - firstRowTop) <= 2;
+      item.classList.toggle('jg-tooltip-below', isFirstRow);
+    });
+  }
+
   initStateFromDOM();
   syncUI('jg_filter_farben');
   syncUI('jg_filter_groessen');
+  refreshColorTooltipPlacement();
   updateBrandRowHighlights();
   updateAllCounts();
   closeAll();
@@ -375,6 +400,8 @@
   });
 
   window.addEventListener('resize', function () {
+    refreshColorTooltipPlacement();
+
     var openBtn = getOpenButton();
     var openPanelEl = getOpenPanel();
     if (!openBtn || !openPanelEl) return;
