@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-21 00:00:03
+// LastChanged: 2026-06-21 00:00:04
 (function () {
   function initFilterbar() {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
@@ -343,6 +343,15 @@
     if (t.matches('[data-jg-toggle-query]')) {
       var key = t.getAttribute('data-jg-toggle-query');
       var url = new URL(window.location.href);
+
+      if (t.checked && key === 'jg_sale') {
+        setQueryParam(url, 'jg_new', null);
+      }
+
+      if (t.checked && key === 'jg_new') {
+        setQueryParam(url, 'jg_sale', null);
+      }
+
       setQueryParam(url, key, t.checked ? '1' : null);
       url.searchParams.delete('paged');
       removeLegacyWooFilterParams(url);

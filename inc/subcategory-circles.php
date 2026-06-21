@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-13 23:10:00
+// LastChanged: 2026-06-21 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -48,10 +48,9 @@ add_shortcode('jg_top_subcats', function($atts) {
         $active_subcat_id = $current_parent_id > 0 ? $current_parent_id : $current_id;
     }
 
-    // NEU + SALE nur anzeigen, wenn man direkt auf Damen oder Herren ist
+    // NEU + SALE in der gesamten Damen/Herren-Hierarchie anzeigen
     $allowed_top_slugs = ['damen', 'herren'];
-    $is_top_level_view = ($current_id === $top_id);
-    $show_filter_circles = $is_top_level_view && in_array($top_term->slug, $allowed_top_slugs, true);
+    $show_filter_circles = in_array($top_term->slug, $allowed_top_slugs, true);
 
     if (empty($children) && !$show_filter_circles) {
         return '';
@@ -93,6 +92,13 @@ add_shortcode('jg_top_subcats', function($atts) {
         $args = $current_args;
 
         $is_active = !empty($args[$key]) && $args[$key] === '1';
+
+        // Neu/Sale sollen sich gegenseitig ausschliessen.
+        if ($key === 'jg_sale') {
+            unset($args['jg_new']);
+        } elseif ($key === 'jg_new') {
+            unset($args['jg_sale']);
+        }
 
         if ($is_active) {
             unset($args[$key]);
