@@ -1,8 +1,38 @@
-// LastChanged: 2026-06-21 00:00:00
+// LastChanged: 2026-06-21 00:00:01
 (function () {
   function initFilterbar() {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
   if (!bar) return;
+
+  function updateStickyTopOffset() {
+    var selectors = [
+      '.whb-sticked .whb-header',
+      '.whb-sticked-header',
+      '.whb-main-header',
+      '.wd-header',
+      '.main-header',
+      '.site-header',
+      'header'
+    ];
+
+    var maxBottom = 0;
+
+    selectors.forEach(function (selector) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        var style = window.getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') return;
+
+        var rect = el.getBoundingClientRect();
+        if (rect.height <= 0 || rect.bottom <= 0) return;
+
+        maxBottom = Math.max(maxBottom, rect.bottom);
+      });
+    });
+
+    bar.style.setProperty('--jg-sticky-top', Math.ceil(maxBottom) + 'px');
+  }
+
+  updateStickyTopOffset();
 
   var buttons = Array.prototype.slice.call(
     bar.querySelectorAll('.jg-filterbtn[data-jg-panel]')
@@ -543,6 +573,7 @@
     if (resizeRaf) return;
     resizeRaf = requestAnimationFrame(function () {
       resizeRaf = null;
+      updateStickyTopOffset();
       refreshColorTooltipPlacement();
       var openBtn = getOpenButton();
       var openPanelEl = getOpenPanel();
@@ -556,6 +587,7 @@
     if (scrollRaf) return;
     scrollRaf = requestAnimationFrame(function () {
       scrollRaf = null;
+      updateStickyTopOffset();
       var openBtn = getOpenButton();
       var openPanelEl = getOpenPanel();
       if (!openBtn || !openPanelEl) return;

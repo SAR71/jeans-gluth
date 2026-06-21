@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:05 */
+/* LastChanged: 2026-06-21 00:00:06 */
 /* =========================================================
    JG Filterbar (Snippet)
    ========================================================= */
@@ -13,6 +13,7 @@
 
   --jg-filterbar-padding-y: 2px;
   --jg-filterbar-gap: 28px;
+  --jg-filterbar-sticky-gap: 10px;
   --jg-focus-ring-color: #111111;
 }
 
@@ -22,7 +23,7 @@
   --jg-accent: #761611;
 
   position: sticky;
-  top: var(--jg-sticky-top);
+  top: calc(var(--jg-sticky-top) + var(--jg-filterbar-sticky-gap));
   z-index: 1000;
   background: var(--jg-accent);
   padding: var(--jg-filterbar-padding-y) 0;
