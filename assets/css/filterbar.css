@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:04 */
+/* LastChanged: 2026-06-21 00:00:05 */
 /* =========================================================
    JG Filterbar (Snippet)
    ========================================================= */
@@ -24,7 +24,7 @@
   position: sticky;
   top: var(--jg-sticky-top);
   z-index: 1000;
-  background: transparent;
+  background: var(--jg-accent);
   padding: var(--jg-filterbar-padding-y) 0;
 
   display: flex;
@@ -73,7 +73,7 @@
 .jg-filterbtn{
   appearance: none;
   border: 0;
-  background: var(--jg-accent) !important;
+  background: transparent !important;
   padding: 8px 0;
   cursor: pointer;
   display: inline-flex;
@@ -86,7 +86,7 @@
 .jg-filterbar .jg-filterbtn .jg-count,
 .jg-filterbar .jg-filterbtn .jg-chev,
 .jg-filterbar .jg-filterbar-label{
-  background: var(--jg-accent) !important;
+  background: transparent !important;
 }
 
 .jg-filterbtn.is-active{
