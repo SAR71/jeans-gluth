@@ -679,6 +679,58 @@ if ( ! function_exists( 'jg_filterbar_modify_breadcrumbs' ) ) {
 }
 add_filter( 'woocommerce_get_breadcrumb', 'jg_filterbar_modify_breadcrumbs', 10, 2 );
 
+if ( ! function_exists( 'jg_has_sale_products_in_context' ) ) {
+	function jg_has_sale_products_in_context() {
+		if ( ! function_exists( 'wc_get_product_ids_on_sale' ) ) {
+			return false;
+		}
+
+		$context_ids = jg_get_filtered_product_ids_for_context( [ 'jg_sale', 'jg_new' ] );
+		if ( empty( $context_ids ) ) {
+			return false;
+		}
+
+		$sale_ids = array_map( 'absint', (array) wc_get_product_ids_on_sale() );
+		if ( empty( $sale_ids ) ) {
+			return false;
+		}
+
+		return ! empty( array_intersect( $context_ids, $sale_ids ) );
+	}
+}
+
+if ( ! function_exists( 'jg_has_new_products_in_context' ) ) {
+	function jg_has_new_products_in_context() {
+		$context_ids = jg_get_filtered_product_ids_for_context( [ 'jg_sale', 'jg_new' ] );
+		if ( empty( $context_ids ) ) {
+			return false;
+		}
+
+		$after = gmdate( 'Y-m-d', strtotime( '-30 days' ) );
+
+		$new_ids = get_posts( [
+			'post_type'              => 'product',
+			'post_status'            => 'publish',
+			'fields'                 => 'ids',
+			'posts_per_page'         => -1,
+			'no_found_rows'          => true,
+			'cache_results'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+			'date_query'             => [
+				[
+					'after'     => $after,
+					'inclusive' => true,
+					'column'    => 'post_date_gmt',
+				],
+			],
+			'post__in'               => $context_ids,
+		] );
+
+		return ! empty( $new_ids );
+	}
+}
+
 if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 	function jg_filterbar_shortcode() {
 		if ( ! function_exists( 'is_shop' ) ) {
@@ -699,11 +751,15 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		$sale_on = ( ! empty( $_GET['jg_sale'] ) && $_GET['jg_sale'] === '1' );
 		$new_on  = ( ! empty( $_GET['jg_new'] ) && $_GET['jg_new'] === '1' );
 
-		$show_sale_new_toggles = false;
+		$show_sale_toggle = false;
+		$show_new_toggle  = false;
 		if ( is_product_category() ) {
 			$current_term = get_queried_object();
 			if ( $current_term && ! empty( $current_term->term_id ) && isset( $current_term->parent ) ) {
-				$show_sale_new_toggles = ( (int) $current_term->parent > 0 );
+				if ( (int) $current_term->parent > 0 ) {
+					$show_sale_toggle = jg_has_sale_products_in_context();
+					$show_new_toggle  = jg_has_new_products_in_context();
+				}
 			}
 		}
 
@@ -1056,8 +1112,9 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				<span class="jg-filtertext">SORTIEREN</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<?php if ( $show_sale_new_toggles ) : ?>
+			<?php if ( $show_sale_toggle || $show_new_toggle ) : ?>
 			<div class="jg-filter-toggles" aria-label="Toggle Filter">
+				<?php if ( $show_sale_toggle ) : ?>
 				<div class="jg-filter-toggle" aria-label="Sale">
 					<span class="jg-toggle-label">SALE</span>
 					<label class="jg-switch">
@@ -1065,7 +1122,9 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 						<span class="jg-switch-ui" aria-hidden="true"></span>
 					</label>
 				</div>
+				<?php endif; ?>
 
+				<?php if ( $show_new_toggle ) : ?>
 				<div class="jg-filter-toggle" aria-label="Neu">
 					<span class="jg-toggle-label">NEU</span>
 					<label class="jg-switch">
@@ -1073,6 +1132,7 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 						<span class="jg-switch-ui" aria-hidden="true"></span>
 					</label>
 				</div>
+				<?php endif; ?>
 			</div>
 			<?php endif; ?>
 
