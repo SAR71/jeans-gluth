@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-04-23 23:01:28
+// LastChanged: 2026-06-21 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -139,8 +139,12 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 				return false;
 			}
 
-			$terms = wc_get_product_terms( $product->get_id(), 'pa_groessen', [ 'fields' => 'slugs' ] );
-			$terms = array_map( 'sanitize_title', (array) $terms );
+			$terms_int = wc_get_product_terms( $product->get_id(), 'pa_int', [ 'fields' => 'slugs' ] );
+			$terms_eu  = wc_get_product_terms( $product->get_id(), 'pa_eu', [ 'fields' => 'slugs' ] );
+			$terms     = array_merge(
+				array_map( 'sanitize_title', (array) $terms_int ),
+				array_map( 'sanitize_title', (array) $terms_eu )
+			);
 
 			$match_cache[ $cache_key ] = ! empty( array_intersect( $selected_sizes, $terms ) );
 			return $match_cache[ $cache_key ];
@@ -168,10 +172,11 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 					continue;
 				}
 
-				$variation_size = $variation->get_attribute( 'pa_groessen' );
-				$variation_size = sanitize_title( $variation_size );
+				$variation_size_int = sanitize_title( $variation->get_attribute( 'pa_int' ) );
+				$variation_size_eu  = sanitize_title( $variation->get_attribute( 'pa_eu' ) );
 
-				if ( $variation_size && in_array( $variation_size, $selected_sizes, true ) ) {
+				if ( ( $variation_size_int && in_array( $variation_size_int, $selected_sizes, true ) ) ||
+				     ( $variation_size_eu && in_array( $variation_size_eu, $selected_sizes, true ) ) ) {
 					$match_cache[ $cache_key ] = true;
 					return true;
 				}
@@ -187,31 +192,32 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 }
 
 if ( ! function_exists( 'jg_get_instock_size_slugs_for_product' ) ) {
-	function jg_get_instock_size_slugs_for_product( $product ) {
+	function jg_get_instock_size_slugs_for_product( $product, $taxonomy = 'pa_int' ) {
 		if ( ! $product ) {
 			return [];
 		}
 
 		$product_id = (int) $product->get_id();
+		$cache_key  = $product_id . '|' . $taxonomy;
 		static $size_cache = [];
 
-		if ( array_key_exists( $product_id, $size_cache ) ) {
-			return $size_cache[ $product_id ];
+		if ( array_key_exists( $cache_key, $size_cache ) ) {
+			return $size_cache[ $cache_key ];
 		}
 
 		$size_slugs = [];
 
 		if ( $product->is_type( 'simple' ) ) {
 			if ( ! $product->is_in_stock() ) {
-				$size_cache[ $product_id ] = [];
+				$size_cache[ $cache_key ] = [];
 				return [];
 			}
 
-			$terms = wc_get_product_terms( $product->get_id(), 'pa_groessen', [ 'fields' => 'slugs' ] );
+			$terms = wc_get_product_terms( $product->get_id(), $taxonomy, [ 'fields' => 'slugs' ] );
 			$terms = array_map( 'sanitize_title', (array) $terms );
 
-			$size_cache[ $product_id ] = array_values( array_unique( array_filter( $terms ) ) );
-			return $size_cache[ $product_id ];
+			$size_cache[ $cache_key ] = array_values( array_unique( array_filter( $terms ) ) );
+			return $size_cache[ $cache_key ];
 		}
 
 		if ( $product->is_type( 'variable' ) ) {
@@ -232,7 +238,7 @@ if ( ! function_exists( 'jg_get_instock_size_slugs_for_product' ) ) {
 					continue;
 				}
 
-				$variation_size = sanitize_title( $variation->get_attribute( 'pa_groessen' ) );
+				$variation_size = sanitize_title( $variation->get_attribute( $taxonomy ) );
 
 				if ( $variation_size ) {
 					$size_slugs[] = $variation_size;
@@ -240,9 +246,9 @@ if ( ! function_exists( 'jg_get_instock_size_slugs_for_product' ) ) {
 			}
 		}
 
-		$size_cache[ $product_id ] = array_values( array_unique( array_filter( $size_slugs ) ) );
+		$size_cache[ $cache_key ] = array_values( array_unique( array_filter( $size_slugs ) ) );
 
-		return $size_cache[ $product_id ];
+		return $size_cache[ $cache_key ];
 	}
 }
 
@@ -425,7 +431,7 @@ if ( ! function_exists( 'jg_get_tax_terms_for_filtered_products' ) ) {
 }
 
 if ( ! function_exists( 'jg_get_size_terms_for_filtered_products' ) ) {
-	function jg_get_size_terms_for_filtered_products( $exclude_filter_keys = [] ) {
+	function jg_get_size_terms_for_filtered_products( $taxonomy, $exclude_filter_keys = [] ) {
 		$product_ids = jg_get_filtered_product_ids_for_context( $exclude_filter_keys );
 
 		if ( empty( $product_ids ) ) {
@@ -441,7 +447,7 @@ if ( ! function_exists( 'jg_get_size_terms_for_filtered_products' ) ) {
 				continue;
 			}
 
-			$size_slugs = array_merge( $size_slugs, jg_get_instock_size_slugs_for_product( $product ) );
+			$size_slugs = array_merge( $size_slugs, jg_get_instock_size_slugs_for_product( $product, $taxonomy ) );
 		}
 
 		$size_slugs = array_values( array_unique( array_filter( array_map( 'sanitize_title', $size_slugs ) ) ) );
@@ -452,7 +458,7 @@ if ( ! function_exists( 'jg_get_size_terms_for_filtered_products' ) ) {
 
 		$terms = get_terms(
 			[
-				'taxonomy'   => 'pa_groessen',
+				'taxonomy'   => $taxonomy,
 				'hide_empty' => false,
 				'slug'       => $size_slugs,
 				'orderby'    => 'name',
@@ -683,9 +689,8 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			return '';
 		}
 
-		$tax_marke    = 'pa_marke';
-		$tax_farben   = 'pa_colorgroup';
-		$tax_groessen = 'pa_groessen';
+		$tax_marke  = 'pa_marke';
+		$tax_farben = 'pa_colorgroup';
 
 		$selected_marke    = jg_get_list_param( 'jg_filter_marke' );
 		$selected_farben   = jg_get_list_param( 'jg_filter_farben' );
@@ -702,9 +707,10 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			}
 		}
 
-		$terms_marke    = jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] );
-		$terms_farben   = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
-		$terms_groessen = jg_get_size_terms_for_filtered_products( [ 'jg_filter_groessen' ] );
+		$terms_marke        = jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] );
+		$terms_farben       = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
+		$terms_groessen_int = jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] );
+		$terms_groessen_eu  = jg_get_size_terms_for_filtered_products( 'pa_eu', [ 'jg_filter_groessen' ] );
 
 		$terms_farben = array_values(
 			array_filter(
@@ -1121,8 +1127,10 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			<div class="jg-panel jg-panel--wide" id="jg-panel-groesse" role="dialog" aria-labelledby="jg-panel-groesse-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
 					<h2 class="jg-sr-only" id="jg-panel-groesse-title">Größe</h2>
-					<div class="jg-size-grid">
-						<?php foreach ( $terms_groessen as $t ) : ?>
+<div class="jg-size-rows">
+					<?php if ( ! empty( $terms_groessen_int ) ) : ?>
+					<div class="jg-size-row">
+						<?php foreach ( $terms_groessen_int as $t ) : ?>
 							<?php
 							$slug      = sanitize_title( $t->slug );
 							$is_active = in_array( $slug, $selected_groessen, true );
@@ -1137,6 +1145,27 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 								<?php echo esc_html( $t->name ); ?>
 							</button>
 						<?php endforeach; ?>
+					</div>
+					<?php endif; ?>
+					<?php if ( ! empty( $terms_groessen_eu ) ) : ?>
+					<div class="jg-size-row">
+						<?php foreach ( $terms_groessen_eu as $t ) : ?>
+							<?php
+							$slug      = sanitize_title( $t->slug );
+							$is_active = in_array( $slug, $selected_groessen, true );
+							?>
+							<button
+								type="button"
+								class="jg-size-pill<?php echo $is_active ? ' is-active' : ''; ?>"
+								data-jg-toggle="jg_filter_groessen"
+								data-jg-value="<?php echo esc_attr( $slug ); ?>"
+								aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+							>
+								<?php echo esc_html( $t->name ); ?>
+							</button>
+						<?php endforeach; ?>
+					</div>
+					<?php endif; ?>
 					</div>
 
 					<div class="jg-panel-actions">
