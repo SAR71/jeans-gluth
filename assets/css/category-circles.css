@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:00 */
+/* LastChanged: 2026-06-21 00:00:01 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -211,7 +211,10 @@
 }
 
 /* Tastatur-Fokus (BFSG/WCAG): sichtbar, etwas stärker */
-.jg-subcat-item:focus,
+.jg-subcat-item:focus{
+  outline: none;
+}
+
 .jg-subcat-item:focus-visible{
   outline: 3px solid #111111;
   outline-offset: 3px;
