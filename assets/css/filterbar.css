@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:06 */
+/* LastChanged: 2026-06-21 00:00:08 */
 /* =========================================================
    JG Filterbar (Snippet)
    ========================================================= */
@@ -18,13 +18,12 @@
 }
 
 .jg-filterbar{
-  --jg-sticky-top: 0px;
   --jg-gap: var(--jg-filterbar-gap);
   --jg-accent: #761611;
 
-  position: sticky;
-  top: calc(var(--jg-sticky-top) + var(--jg-filterbar-sticky-gap));
-  z-index: 1000;
+  position: relative;
+  top: auto;
+  z-index: 1;
   background: var(--jg-accent);
   padding: var(--jg-filterbar-padding-y) 0;
 
