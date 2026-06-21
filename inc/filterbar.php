@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-21 00:00:00
+// LastChanged: 2026-06-21 00:00:01
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -711,6 +711,18 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		$terms_farben       = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
 		$terms_groessen_int = jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] );
 		$terms_groessen_eu  = jg_get_size_terms_for_filtered_products( 'pa_eu', [ 'jg_filter_groessen' ] );
+
+		$int_order = [ 'xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl', '3xl', '4xl', '5xl' ];
+		usort(
+			$terms_groessen_int,
+			static function( $a, $b ) use ( $int_order ) {
+				$pos_a = array_search( sanitize_title( $a->name ), $int_order, true );
+				$pos_b = array_search( sanitize_title( $b->name ), $int_order, true );
+				if ( $pos_a === false ) $pos_a = 999;
+				if ( $pos_b === false ) $pos_b = 999;
+				return $pos_a - $pos_b;
+			}
+		);
 
 		$terms_farben = array_values(
 			array_filter(
