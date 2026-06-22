@@ -56,6 +56,22 @@
   border: 0;
 }
 
+/* Responsive: Tablet */
+@media (max-width: 1023px){
+  .jg-subcat-item{
+    flex: 0 0 95px;
+    max-width: 95px;
+  }
+}
+
+/* Responsive: Kleine Handys */
+@media (max-width: 576px){
+  .jg-subcat-item{
+    flex: 0 0 75px;
+    max-width: 75px;
+  }
+}
+
 .jg-subcat-item::before,
 .jg-subcat-item::after,
 .jg-subcat-item[aria-current="page"]::before,
@@ -82,6 +98,22 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+}
+
+/* Responsive: Tablet */
+@media (max-width: 1023px){
+  .jg-subcat-thumb{
+    width: 75px;
+    height: 75px;
+  }
+}
+
+/* Responsive: Kleine Handys */
+@media (max-width: 576px){
+  .jg-subcat-thumb{
+    width: 60px;
+    height: 60px;
+  }
 }
 
 
@@ -131,6 +163,22 @@
   color: #000000;
 }
 
+/* Responsive: Tablet */
+@media (max-width: 1023px){
+  .jg-subcat-thumb-label{
+    font-size: 14px;
+    padding: 0 8px;
+  }
+}
+
+/* Responsive: Kleine Handys */
+@media (max-width: 576px){
+  .jg-subcat-thumb-label{
+    font-size: 11px;
+    padding: 0 6px;
+  }
+}
+
 
 /* =============================
    Hover-Zoom nur Desktop
@@ -167,6 +215,24 @@
   min-height: 48px;
   white-space: normal;
   word-break: normal;
+}
+
+/* Responsive: Tablet */
+@media (max-width: 1023px){
+  .jg-subcat-title{
+    font-size: 16px;
+    margin-top: 8px;
+    min-height: 38px;
+  }
+}
+
+/* Responsive: Kleine Handys */
+@media (max-width: 576px){
+  .jg-subcat-title{
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 32px;
+  }
 }
 
 /* NEU (minimal): Hoverfarbe wie Entities hover (mit Fallback) */
