@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-24 00:00:00 */
+/* LastChanged: 2026-06-24 00:00:01 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -316,50 +316,46 @@
    - NUR auf Tablet/Handy EIN
    ================================================= */
 
-/* Desktop: nie anzeigen */
 .jg-subcat-nav{
-  display: none !important;
+  all: unset;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.92);
+  cursor: pointer;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Tablet/Handy: anzeigen */
-@media (max-width: 1023px){
-  .jg-subcat-nav{
-    all: unset;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.92);
-    cursor: pointer;
-    z-index: 10;
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-  }
+.jg-subcat-carousel--overflow .jg-subcat-nav{
+  display: inline-flex;
+}
 
-  .jg-subcat-nav.jg-prev{ left: 6px; }
-  .jg-subcat-nav.jg-next{ right: 6px; }
+.jg-subcat-nav.jg-prev{ left: 6px; }
+.jg-subcat-nav.jg-next{ right: 6px; }
 
-  .jg-subcat-nav::before{
-    content: "<";
-    font-size: 18px;
-    line-height: 1;
-    color: rgba(0,0,0,0.55);
-    font-weight: 700;
-  }
+.jg-subcat-nav::before{
+  content: "<";
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(0,0,0,0.55);
+  font-weight: 700;
+}
 
-  .jg-subcat-nav.jg-next::before{
-    content: ">";
-  }
+.jg-subcat-nav.jg-next::before{
+  content: ">";
+}
 
-  /* JS blendet Buttons aus, wenn nicht nötig */
-  .jg-subcat-nav[hidden]{ display: none !important; }
+/* JS blendet Buttons aus, wenn nicht nötig */
+.jg-subcat-nav[hidden]{ display: none !important; }
 
-  .jg-subcat-nav:focus-visible{
-    outline: 3px solid #111111;
-    outline-offset: 2px;
-  }
+.jg-subcat-nav:focus-visible{
+  outline: 3px solid #111111;
+  outline-offset: 2px;
 }

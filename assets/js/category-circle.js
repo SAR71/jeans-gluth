@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:00
+// LastChanged: 2026-06-24 00:00:01
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -9,12 +9,49 @@
     return document.querySelector('.jg-subcat-circles');
   }
 
+  function getCarousel() {
+    const scroller = getScroller();
+    return scroller ? scroller.closest('.jg-subcat-carousel') : null;
+  }
+
+  function getNavButtons() {
+    const carousel = getCarousel();
+    if (!carousel) return { prev: null, next: null };
+
+    return {
+      prev: carousel.querySelector('.jg-subcat-nav.jg-prev'),
+      next: carousel.querySelector('.jg-subcat-nav.jg-next')
+    };
+  }
+
   function syncOverflowAlignment() {
     const scroller = getScroller();
     if (!scroller) return;
 
+    const carousel = getCarousel();
+    const nav = getNavButtons();
+
     const hasOverflow = scroller.scrollWidth > (scroller.clientWidth + 1);
     scroller.classList.toggle('jg-subcat-circles--overflow', hasOverflow);
+
+    if (carousel) {
+      carousel.classList.toggle('jg-subcat-carousel--overflow', hasOverflow);
+    }
+
+    if (!nav.prev || !nav.next) return;
+
+    if (!hasOverflow) {
+      nav.prev.hidden = true;
+      nav.next.hidden = true;
+      return;
+    }
+
+    const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+    const atStart = scroller.scrollLeft <= 2;
+    const atEnd = scroller.scrollLeft >= (maxScrollLeft - 2);
+
+    nav.prev.hidden = atStart;
+    nav.next.hidden = atEnd;
   }
 
   function clearClicked() {
@@ -45,6 +82,8 @@
   function bindClicks() {
     const scroller = getScroller();
     if (!scroller) return;
+
+    const nav = getNavButtons();
 
     let lastSaved = null;
     let rafPending = false;
@@ -115,8 +154,26 @@
       requestAnimationFrame(() => {
         rafPending = false;
         saveScrollLeft();
+        syncOverflowAlignment();
       });
     }, { passive: true });
+
+    function scrollByStep(direction) {
+      const step = Math.max(140, Math.round(scroller.clientWidth * 0.65));
+      scroller.scrollBy({ left: direction * step, behavior: 'smooth' });
+    }
+
+    if (nav.prev) {
+      nav.prev.addEventListener('click', () => {
+        scrollByStep(-1);
+      });
+    }
+
+    if (nav.next) {
+      nav.next.addEventListener('click', () => {
+        scrollByStep(1);
+      });
+    }
   }
 
   // Wichtig: wir verhindern NICHT global scrollRestoration,
