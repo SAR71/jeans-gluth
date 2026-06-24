@@ -1,4 +1,4 @@
-// LastChanged: 2026-04-23 23:01:28
+// LastChanged: 2026-06-24 00:00:00
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -7,6 +7,14 @@
 
   function getScroller() {
     return document.querySelector('.jg-subcat-circles');
+  }
+
+  function syncOverflowAlignment() {
+    const scroller = getScroller();
+    if (!scroller) return;
+
+    const hasOverflow = scroller.scrollWidth > (scroller.clientWidth + 1);
+    scroller.classList.toggle('jg-subcat-circles--overflow', hasOverflow);
   }
 
   function clearClicked() {
@@ -118,10 +126,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindClicks();
     restoreScroller();
+    syncOverflowAlignment();
+
+    window.addEventListener('resize', syncOverflowAlignment, { passive: true });
   });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
     restoreScroller();
+    syncOverflowAlignment();
   });
 })();

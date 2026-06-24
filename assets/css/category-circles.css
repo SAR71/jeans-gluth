@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:01 */
+/* LastChanged: 2026-06-24 00:00:00 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -35,6 +35,10 @@
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto;      /* wichtig: kein Smooth-Jump beim Seitenwechsel */
   padding: 8px 44px;          /* Platz für Hover-Skalierung + Chevrons */
+}
+
+.jg-subcat-circles.jg-subcat-circles--overflow{
+  justify-content: flex-start;
 }
 
 /* Scrollbars ausblenden */
