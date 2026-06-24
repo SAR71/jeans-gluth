@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-21 00:00:08 */
+/* LastChanged: 2026-06-24 00:00:00 */
 /* =========================================================
    JG Filterbar (Snippet)
    ========================================================= */
@@ -80,6 +80,33 @@
   align-items: center;
   gap: 8px;
   position: relative;
+}
+
+.jg-filterbtn--compact{
+  display: none;
+}
+
+.jg-filterbar--compact{
+  gap: 0;
+  padding: 0;
+}
+
+.jg-filterbar--compact .jg-filterbar-label--desktop,
+.jg-filterbar--compact .jg-filterbtn--desktop,
+.jg-filterbar--compact .jg-filter-toggles--desktop{
+  display: none !important;
+}
+
+.jg-filterbar--compact .jg-filterbtn--compact{
+  display: inline-flex;
+  flex: 1 1 50%;
+  justify-content: center;
+  padding: 12px 10px;
+  border-right: 1px solid rgba(255,255,255,.25);
+}
+
+.jg-filterbar--compact .jg-filterbtn--compact:last-of-type{
+  border-right: 0;
 }
 
 .jg-filterbar .jg-filterbtn .jg-filtertext,
@@ -223,6 +250,72 @@
 
 .jg-panel-inner{
   padding: 18px 18px 14px;
+}
+
+.jg-panel--mobile-filter .jg-panel-inner{
+  padding-right: 18px;
+}
+
+.jg-panel-mobile-title{
+  margin: 0 0 16px;
+  color: #000;
+}
+
+.jg-mobile-filter-sections{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jg-mobile-filter-section{
+  border-top: 1px solid rgba(0,0,0,.12);
+  padding-top: 10px;
+}
+
+.jg-mobile-section-toggle{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #000;
+  padding: 4px 0 10px;
+  cursor: pointer;
+}
+
+.jg-mobile-section-content{
+  padding-bottom: 6px;
+}
+
+.jg-mobile-typ-list,
+.jg-mobile-text-list{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jg-mobile-typ-link,
+.jg-mobile-text-option{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #000;
+  text-align: left;
+  padding: 4px 0;
+  text-decoration: none;
+}
+
+.jg-mobile-typ-link.is-active,
+.jg-mobile-text-option.is-active{
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.jg-mobile-text-option{
+  cursor: pointer;
 }
 
 /* Scroll nur im Dropdown */
@@ -631,7 +724,7 @@
   min-width: auto;
 }
 
-.jg-filterbtn[data-jg-panel="jg-panel-sort"]{
+.jg-filterbtn--desktop[data-jg-panel="jg-panel-sort"]{
   margin-left: auto;
 }
 
@@ -652,7 +745,7 @@
 .jg-filterbtn[data-jg-panel="jg-panel-groesse"]{ order: 4; }
 .jg-filter-toggles{ order: 5; }
 
-.jg-filterbtn[data-jg-panel="jg-panel-sort"]{
+.jg-filterbtn--desktop[data-jg-panel="jg-panel-sort"]{
   order: 99;
   margin-left: auto;
   flex: 0 0 auto;
