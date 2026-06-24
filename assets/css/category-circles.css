@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-24 00:00:02 */
+/* LastChanged: 2026-06-24 00:00:03 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -20,6 +20,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  --jg-subcat-thumb-size: 88px;
 }
 
 
@@ -39,7 +40,7 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto;      /* wichtig: kein Smooth-Jump beim Seitenwechsel */
-  padding: 8px 44px;          /* Platz für Hover-Skalierung + Chevrons */
+  padding: 8px 0;             /* Platz für Hover-Skalierung */
 }
 
 .jg-subcat-circles.jg-subcat-circles--overflow{
@@ -67,6 +68,10 @@
 
 /* Responsive: Tablet */
 @media (max-width: 1023px){
+  .jg-subcat-carousel{
+    --jg-subcat-thumb-size: 75px;
+  }
+
   .jg-subcat-item{
     flex: 0 0 95px;
     max-width: 95px;
@@ -75,6 +80,10 @@
 
 /* Responsive: Kleine Handys */
 @media (max-width: 576px){
+  .jg-subcat-carousel{
+    --jg-subcat-thumb-size: 60px;
+  }
+
   .jg-subcat-item{
     flex: 0 0 75px;
     max-width: 75px;
@@ -326,10 +335,9 @@
   position: relative;
   width: 34px;
   height: 34px;
-  margin-top: 35px; /* auf Höhe der Kreisreihe */
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: rgba(255,255,255,0.92);
+  margin-top: calc(8px + (var(--jg-subcat-thumb-size) - 34px) / 2);
+  border: 0;
+  background: transparent;
   cursor: pointer;
   z-index: 10;
   display: none;
