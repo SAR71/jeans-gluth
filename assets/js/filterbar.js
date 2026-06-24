@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:01
+// LastChanged: 2026-06-24 00:00:02
 (function () {
   function initFilterbar() {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
@@ -142,8 +142,8 @@
     panel.style.top = '0px';
 
     if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort')) {
-      if (window.innerWidth <= 640) {
-        var fullWidth = Math.max(320, window.innerWidth - 12);
+      if (window.innerWidth <= 767) {
+        var fullWidth = Math.max(320, window.innerWidth - 24);
         panel.style.width = fullWidth + 'px';
         panel.style.maxWidth = fullWidth + 'px';
       } else {
@@ -174,7 +174,7 @@
     var panelWidth = panelRect.width;
 
     var left = btnRect.left;
-    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort') && window.innerWidth <= 640) {
+    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort') && window.innerWidth <= 767) {
       left = Math.round((window.innerWidth - panelWidth) / 2);
     }
     var maxLeft = window.innerWidth - panelWidth - viewportPad;
@@ -328,20 +328,24 @@
   }
 
   function syncCompactMode() {
+    bar.classList.remove('jg-filterbar--compact');
+
     var desktopParts = Array.prototype.slice.call(
       bar.querySelectorAll('.jg-filterbar-label--desktop, .jg-filterbtn--desktop, .jg-filter-toggles--desktop')
     ).filter(function (el) {
       return window.getComputedStyle(el).display !== 'none';
     });
 
-    if (!desktopParts.length) return;
+    if (!desktopParts.length) {
+      return;
+    }
 
     var firstTop = desktopParts[0].offsetTop;
     var wrapped = desktopParts.some(function (el) {
       return Math.abs(el.offsetTop - firstTop) > 2;
     });
 
-    bar.classList.toggle('jg-filterbar--compact', wrapped || window.innerWidth <= 900);
+    bar.classList.toggle('jg-filterbar--compact', wrapped);
   }
 
   function getMarkeCountFromCheckboxes() {

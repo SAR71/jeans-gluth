@@ -1189,11 +1189,11 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 					<div class="jg-mobile-filter-sections">
 						<?php if ( ! empty( $typ_items ) ) : ?>
 						<div class="jg-mobile-filter-section">
-							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="false" aria-controls="jg-mobile-section-typ">
+							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="true" aria-controls="jg-mobile-section-typ">
 								<span>TYP</span>
-								<span aria-hidden="true">+</span>
+								<span aria-hidden="true">−</span>
 							</button>
-							<div class="jg-mobile-section-content" id="jg-mobile-section-typ" hidden>
+							<div class="jg-mobile-section-content" id="jg-mobile-section-typ">
 								<div class="jg-mobile-typ-list">
 									<?php foreach ( $typ_items as $typ_term ) : ?>
 										<?php

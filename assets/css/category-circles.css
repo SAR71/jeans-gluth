@@ -372,3 +372,9 @@
   outline: 3px solid #111111;
   outline-offset: 2px;
 }
+
+@media (max-width: 1023px){
+  .jg-subcat-nav{
+    display: none !important;
+  }
+}
