@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:02
+// LastChanged: 2026-06-24 00:00:03
 (function () {
   function initFilterbar() {
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
@@ -138,6 +138,10 @@
     var btnRect = btn.getBoundingClientRect();
     var compactMode = bar.classList.contains('jg-filterbar--compact');
 
+    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort') && window.innerWidth <= 767) {
+      viewportPad = 12;
+    }
+
     panel.style.left = '0px';
     panel.style.top = '0px';
 
@@ -148,8 +152,17 @@
         panel.style.maxWidth = fullWidth + 'px';
       } else {
         var buttonWidth = Math.round(btnRect.width);
-        panel.style.width = buttonWidth + 'px';
-        panel.style.maxWidth = buttonWidth + 'px';
+        var targetWidth = buttonWidth;
+
+        if (panel.id === 'jg-panel-sort' && panelInner) {
+          targetWidth = Math.max(buttonWidth, Math.ceil(panelInner.scrollWidth + 2));
+        }
+
+        var maxPanelWidth = Math.max(320, window.innerWidth - (viewportPad * 2));
+        targetWidth = Math.min(targetWidth, maxPanelWidth);
+
+        panel.style.width = targetWidth + 'px';
+        panel.style.maxWidth = targetWidth + 'px';
       }
     }
 
@@ -432,6 +445,13 @@
   updateMobileBrandRowHighlights();
   updateAllCounts();
   syncCompactMode();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      syncCompactMode();
+    });
+  }
+
   closeAll(false);
 
   document.addEventListener('change', function (e) {
@@ -728,6 +748,10 @@
       positionPanel(openPanelEl, openBtn);
     });
   }, { passive: true });
+
+  window.addEventListener('load', function () {
+    syncCompactMode();
+  }, { once: true });
   }
 
   function runWhenIdle() {

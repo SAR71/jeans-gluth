@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-24 00:00:04 */
+/* LastChanged: 2026-06-24 00:00:05 */
 /* =========================================================
    JG Filterbar (Snippet)
    ========================================================= */
@@ -257,11 +257,13 @@
 
 .jg-panel--mobile-filter .jg-panel-inner{
   padding-right: 18px;
+  --jg-mobile-panel-side-gutter: 12px;
 }
 
 .jg-mobile-panel-head{
   display: flex;
   justify-content: flex-end;
+  padding-right: var(--jg-mobile-panel-side-gutter);
   margin-bottom: 4px;
 }
 
@@ -303,7 +305,7 @@
   align-items: center;
   justify-content: flex-start;
   color: #000;
-  padding: 4px 0 10px;
+  padding: 4px var(--jg-mobile-panel-side-gutter) 10px 0;
   cursor: pointer;
   position: relative;
   text-align: left;
@@ -317,7 +319,7 @@
 
 .jg-mobile-section-toggle > span[aria-hidden="true"]{
   position: absolute;
-  right: 0;
+  right: var(--jg-mobile-panel-side-gutter);
   top: 50%;
   transform: translateY(-50%);
   margin-left: 0;
