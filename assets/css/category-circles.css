@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-24 00:00:04 */
+/* LastChanged: 2026-06-24 00:00:05 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -17,9 +17,7 @@
    ============================= */
 .jg-subcat-carousel{
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  padding: 0 30px;
   --jg-subcat-thumb-size: 88px;
 }
 
@@ -333,10 +331,11 @@
 .jg-subcat-nav{
   all: unset;
   appearance: none;
-  position: relative;
+  position: absolute;
+  top: calc(8px + (var(--jg-subcat-thumb-size) / 2));
+  transform: translateY(-50%);
   width: 34px;
   height: 34px;
-  margin-top: calc(8px + (var(--jg-subcat-thumb-size) - 34px) / 2);
   padding: 0;
   border: 0 !important;
   border-radius: 0;
@@ -348,6 +347,9 @@
   align-items: center;
   justify-content: center;
 }
+
+.jg-subcat-nav.jg-prev{ left: 0; }
+.jg-subcat-nav.jg-next{ right: 0; }
 
 .jg-subcat-carousel--overflow .jg-subcat-nav{
   display: inline-flex;
