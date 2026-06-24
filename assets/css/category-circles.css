@@ -1,4 +1,4 @@
-/* LastChanged: 2026-06-24 00:00:03 */
+/* LastChanged: 2026-06-24 00:00:04 */
 /* =========================================================
    JG Subkategorie-Kreisleiste (Snippet)
    ---------------------------------------------------------
@@ -332,12 +332,16 @@
 
 .jg-subcat-nav{
   all: unset;
+  appearance: none;
   position: relative;
   width: 34px;
   height: 34px;
   margin-top: calc(8px + (var(--jg-subcat-thumb-size) - 34px) / 2);
-  border: 0;
-  background: transparent;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
   cursor: pointer;
   z-index: 10;
   display: none;

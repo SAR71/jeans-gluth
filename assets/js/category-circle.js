@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:01
+// LastChanged: 2026-06-24 00:00:02
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -158,20 +158,51 @@
       });
     }, { passive: true });
 
-    function scrollByStep(direction) {
-      const step = Math.max(140, Math.round(scroller.clientWidth * 0.65));
-      scroller.scrollBy({ left: direction * step, behavior: 'smooth' });
+    function scrollToUnseenGroup(direction) {
+      const items = Array.from(scroller.querySelectorAll('.jg-subcat-item'));
+      if (!items.length) return;
+
+      const start = scroller.scrollLeft;
+      const end = start + scroller.clientWidth;
+
+      if (direction > 0) {
+        const nextItem = items.find((item) => item.offsetLeft >= (end - 1));
+
+        if (!nextItem) {
+          scroller.scrollTo({ left: scroller.scrollWidth, behavior: 'smooth' });
+          return;
+        }
+
+        scroller.scrollTo({ left: nextItem.offsetLeft, behavior: 'smooth' });
+        return;
+      }
+
+      let prevItem = null;
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        const item = items[i];
+        if ((item.offsetLeft + item.offsetWidth) <= (start + 1)) {
+          prevItem = item;
+          break;
+        }
+      }
+
+      if (!prevItem) {
+        scroller.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+
+      scroller.scrollTo({ left: prevItem.offsetLeft, behavior: 'smooth' });
     }
 
     if (nav.prev) {
       nav.prev.addEventListener('click', () => {
-        scrollByStep(-1);
+        scrollToUnseenGroup(-1);
       });
     }
 
     if (nav.next) {
       nav.next.addEventListener('click', () => {
-        scrollByStep(1);
+        scrollToUnseenGroup(1);
       });
     }
   }
