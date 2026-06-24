@@ -1180,9 +1180,11 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			</div>
 			<?php endif; ?>
 
-			<div class="jg-panel jg-panel--wide jg-panel--mobile-filter" id="jg-panel-filter-mobile" role="dialog" aria-labelledby="jg-panel-filter-mobile-title" aria-modal="false" aria-hidden="true">
+			<div class="jg-panel jg-panel--wide jg-panel--mobile-filter" id="jg-panel-filter-mobile" role="dialog" aria-label="Filter" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
-					<h2 class="jg-panel-mobile-title" id="jg-panel-filter-mobile-title">FILTER</h2>
+					<div class="jg-mobile-panel-head">
+						<button class="jg-mobile-panel-close" type="button" data-jg-close aria-label="Schließen">✕</button>
+					</div>
 
 					<div class="jg-mobile-filter-sections">
 						<?php if ( ! empty( $typ_items ) ) : ?>
@@ -1216,14 +1218,25 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 								<span aria-hidden="true">−</span>
 							</button>
 							<div class="jg-mobile-section-content" id="jg-mobile-section-farbe">
-								<div class="jg-mobile-text-list">
+								<div class="jg-color-grid">
 									<?php foreach ( $terms_farben as $t ) : ?>
 										<?php
 										$slug      = sanitize_title( $t->slug );
+										$hex       = $swatch_for_term( $t );
 										$is_active = in_array( $slug, $selected_farben, true );
 										?>
-										<button type="button" class="jg-mobile-text-option<?php echo $is_active ? ' is-active' : ''; ?>" data-jg-toggle="jg_filter_farben" data-jg-value="<?php echo esc_attr( $slug ); ?>" aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
-											<?php echo esc_html( $t->name ); ?>
+										<button
+											type="button"
+											class="jg-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
+											data-jg-toggle="jg_filter_farben"
+											data-jg-value="<?php echo esc_attr( $slug ); ?>"
+											aria-label="<?php echo esc_attr( $t->name ); ?>"
+											aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+											style="--jg-swatch: <?php echo esc_attr( $hex ); ?>;"
+										>
+											<span class="jg-color-dot" aria-hidden="true"></span>
+											<span class="jg-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
+											<span class="jg-sr-only"><?php echo esc_html( $t->name ); ?></span>
 										</button>
 									<?php endforeach; ?>
 								</div>
@@ -1291,9 +1304,8 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 					</div>
 
 					<div class="jg-panel-actions">
-						<button class="jg-apply" type="button" data-jg-apply-mobile="1">ANWENDEN</button>
-						<button class="jg-close" type="button" data-jg-close><span aria-hidden="true">✕</span><span>Schließen</span></button>
 						<button class="jg-reset" type="button" data-jg-reset-mobile="1">Auswahl zurücksetzen</button>
+						<button class="jg-apply" type="button" data-jg-apply-mobile="1">ANWENDEN</button>
 					</div>
 				</div>
 			</div>
