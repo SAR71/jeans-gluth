@@ -124,6 +124,41 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$selected_groessen = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_groessen' ) : [];
 		$selected_orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['orderby'] ) ) : '';
 
+		$typ_items     = [];
+		$typ_active_id = 0;
+		if ( is_product_category() ) {
+			$current_term = get_queried_object();
+			if ( $current_term && ! empty( $current_term->term_id ) && $current_term->taxonomy === 'product_cat' ) {
+				$current_id = (int) $current_term->term_id;
+				$ancestors  = get_ancestors( $current_id, 'product_cat' );
+				$depth_rel  = is_array( $ancestors ) ? count( $ancestors ) : 0;
+
+				if ( $depth_rel > 0 ) {
+					$level2_id = ( $depth_rel === 1 ) ? $current_id : (int) $current_term->parent;
+
+					if ( $level2_id > 0 ) {
+						$typ_items = get_terms(
+							[
+								'taxonomy'   => 'product_cat',
+								'parent'     => $level2_id,
+								'hide_empty' => true,
+								'orderby'    => 'menu_order',
+								'order'      => 'ASC',
+							]
+						);
+
+						if ( is_wp_error( $typ_items ) || count( $typ_items ) < 2 ) {
+							$typ_items = [];
+						}
+
+						if ( $depth_rel >= 2 ) {
+							$typ_active_id = $current_id;
+						}
+					}
+				}
+			}
+		}
+
 		$terms_marke        = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] ) : [];
 		$terms_farben       = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] ) : [];
 		$terms_groessen_int = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] ) : [];
@@ -189,104 +224,152 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 			<div class="jgm-panel" id="jgm-panel-filter" role="dialog" aria-labelledby="jgm-panel-filter-title" aria-modal="false" aria-hidden="true">
 				<div class="jgm-panel-inner">
-					<h2 class="jgm-sr-only" id="jgm-panel-filter-title">Filter</h2>
-
-					<?php if ( ! empty( $terms_marke ) ) : ?>
-					<div class="jgm-section">
-						<p class="jgm-section-title">Marke</p>
-						<div class="jgm-brand-list">
-							<?php foreach ( $terms_marke as $t ) : ?>
-								<?php
-								$slug    = sanitize_title( $t->slug );
-								$checked = in_array( $slug, $selected_marke, true );
-								?>
-								<label class="jgm-checkrow<?php echo $checked ? ' is-active' : ''; ?>">
-									<input type="checkbox" class="jgm-check" data-jgm-filter="jg_filter_marke" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $checked ); ?> />
-									<span class="jgm-checkbox-ui" aria-hidden="true"></span>
-									<span><?php echo esc_html( $t->name ); ?></span>
-								</label>
-							<?php endforeach; ?>
-						</div>
+					<div class="jgm-panel-head">
+						<h2 class="jgm-panel-title" id="jgm-panel-filter-title">FILTER</h2>
+						<button class="jgm-panel-close" type="button" data-jgm-close aria-label="Schließen">✕</button>
 					</div>
-					<?php endif; ?>
 
-					<?php if ( ! empty( $color_items ) ) : ?>
-					<div class="jgm-section">
-						<p class="jgm-section-title">Farbe</p>
-						<div class="jgm-color-grid">
-							<?php foreach ( $color_items as $item ) : ?>
-								<?php
-								$t         = $item['term'];
-								$slug      = sanitize_title( $t->slug );
-								$is_active = in_array( $slug, $selected_farben, true );
-								?>
-								<button
-									type="button"
-									class="jgm-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
-									data-jgm-toggle="jg_filter_farben"
-									data-jgm-value="<?php echo esc_attr( $slug ); ?>"
-									aria-label="<?php echo esc_attr( $t->name ); ?>"
-									aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
-									style="--jgm-swatch: <?php echo esc_attr( $item['swatch'] ); ?>;"
-								>
-									<span class="jgm-color-dot" aria-hidden="true"></span>
-								</button>
-							<?php endforeach; ?>
-						</div>
-					</div>
-					<?php endif; ?>
+					<p class="jgm-limiter">BEGRENZEN</p>
 
-					<?php if ( ! empty( $terms_groessen_int ) || ! empty( $terms_groessen_eu ) ) : ?>
-					<div class="jgm-section">
-						<p class="jgm-section-title">Größe</p>
-						<div class="jgm-size-rows">
-							<?php if ( ! empty( $terms_groessen_int ) ) : ?>
-							<div class="jgm-size-row">
-								<?php foreach ( $terms_groessen_int as $t ) : ?>
-									<?php
-									$slug      = sanitize_title( $t->slug );
-									$is_active = in_array( $slug, $selected_groessen, true );
-									?>
-									<button
-										type="button"
-										class="jgm-size-pill<?php echo $is_active ? ' is-active' : ''; ?>"
-										data-jgm-toggle="jg_filter_groessen"
-										data-jgm-value="<?php echo esc_attr( $slug ); ?>"
-										aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
-									>
-										<?php echo esc_html( $t->name ); ?>
-									</button>
-								<?php endforeach; ?>
+					<div class="jgm-mobile-sections">
+						<?php if ( ! empty( $typ_items ) ) : ?>
+						<div class="jgm-mobile-section">
+							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="false" aria-controls="jgm-section-typ">
+								<span>TYP</span>
+								<span aria-hidden="true">+</span>
+							</button>
+							<div class="jgm-section-content" id="jgm-section-typ" hidden>
+								<div class="jgm-type-list">
+									<?php foreach ( $typ_items as $typ_term ) : ?>
+										<?php
+										$typ_link = get_term_link( $typ_term );
+										if ( is_wp_error( $typ_link ) ) {
+											continue;
+										}
+										$is_typ_active = $typ_active_id && ( (int) $typ_term->term_id === (int) $typ_active_id );
+										?>
+										<a href="<?php echo esc_url( $typ_link ); ?>" class="jgm-type-link<?php echo $is_typ_active ? ' is-active' : ''; ?>" <?php echo $is_typ_active ? 'aria-current="page"' : ''; ?>>
+											<?php echo esc_html( $typ_term->name ); ?>
+										</a>
+									<?php endforeach; ?>
+								</div>
 							</div>
-							<?php endif; ?>
-
-							<?php if ( ! empty( $terms_groessen_eu ) ) : ?>
-							<div class="jgm-size-row">
-								<?php foreach ( $terms_groessen_eu as $t ) : ?>
-									<?php
-									$slug      = sanitize_title( $t->slug );
-									$is_active = in_array( $slug, $selected_groessen, true );
-									?>
-									<button
-										type="button"
-										class="jgm-size-pill<?php echo $is_active ? ' is-active' : ''; ?>"
-										data-jgm-toggle="jg_filter_groessen"
-										data-jgm-value="<?php echo esc_attr( $slug ); ?>"
-										aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
-									>
-										<?php echo esc_html( $t->name ); ?>
-									</button>
-								<?php endforeach; ?>
-							</div>
-							<?php endif; ?>
 						</div>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $terms_groessen_int ) || ! empty( $terms_groessen_eu ) ) : ?>
+						<div class="jgm-mobile-section">
+							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="true" aria-controls="jgm-section-groesse">
+								<span>GRÖSSE</span>
+								<span aria-hidden="true">−</span>
+							</button>
+							<div class="jgm-section-content" id="jgm-section-groesse">
+								<div class="jgm-size-rows">
+									<?php if ( ! empty( $terms_groessen_int ) ) : ?>
+									<div class="jgm-size-row">
+										<?php foreach ( $terms_groessen_int as $t ) : ?>
+											<?php
+											$slug      = sanitize_title( $t->slug );
+											$is_active = in_array( $slug, $selected_groessen, true );
+											?>
+											<button
+												type="button"
+												class="jgm-size-pill<?php echo $is_active ? ' is-active' : ''; ?>"
+												data-jgm-toggle="jg_filter_groessen"
+												data-jgm-value="<?php echo esc_attr( $slug ); ?>"
+												aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+											>
+												<?php echo esc_html( $t->name ); ?>
+											</button>
+										<?php endforeach; ?>
+									</div>
+									<?php endif; ?>
+
+									<?php if ( ! empty( $terms_groessen_eu ) ) : ?>
+									<div class="jgm-size-row">
+										<?php foreach ( $terms_groessen_eu as $t ) : ?>
+											<?php
+											$slug      = sanitize_title( $t->slug );
+											$is_active = in_array( $slug, $selected_groessen, true );
+											?>
+											<button
+												type="button"
+												class="jgm-size-pill<?php echo $is_active ? ' is-active' : ''; ?>"
+												data-jgm-toggle="jg_filter_groessen"
+												data-jgm-value="<?php echo esc_attr( $slug ); ?>"
+												aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+											>
+												<?php echo esc_html( $t->name ); ?>
+											</button>
+										<?php endforeach; ?>
+									</div>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $color_items ) ) : ?>
+						<div class="jgm-mobile-section">
+							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="true" aria-controls="jgm-section-farbe">
+								<span>FARBE</span>
+								<span aria-hidden="true">−</span>
+							</button>
+							<div class="jgm-section-content" id="jgm-section-farbe">
+								<div class="jgm-color-grid">
+									<?php foreach ( $color_items as $item ) : ?>
+										<?php
+										$t         = $item['term'];
+										$slug      = sanitize_title( $t->slug );
+										$is_active = in_array( $slug, $selected_farben, true );
+										?>
+										<button
+											type="button"
+											class="jgm-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
+											data-jgm-toggle="jg_filter_farben"
+											data-jgm-value="<?php echo esc_attr( $slug ); ?>"
+											aria-label="<?php echo esc_attr( $t->name ); ?>"
+											aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+											style="--jgm-swatch: <?php echo esc_attr( $item['swatch'] ); ?>;"
+										>
+											<span class="jgm-color-dot" aria-hidden="true"></span>
+											<span class="jgm-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
+											<span class="jgm-sr-only"><?php echo esc_html( $t->name ); ?></span>
+										</button>
+									<?php endforeach; ?>
+								</div>
+							</div>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $terms_marke ) ) : ?>
+						<div class="jgm-mobile-section">
+							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="false" aria-controls="jgm-section-marke">
+								<span>MARKE</span>
+								<span aria-hidden="true">+</span>
+							</button>
+							<div class="jgm-section-content" id="jgm-section-marke" hidden>
+								<div class="jgm-brand-list">
+									<?php foreach ( $terms_marke as $t ) : ?>
+										<?php
+										$slug    = sanitize_title( $t->slug );
+										$checked = in_array( $slug, $selected_marke, true );
+										?>
+										<label class="jgm-checkrow<?php echo $checked ? ' is-active' : ''; ?>">
+											<input type="checkbox" class="jgm-check" data-jgm-filter="jg_filter_marke" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $checked ); ?> />
+											<span class="jgm-checkbox-ui" aria-hidden="true"></span>
+											<span><?php echo esc_html( $t->name ); ?></span>
+										</label>
+									<?php endforeach; ?>
+								</div>
+							</div>
+						</div>
+						<?php endif; ?>
 					</div>
-					<?php endif; ?>
 
 					<div class="jgm-actions">
+						<button type="button" class="jgm-reset" data-jgm-reset-filter="1">FILTER ZURÜCKSETZEN</button>
 						<button type="button" class="jgm-apply" data-jgm-apply-filter="1">ANWENDEN</button>
-						<button type="button" class="jgm-close" data-jgm-close>Schließen</button>
-						<button type="button" class="jgm-reset" data-jgm-reset-filter="1">Filter zurücksetzen</button>
 					</div>
 				</div>
 			</div>

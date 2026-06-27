@@ -1095,7 +1095,6 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		ob_start();
 		?>
 		<div class="jg-filterbar" data-jg-filterbar="1" role="navigation" aria-label="Filter">
-			<span class="jg-filterbar-label" aria-hidden="true">FILTER</span>
 			<span class="jg-sr-only" aria-live="polite" aria-atomic="true" data-jg-filter-live-region></span>
 
 			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-marke" aria-haspopup="dialog" aria-controls="jg-panel-marke" aria-expanded="false" aria-label="Marke Filter öffnen">

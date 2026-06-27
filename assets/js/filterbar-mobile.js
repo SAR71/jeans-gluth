@@ -172,6 +172,28 @@
 				return;
 			}
 
+			var sectionToggle = event.target.closest('[data-jgm-section-toggle]');
+			if (sectionToggle) {
+				event.preventDefault();
+
+				var contentId = sectionToggle.getAttribute('aria-controls');
+				if (!contentId) return;
+
+				var contentEl = document.getElementById(contentId);
+				if (!contentEl) return;
+
+				var expanded = sectionToggle.getAttribute('aria-expanded') === 'true';
+				sectionToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+				contentEl.hidden = expanded;
+
+				var indicator = sectionToggle.querySelector('span[aria-hidden="true"]');
+				if (indicator) {
+					indicator.textContent = expanded ? '+' : '−';
+				}
+
+				return;
+			}
+
 			var toggle = event.target.closest('[data-jgm-toggle][data-jgm-value]');
 			if (toggle && bar.contains(toggle)) {
 				event.preventDefault();

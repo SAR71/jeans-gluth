@@ -639,7 +639,7 @@
   min-width: auto;
 }
 
-.jg-filterbtn--desktop[data-jg-panel="jg-panel-sort"]{
+.jg-filterbtn[data-jg-panel="jg-panel-sort"]{
   margin-left: auto;
 }
 
@@ -660,7 +660,7 @@
 .jg-filterbtn[data-jg-panel="jg-panel-groesse"]{ order: 4; }
 .jg-filter-toggles{ order: 5; }
 
-.jg-filterbtn--desktop[data-jg-panel="jg-panel-sort"]{
+.jg-filterbtn[data-jg-panel="jg-panel-sort"]{
   order: 99;
   margin-left: auto;
   flex: 0 0 auto;
