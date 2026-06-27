@@ -1273,6 +1273,10 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 
 		$output = ob_get_clean();
 
+		if ( shortcode_exists( 'jg_filterbar_mobile' ) ) {
+			$output .= do_shortcode( '[jg_filterbar_mobile]' );
+		}
+
 		return $output;
 	}
 }
