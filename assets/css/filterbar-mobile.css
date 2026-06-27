@@ -8,6 +8,9 @@
 	.jgm-filterbar {
 		--jgm-accent: #761611;
 		--jgm-text: #fbf0d8;
+		--jgm-font-family: var(--wd-entities-title-font, inherit);
+		--jgm-font-weight: var(--wd-entities-title-font-weight, 600);
+		--jgm-letter-spacing: 0.08em;
 
 		position: relative;
 		z-index: 2;
@@ -17,6 +20,24 @@
 		gap: 0;
 		background: var(--jgm-accent);
 		padding: 0;
+	}
+
+	.jgm-filterbar,
+	.jgm-btn,
+	.jgm-panel-title,
+	.jgm-limiter,
+	.jgm-section-toggle,
+	.jgm-type-link,
+	.jgm-size-pill,
+	.jgm-sort-option,
+	.jgm-apply,
+	.jgm-close,
+	.jgm-reset,
+	.jgm-checkrow,
+	.jgm-color-name {
+		font-family: var(--jgm-font-family) !important;
+		font-weight: var(--jgm-font-weight) !important;
+		letter-spacing: var(--jgm-letter-spacing) !important;
 	}
 
 	.jgm-btn {
