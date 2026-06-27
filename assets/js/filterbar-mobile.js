@@ -156,6 +156,24 @@
 		syncBrandRows();
 		closeAll(false);
 
+		panelButtons.forEach(function (button) {
+			button.addEventListener('click', function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				var panelId = button.getAttribute('data-jgm-panel');
+				if (!panelId) return;
+
+				var expanded = button.getAttribute('aria-expanded') === 'true';
+				if (expanded) {
+					closeAll(true);
+					return;
+				}
+
+				openPanel(panelId, button);
+			});
+		});
+
 			bar.addEventListener('change', function (event) {
 			var target = event.target;
 			if (!(target instanceof HTMLInputElement)) return;
@@ -322,5 +340,16 @@
 		document.addEventListener('DOMContentLoaded', boot, { once: true });
 	} else {
 		boot();
+	}
+
+	if (window.MutationObserver) {
+		var observer = new MutationObserver(function () {
+			initMobileFilterbar();
+		});
+
+		observer.observe(document.documentElement, {
+			childList: true,
+			subtree: true
+		});
 	}
 })();
