@@ -1,4 +1,4 @@
-// LastChanged: 2026-04-23 23:01:28
+// LastChanged: 2026-06-24 00:00:03
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -7,6 +7,66 @@
 
   function getScroller() {
     return document.querySelector('.jg-subcat-circles');
+  }
+
+  function getCarousel() {
+    const scroller = getScroller();
+    return scroller ? scroller.closest('.jg-subcat-carousel') : null;
+  }
+
+  function getNavButtons() {
+    const carousel = getCarousel();
+    if (!carousel) return { prev: null, next: null };
+
+    return {
+      prev: carousel.querySelector('.jg-subcat-nav.jg-prev'),
+      next: carousel.querySelector('.jg-subcat-nav.jg-next')
+    };
+  }
+
+  function syncOverflowAlignment() {
+    const scroller = getScroller();
+    if (!scroller) return;
+
+    const carousel = getCarousel();
+    const nav = getNavButtons();
+
+    const hasOverflow = scroller.scrollWidth > (scroller.clientWidth + 1);
+    scroller.classList.toggle('jg-subcat-circles--overflow', hasOverflow);
+
+    if (carousel) {
+      carousel.classList.toggle('jg-subcat-carousel--overflow', hasOverflow);
+    }
+
+    if (!nav.prev || !nav.next) return;
+
+    if (!hasOverflow) {
+      nav.prev.hidden = true;
+      nav.next.hidden = true;
+      return;
+    }
+
+    const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+    const atStart = scroller.scrollLeft <= 2;
+    const atEnd = scroller.scrollLeft >= (maxScrollLeft - 2);
+
+    nav.prev.hidden = atStart;
+    nav.next.hidden = atEnd;
+  }
+
+  function syncChevronCenterLine() {
+    const scroller = getScroller();
+    const carousel = getCarousel();
+    if (!scroller || !carousel) return;
+
+    const firstThumb = scroller.querySelector('.jg-subcat-thumb');
+    if (!firstThumb) return;
+
+    const thumbRect = firstThumb.getBoundingClientRect();
+    const carouselRect = carousel.getBoundingClientRect();
+    const centerY = thumbRect.top + (thumbRect.height / 2) - carouselRect.top;
+
+    carousel.style.setProperty('--jg-subcat-chevron-center-y', Math.round(centerY) + 'px');
   }
 
   function clearClicked() {
@@ -37,6 +97,8 @@
   function bindClicks() {
     const scroller = getScroller();
     if (!scroller) return;
+
+    const nav = getNavButtons();
 
     let lastSaved = null;
     let rafPending = false;
@@ -107,8 +169,57 @@
       requestAnimationFrame(() => {
         rafPending = false;
         saveScrollLeft();
+        syncOverflowAlignment();
       });
     }, { passive: true });
+
+    function scrollToUnseenGroup(direction) {
+      const items = Array.from(scroller.querySelectorAll('.jg-subcat-item'));
+      if (!items.length) return;
+
+      const start = scroller.scrollLeft;
+      const end = start + scroller.clientWidth;
+
+      if (direction > 0) {
+        const nextItem = items.find((item) => item.offsetLeft >= (end - 1));
+
+        if (!nextItem) {
+          scroller.scrollTo({ left: scroller.scrollWidth, behavior: 'smooth' });
+          return;
+        }
+
+        scroller.scrollTo({ left: nextItem.offsetLeft, behavior: 'smooth' });
+        return;
+      }
+
+      let prevItem = null;
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        const item = items[i];
+        if ((item.offsetLeft + item.offsetWidth) <= (start + 1)) {
+          prevItem = item;
+          break;
+        }
+      }
+
+      if (!prevItem) {
+        scroller.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+
+      scroller.scrollTo({ left: prevItem.offsetLeft, behavior: 'smooth' });
+    }
+
+    if (nav.prev) {
+      nav.prev.addEventListener('click', () => {
+        scrollToUnseenGroup(-1);
+      });
+    }
+
+    if (nav.next) {
+      nav.next.addEventListener('click', () => {
+        scrollToUnseenGroup(1);
+      });
+    }
   }
 
   // Wichtig: wir verhindern NICHT global scrollRestoration,
@@ -118,10 +229,19 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindClicks();
     restoreScroller();
+    syncChevronCenterLine();
+    syncOverflowAlignment();
+
+    window.addEventListener('resize', () => {
+      syncChevronCenterLine();
+      syncOverflowAlignment();
+    }, { passive: true });
   });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
     restoreScroller();
+    syncChevronCenterLine();
+    syncOverflowAlignment();
   });
 })();

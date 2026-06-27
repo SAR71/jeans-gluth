@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-21 00:00:00
+// LastChanged: 2026-06-24 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -121,6 +121,7 @@ add_shortcode('jg_top_subcats', function($atts) {
 
     ob_start(); ?>
     <div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
+            <button type="button" class="jg-subcat-nav jg-prev" aria-label="Nach links scrollen" hidden></button>
       <div class="jg-subcat-circles">
 
         <?php if ($show_filter_circles): ?>
@@ -185,6 +186,7 @@ add_shortcode('jg_top_subcats', function($atts) {
         <?php endforeach; ?>
 
       </div>
+            <button type="button" class="jg-subcat-nav jg-next" aria-label="Nach rechts scrollen" hidden></button>
     </div>
     <?php
     return ob_get_clean();
