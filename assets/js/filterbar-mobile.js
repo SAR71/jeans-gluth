@@ -20,6 +20,12 @@
 		);
 		var panels = Array.prototype.slice.call(bar.querySelectorAll('.jgm-panel'));
 		var liveRegion = bar.querySelector('[data-jgm-live-region]');
+		var backdrop = document.querySelector('.jgm-backdrop');
+		if (!backdrop) {
+			backdrop = document.createElement('div');
+			backdrop.className = 'jgm-backdrop';
+			document.body.appendChild(backdrop);
+		}
 
 		var state = {
 			jg_filter_farben: new Set(),
@@ -66,6 +72,9 @@
 			if (restoreFocus && document.activeElement && document.activeElement instanceof HTMLElement) {
 				document.activeElement.blur();
 			}
+
+			backdrop.classList.remove('is-visible');
+			document.body.classList.remove('jgm-lock-scroll');
 		}
 
 		function getPanelById(panelId) {
@@ -82,6 +91,19 @@
 			panel.setAttribute('aria-hidden', 'false');
 			panel.setAttribute('aria-modal', 'true');
 			btn.setAttribute('aria-expanded', 'true');
+
+			var btnRect = btn.getBoundingClientRect();
+			var viewportPad = 12;
+			var top = Math.round(btnRect.bottom + 8);
+			var maxTop = Math.max(viewportPad, window.innerHeight - 180);
+			if (top > maxTop) top = maxTop;
+
+			panel.style.top = top + 'px';
+			panel.style.left = viewportPad + 'px';
+			panel.style.right = viewportPad + 'px';
+
+			backdrop.classList.add('is-visible');
+			document.body.classList.add('jgm-lock-scroll');
 
 			var firstFocusable = panel.querySelector('button, input, [tabindex]:not([tabindex="-1"])');
 			if (firstFocusable && firstFocusable instanceof HTMLElement) {
@@ -172,6 +194,16 @@
 
 				openPanel(panelId, button);
 			});
+		});
+
+		backdrop.addEventListener('click', function () {
+			var hasOpenPanel = panels.some(function (panel) {
+				return panel.getAttribute('aria-hidden') === 'false';
+			});
+			if (!hasOpenPanel) return;
+
+			closeAll(false);
+			announce('Dialog geschlossen');
 		});
 
 			bar.addEventListener('change', function (event) {

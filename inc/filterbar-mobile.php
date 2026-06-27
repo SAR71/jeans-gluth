@@ -229,8 +229,6 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 						<button class="jgm-panel-close" type="button" data-jgm-close aria-label="Schließen">✕</button>
 					</div>
 
-					<p class="jgm-limiter">BEGRENZEN</p>
-
 					<div class="jgm-mobile-sections">
 						<?php if ( ! empty( $typ_items ) ) : ?>
 						<div class="jgm-mobile-section">
@@ -251,6 +249,39 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 										<a href="<?php echo esc_url( $typ_link ); ?>" class="jgm-type-link<?php echo $is_typ_active ? ' is-active' : ''; ?>" <?php echo $is_typ_active ? 'aria-current="page"' : ''; ?>>
 											<?php echo esc_html( $typ_term->name ); ?>
 										</a>
+									<?php endforeach; ?>
+								</div>
+							</div>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( ! empty( $color_items ) ) : ?>
+						<div class="jgm-mobile-section">
+							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="true" aria-controls="jgm-section-farbe">
+								<span>FARBE</span>
+								<span aria-hidden="true">−</span>
+							</button>
+							<div class="jgm-section-content" id="jgm-section-farbe">
+								<div class="jgm-color-grid">
+									<?php foreach ( $color_items as $item ) : ?>
+										<?php
+										$t         = $item['term'];
+										$slug      = sanitize_title( $t->slug );
+										$is_active = in_array( $slug, $selected_farben, true );
+										?>
+										<button
+											type="button"
+											class="jgm-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
+											data-jgm-toggle="jg_filter_farben"
+											data-jgm-value="<?php echo esc_attr( $slug ); ?>"
+											aria-label="<?php echo esc_attr( $t->name ); ?>"
+											aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
+											style="--jgm-swatch: <?php echo esc_attr( $item['swatch'] ); ?>;"
+										>
+											<span class="jgm-color-dot" aria-hidden="true"></span>
+											<span class="jgm-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
+											<span class="jgm-sr-only"><?php echo esc_html( $t->name ); ?></span>
+										</button>
 									<?php endforeach; ?>
 								</div>
 							</div>
@@ -309,39 +340,6 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 						</div>
 						<?php endif; ?>
 
-						<?php if ( ! empty( $color_items ) ) : ?>
-						<div class="jgm-mobile-section">
-							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="true" aria-controls="jgm-section-farbe">
-								<span>FARBE</span>
-								<span aria-hidden="true">−</span>
-							</button>
-							<div class="jgm-section-content" id="jgm-section-farbe">
-								<div class="jgm-color-grid">
-									<?php foreach ( $color_items as $item ) : ?>
-										<?php
-										$t         = $item['term'];
-										$slug      = sanitize_title( $t->slug );
-										$is_active = in_array( $slug, $selected_farben, true );
-										?>
-										<button
-											type="button"
-											class="jgm-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
-											data-jgm-toggle="jg_filter_farben"
-											data-jgm-value="<?php echo esc_attr( $slug ); ?>"
-											aria-label="<?php echo esc_attr( $t->name ); ?>"
-											aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
-											style="--jgm-swatch: <?php echo esc_attr( $item['swatch'] ); ?>;"
-										>
-											<span class="jgm-color-dot" aria-hidden="true"></span>
-											<span class="jgm-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
-											<span class="jgm-sr-only"><?php echo esc_html( $t->name ); ?></span>
-										</button>
-									<?php endforeach; ?>
-								</div>
-							</div>
-						</div>
-						<?php endif; ?>
-
 						<?php if ( ! empty( $terms_marke ) ) : ?>
 						<div class="jgm-mobile-section">
 							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="false" aria-controls="jgm-section-marke">
@@ -376,13 +374,15 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 			<div class="jgm-panel jgm-panel-sort" id="jgm-panel-sort" role="dialog" aria-labelledby="jgm-panel-sort-title" aria-modal="false" aria-hidden="true">
 				<div class="jgm-panel-inner">
-					<h2 class="jgm-sr-only" id="jgm-panel-sort-title">Sortieren</h2>
+					<div class="jgm-panel-head">
+						<h2 class="jgm-panel-title" id="jgm-panel-sort-title">SORTIEREN</h2>
+						<button class="jgm-panel-close" type="button" data-jgm-close aria-label="Schließen">✕</button>
+					</div>
 					<div class="jgm-sort-list" aria-label="Sortieroptionen">
 						<button type="button" class="jgm-sort-option" data-jgm-orderby="price" aria-pressed="<?php echo $selected_orderby === 'price' ? 'true' : 'false'; ?>">PREIS AUFSTEIGEND</button>
 						<button type="button" class="jgm-sort-option" data-jgm-orderby="price-desc" aria-pressed="<?php echo $selected_orderby === 'price-desc' ? 'true' : 'false'; ?>">PREIS ABSTEIGEND</button>
 					</div>
 					<div class="jgm-actions">
-						<button type="button" class="jgm-close" data-jgm-close>Schließen</button>
 						<button type="button" class="jgm-reset" data-jgm-reset-orderby="1">Sortierung zurücksetzen</button>
 					</div>
 				</div>
