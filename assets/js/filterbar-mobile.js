@@ -1,0 +1,275 @@
+// LastChanged: 2026-06-27 00:00:00
+(function () {
+	function initMobileFilterbar() {
+		var bar = document.querySelector('.jgm-filterbar[data-jgm-filterbar="1"]');
+		if (!bar) return;
+
+		var panelButtons = Array.prototype.slice.call(
+			bar.querySelectorAll('.jgm-btn[data-jgm-panel]')
+		);
+		var panels = Array.prototype.slice.call(bar.querySelectorAll('.jgm-panel'));
+		var liveRegion = bar.querySelector('[data-jgm-live-region]');
+
+		var state = {
+			jg_filter_farben: new Set(),
+			jg_filter_groessen: new Set()
+		};
+
+		function announce(message) {
+			if (!liveRegion || !message) return;
+			liveRegion.textContent = '';
+			window.setTimeout(function () {
+				liveRegion.textContent = message;
+			}, 20);
+		}
+
+		function removeLegacyWooFilterParams(url) {
+			url.searchParams.delete('filter_farben');
+			url.searchParams.delete('filter_colorgroup');
+			url.searchParams.delete('filter_groessen');
+			url.searchParams.delete('filter_marke');
+			url.searchParams.delete('query_type_farben');
+			url.searchParams.delete('query_type_colorgroup');
+			url.searchParams.delete('query_type_groessen');
+			url.searchParams.delete('query_type_marke');
+		}
+
+		function setQueryParam(url, key, value) {
+			if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+				url.searchParams.delete(key);
+			} else {
+				url.searchParams.set(key, value);
+			}
+		}
+
+		function closeAll(restoreFocus) {
+			panels.forEach(function (panel) {
+				panel.setAttribute('aria-hidden', 'true');
+				panel.setAttribute('aria-modal', 'false');
+			});
+
+			panelButtons.forEach(function (btn) {
+				btn.setAttribute('aria-expanded', 'false');
+			});
+
+			if (restoreFocus && document.activeElement && document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+			}
+		}
+
+		function openPanel(panelId, btn) {
+			var panel = document.getElementById(panelId);
+			if (!panel) return;
+
+			closeAll(false);
+			panel.setAttribute('aria-hidden', 'false');
+			panel.setAttribute('aria-modal', 'true');
+			btn.setAttribute('aria-expanded', 'true');
+
+			var firstFocusable = panel.querySelector('button, input, [tabindex]:not([tabindex="-1"])');
+			if (firstFocusable && firstFocusable instanceof HTMLElement) {
+				firstFocusable.focus();
+			}
+		}
+
+		function getMarkeChecks() {
+			return Array.prototype.slice.call(
+				bar.querySelectorAll('.jgm-check[data-jgm-filter="jg_filter_marke"]')
+			);
+		}
+
+		function syncToggleUI(key) {
+			bar.querySelectorAll('[data-jgm-toggle="' + key + '"][data-jgm-value]').forEach(function (el) {
+				var value = el.getAttribute('data-jgm-value');
+				var active = state[key].has(value);
+				el.classList.toggle('is-active', active);
+				el.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+		}
+
+		function syncBrandRows() {
+			bar.querySelectorAll('.jgm-checkrow').forEach(function (row) {
+				var input = row.querySelector('.jgm-check[data-jgm-filter="jg_filter_marke"]');
+				if (!input) return;
+				row.classList.toggle('is-active', !!input.checked);
+			});
+		}
+
+		function initStateFromDom() {
+			['jg_filter_farben', 'jg_filter_groessen'].forEach(function (key) {
+				state[key] = new Set();
+				bar.querySelectorAll('[data-jgm-toggle="' + key + '"][data-jgm-value]').forEach(function (el) {
+					if (el.classList.contains('is-active')) {
+						state[key].add(el.getAttribute('data-jgm-value'));
+					}
+				});
+			});
+		}
+
+		function applyFilter() {
+			var url = new URL(window.location.href);
+			var markeValues = getMarkeChecks()
+				.filter(function (input) { return input.checked; })
+				.map(function (input) { return input.value; });
+
+			setQueryParam(url, 'jg_filter_marke', markeValues.length ? markeValues.join(',') : null);
+			setQueryParam(url, 'jg_filter_farben', state.jg_filter_farben.size ? Array.from(state.jg_filter_farben).join(',') : null);
+			setQueryParam(url, 'jg_filter_groessen', state.jg_filter_groessen.size ? Array.from(state.jg_filter_groessen).join(',') : null);
+			url.searchParams.delete('paged');
+			removeLegacyWooFilterParams(url);
+			announce('Filter werden angewendet');
+			window.location.href = url.toString();
+		}
+
+		function resetFilterUi() {
+			getMarkeChecks().forEach(function (input) {
+				input.checked = false;
+			});
+			state.jg_filter_farben = new Set();
+			state.jg_filter_groessen = new Set();
+			syncBrandRows();
+			syncToggleUI('jg_filter_farben');
+			syncToggleUI('jg_filter_groessen');
+			announce('Filter zurückgesetzt');
+		}
+
+		initStateFromDom();
+		syncToggleUI('jg_filter_farben');
+		syncToggleUI('jg_filter_groessen');
+		syncBrandRows();
+		closeAll(false);
+
+		document.addEventListener('change', function (event) {
+			var target = event.target;
+			if (!(target instanceof HTMLInputElement)) return;
+
+			if (target.matches('.jgm-check[data-jgm-filter="jg_filter_marke"]')) {
+				syncBrandRows();
+			}
+		});
+
+		document.addEventListener('click', function (event) {
+			var button = event.target.closest('.jgm-btn[data-jgm-panel]');
+			if (button && bar.contains(button)) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				var panelId = button.getAttribute('data-jgm-panel');
+				var expanded = button.getAttribute('aria-expanded') === 'true';
+				if (!expanded && panelId) {
+					openPanel(panelId, button);
+				} else {
+					closeAll(true);
+				}
+				return;
+			}
+
+			var closeBtn = event.target.closest('[data-jgm-close]');
+			if (closeBtn) {
+				event.preventDefault();
+				closeAll(true);
+				announce('Dialog geschlossen');
+				return;
+			}
+
+			var toggle = event.target.closest('[data-jgm-toggle][data-jgm-value]');
+			if (toggle && bar.contains(toggle)) {
+				event.preventDefault();
+
+				var toggleKey = toggle.getAttribute('data-jgm-toggle');
+				var toggleValue = toggle.getAttribute('data-jgm-value');
+				if (!toggleKey || !(toggleKey in state)) return;
+
+				if (state[toggleKey].has(toggleValue)) {
+					state[toggleKey].delete(toggleValue);
+				} else {
+					state[toggleKey].add(toggleValue);
+				}
+
+				syncToggleUI(toggleKey);
+				return;
+			}
+
+			var applyFilterBtn = event.target.closest('[data-jgm-apply-filter]');
+			if (applyFilterBtn) {
+				event.preventDefault();
+				applyFilter();
+				return;
+			}
+
+			var resetFilterBtn = event.target.closest('[data-jgm-reset-filter]');
+			if (resetFilterBtn) {
+				event.preventDefault();
+				resetFilterUi();
+				return;
+			}
+
+			var sortOption = event.target.closest('.jgm-sort-option[data-jgm-orderby]');
+			if (sortOption) {
+				event.preventDefault();
+				var orderValue = sortOption.getAttribute('data-jgm-orderby');
+				var sortUrl = new URL(window.location.href);
+				setQueryParam(sortUrl, 'orderby', orderValue || null);
+				sortUrl.searchParams.delete('paged');
+				removeLegacyWooFilterParams(sortUrl);
+				announce('Sortierung wird angewendet');
+				window.location.href = sortUrl.toString();
+				return;
+			}
+
+			var resetOrderBtn = event.target.closest('[data-jgm-reset-orderby]');
+			if (resetOrderBtn) {
+				event.preventDefault();
+				var resetUrl = new URL(window.location.href);
+				setQueryParam(resetUrl, 'orderby', null);
+				resetUrl.searchParams.delete('paged');
+				removeLegacyWooFilterParams(resetUrl);
+				announce('Sortierung zurückgesetzt');
+				window.location.href = resetUrl.toString();
+				return;
+			}
+
+			var openPanel = panels.find(function (panel) {
+				return panel.getAttribute('aria-hidden') === 'false';
+			});
+
+			if (!openPanel) return;
+
+			var clickInsidePanel = openPanel.contains(event.target);
+			var clickInsideBar = bar.contains(event.target);
+			if (!clickInsidePanel && !clickInsideBar) {
+				closeAll(true);
+				announce('Dialog geschlossen');
+			}
+		});
+
+		document.addEventListener('keydown', function (event) {
+			if (event.key !== 'Escape') return;
+
+			var hasOpenPanel = panels.some(function (panel) {
+				return panel.getAttribute('aria-hidden') === 'false';
+			});
+
+			if (!hasOpenPanel) return;
+
+			event.preventDefault();
+			closeAll(true);
+			announce('Dialog geschlossen');
+		});
+	}
+
+	function boot() {
+		if (document.readyState === 'complete') {
+			initMobileFilterbar();
+			return;
+		}
+
+		window.addEventListener('load', initMobileFilterbar, { once: true });
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', boot, { once: true });
+	} else {
+		boot();
+	}
+})();

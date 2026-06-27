@@ -135,6 +135,7 @@ function woodmart_child_styles() {
 		'woodmart-child-category-pills' => 'assets/css/category-pills.css',
 		'woodmart-child-checkout' => 'assets/css/checkout.css',
 		'woodmart-child-filterbar' => 'assets/css/filterbar.css',
+		'woodmart-child-filterbar-mobile' => 'assets/css/filterbar-mobile.css',
 		'woodmart-child-header' => 'assets/css/header.css',
 		'woodmart-child-product-gallery' => 'assets/css/product-gallery.css',
 		'woodmart-child-single-product-page' => 'assets/css/single-product-page.css',
@@ -146,6 +147,7 @@ function woodmart_child_styles() {
 		'woodmart-child-category-pills' => woodmart_child_is_shop_archive(),
 		'woodmart-child-checkout' => function_exists( 'is_checkout' ) && is_checkout(),
 		'woodmart-child-filterbar' => woodmart_child_is_shop_archive(),
+		'woodmart-child-filterbar-mobile' => woodmart_child_is_shop_archive(),
 		'woodmart-child-header' => true,
 		'woodmart-child-product-gallery' => function_exists( 'is_product' ) && is_product(),
 		'woodmart-child-single-product-page' => function_exists( 'is_product' ) && is_product(),
@@ -179,12 +181,14 @@ function woodmart_child_scripts() {
 	$scripts = array(
 		'woodmart-child-category-circle' => 'assets/js/category-circle.js',
 		'woodmart-child-filterbar' => 'assets/js/filterbar.js',
+		'woodmart-child-filterbar-mobile' => 'assets/js/filterbar-mobile.js',
 		'woodmart-child-product-gallery' => 'assets/js/product-gallery.js',
 	);
 
 	$should_load = array(
 		'woodmart-child-category-circle' => true,
 		'woodmart-child-filterbar' => woodmart_child_is_shop_archive(),
+		'woodmart-child-filterbar-mobile' => woodmart_child_is_shop_archive(),
 		'woodmart-child-product-gallery' => function_exists( 'is_product' ) && is_product(),
 	);
 
@@ -220,6 +224,7 @@ $child_modules = array(
 	'category-pills',
 	'checkout',
 	'filterbar',
+	'filterbar-mobile',
 	'single-product-layout',
 	'subcategory-circles',
 );

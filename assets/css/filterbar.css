@@ -592,6 +592,12 @@
   }
 }
 
+@media (max-width: 767.98px){
+  .jg-filterbar{
+    display: none !important;
+  }
+}
+
 /* SORTIEREN */
 .jg-panel--sort .jg-sort-list{
   display: flex;

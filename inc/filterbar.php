@@ -747,6 +747,7 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		$selected_marke    = jg_get_list_param( 'jg_filter_marke' );
 		$selected_farben   = jg_get_list_param( 'jg_filter_farben' );
 		$selected_groessen = jg_get_list_param( 'jg_filter_groessen' );
+		$selected_orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['orderby'] ) ) : '';
 
 		$sale_on = ( ! empty( $_GET['jg_sale'] ) && $_GET['jg_sale'] === '1' );
 		$new_on  = ( ! empty( $_GET['jg_new'] ) && $_GET['jg_new'] === '1' );
@@ -1269,7 +1270,13 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		</div>
 		<?php
 
-		return ob_get_clean();
+		$output = ob_get_clean();
+
+		if ( shortcode_exists( 'jg_filterbar_mobile' ) ) {
+			$output .= do_shortcode( '[jg_filterbar_mobile]' );
+		}
+
+		return $output;
 	}
 }
 add_shortcode( 'jg_filterbar', 'jg_filterbar_shortcode' );
