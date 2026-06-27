@@ -765,41 +765,6 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 			}
 		}
 
-		$typ_items     = [];
-		$typ_active_id = 0;
-		if ( is_product_category() ) {
-			$current_term = get_queried_object();
-			if ( $current_term && ! empty( $current_term->term_id ) && $current_term->taxonomy === 'product_cat' ) {
-				$current_id = (int) $current_term->term_id;
-				$ancestors  = get_ancestors( $current_id, 'product_cat' );
-				$depth_rel  = is_array( $ancestors ) ? count( $ancestors ) : 0;
-
-				if ( $depth_rel > 0 ) {
-					$level2_id = ( $depth_rel === 1 ) ? $current_id : (int) $current_term->parent;
-
-					if ( $level2_id > 0 ) {
-						$typ_items = get_terms(
-							[
-								'taxonomy'   => 'product_cat',
-								'parent'     => $level2_id,
-								'hide_empty' => true,
-								'orderby'    => 'menu_order',
-								'order'      => 'ASC',
-							]
-						);
-
-						if ( is_wp_error( $typ_items ) || count( $typ_items ) < 2 ) {
-							$typ_items = [];
-						}
-
-						if ( $depth_rel >= 2 ) {
-							$typ_active_id = $current_id;
-						}
-					}
-				}
-			}
-		}
-
 		$terms_marke        = jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] );
 		$terms_farben       = jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] );
 		$terms_groessen_int = jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] );
@@ -1130,35 +1095,27 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		ob_start();
 		?>
 		<div class="jg-filterbar" data-jg-filterbar="1" role="navigation" aria-label="Filter">
-			<span class="jg-filterbar-label jg-filterbar-label--desktop" aria-hidden="true">FILTER</span>
+			<span class="jg-filterbar-label" aria-hidden="true">FILTER</span>
 			<span class="jg-sr-only" aria-live="polite" aria-atomic="true" data-jg-filter-live-region></span>
 
-			<button class="jg-filterbtn jg-filterbtn--desktop" type="button" data-jg-panel="jg-panel-marke" aria-haspopup="dialog" aria-controls="jg-panel-marke" aria-expanded="false" aria-label="Marke Filter öffnen">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-marke" aria-haspopup="dialog" aria-controls="jg-panel-marke" aria-expanded="false" aria-label="Marke Filter öffnen">
 				<span class="jg-filtertext">MARKE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn jg-filterbtn--desktop" type="button" data-jg-panel="jg-panel-farbe" aria-haspopup="dialog" aria-controls="jg-panel-farbe" aria-expanded="false" aria-label="Farbe Filter öffnen">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-farbe" aria-haspopup="dialog" aria-controls="jg-panel-farbe" aria-expanded="false" aria-label="Farbe Filter öffnen">
 				<span class="jg-filtertext">FARBE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn jg-filterbtn--desktop" type="button" data-jg-panel="jg-panel-groesse" aria-haspopup="dialog" aria-controls="jg-panel-groesse" aria-expanded="false" aria-label="Größe Filter öffnen">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-groesse" aria-haspopup="dialog" aria-controls="jg-panel-groesse" aria-expanded="false" aria-label="Größe Filter öffnen">
 				<span class="jg-filtertext">GRÖSSE</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn jg-filterbtn--desktop" type="button" data-jg-panel="jg-panel-sort" aria-haspopup="dialog" aria-controls="jg-panel-sort" aria-expanded="false" aria-label="Sortierung öffnen">
+			<button class="jg-filterbtn" type="button" data-jg-panel="jg-panel-sort" aria-haspopup="dialog" aria-controls="jg-panel-sort" aria-expanded="false" aria-label="Sortierung öffnen">
 				<span class="jg-filtertext">SORTIEREN</span><span class="jg-count" aria-hidden="true"></span><span class="jg-chev" aria-hidden="true">▾</span>
 			</button>
 
-			<button class="jg-filterbtn jg-filterbtn--compact" type="button" data-jg-panel="jg-panel-filter-mobile" aria-haspopup="dialog" aria-controls="jg-panel-filter-mobile" aria-expanded="false" aria-label="Filter öffnen">
-				<span class="jg-filtertext">FILTER</span>
-			</button>
-
-			<button class="jg-filterbtn jg-filterbtn--compact" type="button" data-jg-panel="jg-panel-sort" aria-haspopup="dialog" aria-controls="jg-panel-sort" aria-expanded="false" aria-label="Sortierung öffnen">
-				<span class="jg-filtertext">SORTIEREN</span>
-			</button>
-
 			<?php if ( $show_sale_toggle || $show_new_toggle ) : ?>
-			<div class="jg-filter-toggles jg-filter-toggles--desktop" aria-label="Toggle Filter">
+			<div class="jg-filter-toggles" aria-label="Toggle Filter">
 				<?php if ( $show_sale_toggle ) : ?>
 				<div class="jg-filter-toggle" aria-label="Sale">
 					<span class="jg-toggle-label">SALE</span>
@@ -1180,136 +1137,6 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 				<?php endif; ?>
 			</div>
 			<?php endif; ?>
-
-			<div class="jg-panel jg-panel--wide jg-panel--mobile-filter" id="jg-panel-filter-mobile" role="dialog" aria-label="Filter" aria-modal="false" aria-hidden="true">
-				<div class="jg-panel-inner">
-					<div class="jg-mobile-panel-head">
-						<button class="jg-mobile-panel-close" type="button" data-jg-close aria-label="Schließen">✕</button>
-					</div>
-
-					<div class="jg-mobile-filter-sections">
-						<?php if ( ! empty( $typ_items ) ) : ?>
-						<div class="jg-mobile-filter-section">
-							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="true" aria-controls="jg-mobile-section-typ">
-								<span>TYP</span>
-								<span aria-hidden="true">−</span>
-							</button>
-							<div class="jg-mobile-section-content" id="jg-mobile-section-typ">
-								<div class="jg-mobile-typ-list">
-									<?php foreach ( $typ_items as $typ_term ) : ?>
-										<?php
-										$typ_link = get_term_link( $typ_term );
-										if ( is_wp_error( $typ_link ) ) {
-											continue;
-										}
-										$is_typ_active = $typ_active_id && ( (int) $typ_term->term_id === (int) $typ_active_id );
-										?>
-										<a href="<?php echo esc_url( $typ_link ); ?>" class="jg-mobile-typ-link<?php echo $is_typ_active ? ' is-active' : ''; ?>" <?php echo $is_typ_active ? 'aria-current="page"' : ''; ?>>
-											<?php echo esc_html( $typ_term->name ); ?>
-										</a>
-									<?php endforeach; ?>
-								</div>
-							</div>
-						</div>
-						<?php endif; ?>
-
-						<div class="jg-mobile-filter-section">
-							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="true" aria-controls="jg-mobile-section-farbe">
-								<span>FARBE</span>
-								<span aria-hidden="true">−</span>
-							</button>
-							<div class="jg-mobile-section-content" id="jg-mobile-section-farbe">
-								<div class="jg-color-grid">
-									<?php foreach ( $terms_farben as $t ) : ?>
-										<?php
-										$slug      = sanitize_title( $t->slug );
-										$hex       = $swatch_for_term( $t );
-										$is_active = in_array( $slug, $selected_farben, true );
-										?>
-										<button
-											type="button"
-											class="jg-color-item<?php echo $is_active ? ' is-active' : ''; ?>"
-											data-jg-toggle="jg_filter_farben"
-											data-jg-value="<?php echo esc_attr( $slug ); ?>"
-											aria-label="<?php echo esc_attr( $t->name ); ?>"
-											aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>"
-											style="--jg-swatch: <?php echo esc_attr( $hex ); ?>;"
-										>
-											<span class="jg-color-dot" aria-hidden="true"></span>
-											<span class="jg-color-name" aria-hidden="true"><?php echo esc_html( $t->name ); ?></span>
-											<span class="jg-sr-only"><?php echo esc_html( $t->name ); ?></span>
-										</button>
-									<?php endforeach; ?>
-								</div>
-							</div>
-						</div>
-
-						<div class="jg-mobile-filter-section">
-							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="true" aria-controls="jg-mobile-section-groesse">
-								<span>GRÖSSE</span>
-								<span aria-hidden="true">−</span>
-							</button>
-							<div class="jg-mobile-section-content" id="jg-mobile-section-groesse">
-								<div class="jg-size-rows">
-									<?php if ( ! empty( $terms_groessen_int ) ) : ?>
-									<div class="jg-size-row">
-										<?php foreach ( $terms_groessen_int as $t ) : ?>
-											<?php
-											$slug      = sanitize_title( $t->slug );
-											$is_active = in_array( $slug, $selected_groessen, true );
-											?>
-											<button type="button" class="jg-size-pill<?php echo $is_active ? ' is-active' : ''; ?>" data-jg-toggle="jg_filter_groessen" data-jg-value="<?php echo esc_attr( $slug ); ?>" aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
-												<?php echo esc_html( $t->name ); ?>
-											</button>
-										<?php endforeach; ?>
-									</div>
-									<?php endif; ?>
-									<?php if ( ! empty( $terms_groessen_eu ) ) : ?>
-									<div class="jg-size-row">
-										<?php foreach ( $terms_groessen_eu as $t ) : ?>
-											<?php
-											$slug      = sanitize_title( $t->slug );
-											$is_active = in_array( $slug, $selected_groessen, true );
-											?>
-											<button type="button" class="jg-size-pill<?php echo $is_active ? ' is-active' : ''; ?>" data-jg-toggle="jg_filter_groessen" data-jg-value="<?php echo esc_attr( $slug ); ?>" aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
-												<?php echo esc_html( $t->name ); ?>
-											</button>
-										<?php endforeach; ?>
-									</div>
-									<?php endif; ?>
-								</div>
-							</div>
-						</div>
-
-						<div class="jg-mobile-filter-section">
-							<button type="button" class="jg-mobile-section-toggle" data-jg-mobile-section-toggle aria-expanded="false" aria-controls="jg-mobile-section-marke">
-								<span>MARKE</span>
-								<span aria-hidden="true">+</span>
-							</button>
-							<div class="jg-mobile-section-content" id="jg-mobile-section-marke" hidden>
-								<div class="jg-brand-list">
-									<?php foreach ( $terms_marke as $t ) : ?>
-										<?php
-										$slug    = sanitize_title( $t->slug );
-										$checked = in_array( $slug, $selected_marke, true );
-										?>
-										<label class="jg-checkrow<?php echo $checked ? ' is-active' : ''; ?>">
-											<input type="checkbox" class="jg-mobile-check" data-jg-filter-marke="1" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $checked ); ?> />
-											<span class="jg-checkbox-ui" aria-hidden="true"></span>
-											<span class="jg-checklabel"><?php echo esc_html( $t->name ); ?></span>
-										</label>
-									<?php endforeach; ?>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="jg-panel-actions">
-						<button class="jg-reset" type="button" data-jg-reset-mobile="1">Auswahl zurücksetzen</button>
-						<button class="jg-apply" type="button" data-jg-apply-mobile="1">ANWENDEN</button>
-					</div>
-				</div>
-			</div>
 
 			<div class="jg-panel jg-panel--wide" id="jg-panel-marke" role="dialog" aria-labelledby="jg-panel-marke-title" aria-modal="false" aria-hidden="true">
 				<div class="jg-panel-inner">
@@ -1445,10 +1272,6 @@ if ( ! function_exists( 'jg_filterbar_shortcode' ) ) {
 		<?php
 
 		$output = ob_get_clean();
-
-		if ( shortcode_exists( 'jg_filterbar_mobile' ) ) {
-			$output .= do_shortcode( '[jg_filterbar_mobile]' );
-		}
 
 		return $output;
 	}

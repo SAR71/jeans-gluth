@@ -4,32 +4,6 @@
   var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
   if (!bar) return;
 
-  var backdropEl = null;
-
-  function ensureBackdrop() {
-    if (backdropEl) return;
-
-    backdropEl = document.createElement('div');
-    backdropEl.className = 'jg-panel-backdrop';
-    backdropEl.hidden = true;
-    backdropEl.addEventListener('click', function () {
-      closeAll(true);
-      announce('Dialog geschlossen');
-    });
-    document.body.appendChild(backdropEl);
-  }
-
-  function showBackdrop() {
-    ensureBackdrop();
-    backdropEl.hidden = false;
-    document.body.classList.add('jg-panel-lock');
-  }
-
-  function hideBackdrop() {
-    if (backdropEl) backdropEl.hidden = true;
-    document.body.classList.remove('jg-panel-lock');
-  }
-
   var buttons = Array.prototype.slice.call(
     bar.querySelectorAll('.jg-filterbtn[data-jg-panel]')
   );
@@ -122,8 +96,6 @@
       btn.setAttribute('aria-expanded', 'false');
     });
 
-    hideBackdrop();
-
     if (restoreFocus && lastOpenButton) {
       lastOpenButton.focus();
     }
@@ -136,35 +108,8 @@
     var spacing = 14;
     var viewportPad = 16;
     var btnRect = btn.getBoundingClientRect();
-    var compactMode = bar.classList.contains('jg-filterbar--compact');
-
-    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort') && window.innerWidth <= 767) {
-      viewportPad = 12;
-    }
-
     panel.style.left = '0px';
     panel.style.top = '0px';
-
-    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort')) {
-      if (window.innerWidth <= 767) {
-        var fullWidth = Math.max(320, window.innerWidth - 24);
-        panel.style.width = fullWidth + 'px';
-        panel.style.maxWidth = fullWidth + 'px';
-      } else {
-        var buttonWidth = Math.round(btnRect.width);
-        var targetWidth = buttonWidth;
-
-        if (panel.id === 'jg-panel-sort' && panelInner) {
-          targetWidth = Math.max(buttonWidth, Math.ceil(panelInner.scrollWidth + 2));
-        }
-
-        var maxPanelWidth = Math.max(320, window.innerWidth - (viewportPad * 2));
-        targetWidth = Math.min(targetWidth, maxPanelWidth);
-
-        panel.style.width = targetWidth + 'px';
-        panel.style.maxWidth = targetWidth + 'px';
-      }
-    }
 
     if (panel.id === 'jg-panel-groesse' && panelInner) {
       var styles = window.getComputedStyle(panelInner);
@@ -187,9 +132,6 @@
     var panelWidth = panelRect.width;
 
     var left = btnRect.left;
-    if (compactMode && (panel.id === 'jg-panel-filter-mobile' || panel.id === 'jg-panel-sort') && window.innerWidth <= 767) {
-      left = Math.round((window.innerWidth - panelWidth) / 2);
-    }
     var maxLeft = window.innerWidth - panelWidth - viewportPad;
 
     if (left > maxLeft) left = maxLeft;
@@ -219,14 +161,6 @@
     panel.setAttribute('aria-modal', 'true');
     btn.setAttribute('aria-expanded', 'true');
     lastOpenButton = btn;
-
-    var useBackdrop = bar.classList.contains('jg-filterbar--compact') &&
-      window.innerWidth <= 1023 &&
-      (panelId === 'jg-panel-filter-mobile' || panelId === 'jg-panel-sort');
-
-    if (useBackdrop) {
-      showBackdrop();
-    }
 
     positionPanel(panel, btn);
 
@@ -334,33 +268,6 @@
     );
   }
 
-  function getMobileMarkeChecks() {
-    return Array.prototype.slice.call(
-      document.querySelectorAll('.jg-mobile-check[data-jg-filter-marke="1"]')
-    );
-  }
-
-  function syncCompactMode() {
-    bar.classList.remove('jg-filterbar--compact');
-
-    var desktopParts = Array.prototype.slice.call(
-      bar.querySelectorAll('.jg-filterbar-label--desktop, .jg-filterbtn--desktop, .jg-filter-toggles--desktop')
-    ).filter(function (el) {
-      return window.getComputedStyle(el).display !== 'none';
-    });
-
-    if (!desktopParts.length) {
-      return;
-    }
-
-    var firstTop = desktopParts[0].offsetTop;
-    var wrapped = desktopParts.some(function (el) {
-      return Math.abs(el.offsetTop - firstTop) > 2;
-    });
-
-    bar.classList.toggle('jg-filterbar--compact', wrapped);
-  }
-
   function getMarkeCountFromCheckboxes() {
     return getMarkeChecks().filter(function (c) { return c.checked; }).length;
   }
@@ -386,29 +293,6 @@
       if (!inp) return;
       row.classList.toggle('is-active', inp.checked);
     });
-  }
-
-  function updateMobileBrandRowHighlights() {
-    document.querySelectorAll('.jg-checkrow').forEach(function (row) {
-      var inp = row.querySelector('.jg-mobile-check[data-jg-filter-marke="1"]');
-      if (!inp) return;
-      row.classList.toggle('is-active', inp.checked);
-    });
-  }
-
-  function applyMobileFilters() {
-    var url = new URL(window.location.href);
-    var farben = Array.from(state.jg_filter_farben);
-    var groessen = Array.from(state.jg_filter_groessen);
-    var marken = getMobileMarkeChecks().filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
-
-    announce('Filter werden angewendet');
-    setQueryParam(url, 'jg_filter_farben', farben.length ? farben.join(',') : null);
-    setQueryParam(url, 'jg_filter_groessen', groessen.length ? groessen.join(',') : null);
-    setQueryParam(url, 'jg_filter_marke', marken.length ? marken.join(',') : null);
-    url.searchParams.delete('paged');
-    removeLegacyWooFilterParams(url);
-    window.location.href = url.toString();
   }
 
   function updateAllCounts() {
@@ -442,15 +326,7 @@
   syncUI('jg_filter_groessen');
   refreshColorTooltipPlacement();
   updateBrandRowHighlights();
-  updateMobileBrandRowHighlights();
   updateAllCounts();
-  syncCompactMode();
-
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () {
-      syncCompactMode();
-    });
-  }
 
   closeAll(false);
 
@@ -461,11 +337,6 @@
     if (t.matches('.jg-check[data-jg-filter="jg_filter_marke"]')) {
       updateBrandRowHighlights();
       updateAllCounts();
-      return;
-    }
-
-    if (t.matches('.jg-mobile-check[data-jg-filter-marke="1"]')) {
-      updateMobileBrandRowHighlights();
       return;
     }
 
@@ -489,10 +360,6 @@
   });
 
   document.addEventListener('click', function (e) {
-    if (backdropEl && !backdropEl.hidden && backdropEl.contains(e.target)) {
-      return;
-    }
-
     var btn = e.target.closest('.jg-filterbtn[data-jg-panel]');
     if (btn && bar.contains(btn)) {
       e.preventDefault();
@@ -541,26 +408,6 @@
       return;
     }
 
-    var mobileSectionToggle = e.target.closest('[data-jg-mobile-section-toggle]');
-    if (mobileSectionToggle) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      var contentId = mobileSectionToggle.getAttribute('aria-controls');
-      if (!contentId) return;
-
-      var contentEl = document.getElementById(contentId);
-      if (!contentEl) return;
-
-      var expanded = mobileSectionToggle.getAttribute('aria-expanded') === 'true';
-      mobileSectionToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-      contentEl.hidden = expanded;
-
-      var indicator = mobileSectionToggle.querySelector('span[aria-hidden="true"]');
-      if (indicator) indicator.textContent = expanded ? '+' : '−';
-      return;
-    }
-
     var applyKeyBtn = e.target.closest('[data-jg-apply-key]');
     if (applyKeyBtn) {
       e.preventDefault();
@@ -581,14 +428,6 @@
 
       pendingCommitOnClose.jg_filter_marke = false;
       applyMarkeParam();
-      return;
-    }
-
-    var applyMobile = e.target.closest('[data-jg-apply-mobile]');
-    if (applyMobile) {
-      e.preventDefault();
-      e.stopPropagation();
-      applyMobileFilters();
       return;
     }
 
@@ -627,21 +466,6 @@
         return;
       }
 
-      return;
-    }
-
-    var resetMobile = e.target.closest('[data-jg-reset-mobile]');
-    if (resetMobile) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      state.jg_filter_farben = new Set();
-      state.jg_filter_groessen = new Set();
-      getMobileMarkeChecks().forEach(function (c) { c.checked = false; });
-      syncUI('jg_filter_farben');
-      syncUI('jg_filter_groessen');
-      updateMobileBrandRowHighlights();
-      updateAllCounts();
       return;
     }
 
@@ -728,7 +552,6 @@
     if (resizeRaf) return;
     resizeRaf = requestAnimationFrame(function () {
       resizeRaf = null;
-      syncCompactMode();
       refreshColorTooltipPlacement();
       var openBtn = getOpenButton();
       var openPanelEl = getOpenPanel();
@@ -748,10 +571,6 @@
       positionPanel(openPanelEl, openBtn);
     });
   }, { passive: true });
-
-  window.addEventListener('load', function () {
-    syncCompactMode();
-  }, { once: true });
   }
 
   function runWhenIdle() {
