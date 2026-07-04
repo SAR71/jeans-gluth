@@ -99,34 +99,69 @@ function jg_preselect_middle_instock_size_swatch() {
 	</script>
 	<?php
 }
-/* EAN / GTIN in "Zusätzliche Informationen" anzeigen */
+/* EAN + Artikelnummer in "Zusätzliche Informationen" anzeigen */
 add_filter('woocommerce_display_product_attributes', function ($attributes, $product) {
 
     $ean = '';
+    $sku = '';
 
-    // Bei Variantenprodukt: erste verfügbare Varianten-EAN nehmen
     if ($product->is_type('variable')) {
         foreach ($product->get_children() as $variation_id) {
             $variation = wc_get_product($variation_id);
-            if ($variation) {
-                $ean = $variation->get_global_unique_id();
 
-                if (!empty($ean)) {
+            if ($variation) {
+                if (empty($ean)) {
+                    $ean = $variation->get_global_unique_id();
+                }
+
+                if (empty($sku)) {
+                    $sku = $variation->get_sku();
+                }
+
+                if (!empty($ean) && !empty($sku)) {
                     break;
                 }
             }
         }
     } else {
         $ean = $product->get_global_unique_id();
+        $sku = $product->get_sku();
     }
 
-    if (!empty($ean)) {
-        $attributes['ean'] = array(
-            'label' => 'EAN',
-            'value' => esc_html($ean),
-        );
+    $new_attributes = array();
+
+    if (wp_is_mobile()) {
+
+        // Mobile:
+        // 1. Artikelnummer
+        if (!empty($sku)) {
+            $new_attributes['artikelnummer'] = array(
+                'label' => 'Artikelnummer',
+                'value' => esc_html($sku),
+            );
+        }
+
+        // 2. EAN
+        if (!empty($ean)) {
+            $new_attributes['ean'] = array(
+                'label' => 'EAN',
+                'value' => esc_html($ean),
+            );
+        }
+
+    } else {
+
+        // Desktop:
+        // 1. EAN
+        if (!empty($ean)) {
+            $new_attributes['ean'] = array(
+                'label' => 'EAN',
+                'value' => esc_html($ean),
+            );
+        }
+
     }
 
-    return $attributes;
+    return $new_attributes + $attributes;
 
 }, 20, 2);
