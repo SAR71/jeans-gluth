@@ -20,9 +20,3 @@
 .wd-sizeguide-title {
     display: none !important;
 }
-/************** Ausgewählten Wert hinter "Größen:" auf Mobilgeräten ausblenden ************/
-@media (max-width: 767px) {
-    .single-product .wd-attr-selected {
-        display: none !important;
-    }
-}
