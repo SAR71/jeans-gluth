@@ -20,14 +20,14 @@
 .wd-sizeguide-title {
     display: none !important;
 }
-/* Ausgewählten Wert hinter "Größen:" auf Mobilgeräten ausblenden */
+/******* Ausgewählten Wert hinter "Größen:" auf Mobilgeräten ausblenden */
 @media (max-width: 767px) {
     .single-product .wd-attr-selected {
         display: none !important;
     }
 }
 
-/* Social-Share auf Mobilgeräten: Überschrift und Icons trennen */
+/********* Social-Share auf Mobilgeräten: Überschrift und Icons trennen */
 @media (max-width: 767px) {
 
     .single-product .wd-social-icons {
@@ -43,4 +43,8 @@
         margin-bottom: 8px;
     }
 
+}
+/*********** Zurücksetzen-Link bei Varianten optisch ausblenden */
+.single-product .reset_variations {
+    display: none !important;
 }
