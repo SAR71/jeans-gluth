@@ -99,6 +99,17 @@ function jg_preselect_middle_instock_size_swatch() {
 	</script>
 	<?php
 }
+
+
+/************** Ausgewählten Wert hinter "Größen:" auf Mobilgeräten ausblenden ************/
+@media (max-width: 767px) {
+    .single-product .wd-attr-selected {
+        display: none !important;
+    }
+}
+
+
+
 /* EAN + Artikelnummer in "Zusätzliche Informationen" anzeigen */
 add_filter('woocommerce_display_product_attributes', function ($attributes, $product) {
 
