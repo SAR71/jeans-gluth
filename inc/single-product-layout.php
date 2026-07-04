@@ -99,3 +99,20 @@ function jg_preselect_middle_instock_size_swatch() {
 	</script>
 	<?php
 }
+/**
+ * EAN in "Zusätzliche Informationen" anzeigen
+ */
+add_filter('woocommerce_display_product_attributes', function ($attributes, $product) {
+
+    $ean = $product->get_meta('_variable_global_unique_id');
+
+    if (!empty($ean)) {
+        $attributes['ean'] = array(
+            'label' => 'EAN',
+            'value' => $ean,
+        );
+    }
+
+    return $attributes;
+
+}, 20, 2);
