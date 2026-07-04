@@ -99,9 +99,3 @@ header .wd-header-text.jg-top-banner:focus-within::before{
     min-height: auto;
   }
 }
-/* Marquee auf Mobilgeräten ausblenden */
-@media (max-width: 767.98px) {
-  header .wd-header-text.jg-top-banner {
-    display: none !important;
-  }
-}
