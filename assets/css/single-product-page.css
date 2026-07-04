@@ -26,3 +26,21 @@
         display: none !important;
     }
 }
+
+/* Social-Share auf Mobilgeräten: Überschrift und Icons trennen */
+@media (max-width: 767px) {
+
+    .single-product .wd-social-icons {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    /* Überschrift über die gesamte Breite */
+    .single-product .wd-social-icons .wd-label {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 8px;
+    }
+
+}
