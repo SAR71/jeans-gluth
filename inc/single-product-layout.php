@@ -99,17 +99,31 @@ function jg_preselect_middle_instock_size_swatch() {
 	</script>
 	<?php
 }
-/**
- * EAN in "Zusätzliche Informationen" anzeigen
- */
+/* EAN / GTIN in "Zusätzliche Informationen" anzeigen */
 add_filter('woocommerce_display_product_attributes', function ($attributes, $product) {
 
-    $ean = $product->get_meta('_variable_global_unique_id');
+    $ean = '';
+
+    // Bei Variantenprodukt: erste verfügbare Varianten-EAN nehmen
+    if ($product->is_type('variable')) {
+        foreach ($product->get_children() as $variation_id) {
+            $variation = wc_get_product($variation_id);
+            if ($variation) {
+                $ean = $variation->get_global_unique_id();
+
+                if (!empty($ean)) {
+                    break;
+                }
+            }
+        }
+    } else {
+        $ean = $product->get_global_unique_id();
+    }
 
     if (!empty($ean)) {
         $attributes['ean'] = array(
             'label' => 'EAN',
-            'value' => $ean,
+            'value' => esc_html($ean),
         );
     }
 
