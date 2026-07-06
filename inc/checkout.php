@@ -108,3 +108,34 @@ add_action('woocommerce_cart_calculate_fees', function ($cart) {
     }
 
 }, 20);
+
+/******* VORRÜBERGEHENDER BLOCK */
+add_action('woocommerce_before_checkout_form', function () {
+
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    echo '<pre>';
+
+    echo "Gewählte Versandmethoden:\n";
+    print_r(WC()->session->get('chosen_shipping_methods'));
+
+    echo "\n\nVerfügbare Versandraten:\n";
+
+    $packages = WC()->shipping()->get_packages();
+
+    foreach ($packages as $package) {
+        if (!empty($package['rates'])) {
+            foreach ($package['rates'] as $rate_id => $rate) {
+                echo "Rate-ID: " . $rate_id . PHP_EOL;
+                echo "Label : " . $rate->get_label() . PHP_EOL;
+                echo "Methode: " . $rate->get_method_id() . PHP_EOL;
+                echo "------------------------" . PHP_EOL;
+            }
+        }
+    }
+
+    echo '</pre>';
+
+}, 1);
