@@ -120,3 +120,18 @@ add_action('woocommerce_cart_calculate_fees', function ($cart) {
     );
 
 }, 20);
+
+
+/* Checkout: Versandlabel nur in der Bestellübersicht anpassen */
+add_filter('woocommerce_cart_shipping_method_full_label', function ($label, $method) {
+
+    if (
+        isset($method->id) &&
+        strpos($method->id, 'pickup_location') !== false
+    ) {
+        return 'vor Ort abholen (@ Jeans Gluth Helmbrechts)'; /* default Versandlabel so lang */
+    }
+
+    return $label;
+
+}, 20, 2);
