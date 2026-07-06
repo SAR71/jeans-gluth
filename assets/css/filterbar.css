@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: var(--jg-gap);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-start;
 
   overflow: visible !important;
@@ -677,4 +677,8 @@
     transition: none !important;
     animation: none !important;
   }
+}
+/* Filterbar ausblenden, sobald sie umbrechen würde */
+.jg-filterbar.jg-filterbar-is-wrapped{
+  display: none !important;
 }
