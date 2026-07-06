@@ -114,23 +114,6 @@
       panel.style.left = '0px';
       panel.style.top = '0px';
 
-      if (panel.id === 'jg-panel-groesse' && panelInner) {
-        var styles = window.getComputedStyle(panelInner);
-        var padLeft = parseFloat(styles.paddingLeft) || 0;
-        var padRight = parseFloat(styles.paddingRight) || 0;
-        var maxRowWidth = 0;
-
-        panel.querySelectorAll('.jg-size-row').forEach(function (row) {
-          maxRowWidth = Math.max(maxRowWidth, row.scrollWidth);
-        });
-
-        if (maxRowWidth > 0) {
-          var desiredWidth = Math.ceil(maxRowWidth + padLeft + padRight + 2);
-          var maxWidth = Math.max(320, window.innerWidth - (viewportPad * 2));
-          panel.style.width = Math.min(desiredWidth, maxWidth) + 'px';
-        }
-      }
-
       var panelRect = panel.getBoundingClientRect();
       var panelWidth = panelRect.width;
 

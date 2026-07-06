@@ -234,7 +234,7 @@
 }
 
 #jg-panel-groesse{
-  width: auto;
+  width: 560px !important;
   max-width: calc(100vw - 40px);
 }
 
