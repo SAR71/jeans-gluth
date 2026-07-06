@@ -344,13 +344,17 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
   appearance: none !important;
   border: 0 !important;
   padding: 0 !important;
+  margin: 0 !important;
 
   position: absolute !important;
-  top: 50% !important;
-  transform: translateY(calc(-50% - 14px)) !important;
+  top: calc((var(--jg-subcat-thumb-size) / 2) + 8px) !important;
+  transform: translateY(-50%) !important;
 
   width: calc(var(--jg-subcat-thumb-size) * 0.55) !important;
   height: calc(var(--jg-subcat-thumb-size) * 0.55) !important;
+  aspect-ratio: 1 / 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
 
   display: none !important;
   align-items: center !important;
@@ -362,17 +366,10 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 
   cursor: pointer !important;
   z-index: 999 !important;
-
-  transition: background .25s, box-shadow .25s;
 }
 
 .jg-subcat-carousel--overflow .jg-subcat-nav{
   display: inline-flex !important;
-}
-
-.jg-subcat-nav:hover{
-  background: #ffffff !important;
-  box-shadow: 0 6px 20px rgba(0,0,0,.22) !important;
 }
 
 .jg-subcat-nav.jg-prev{
@@ -385,13 +382,10 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 
 .jg-subcat-nav::before{
   content: "" !important;
-
-  width: calc(var(--jg-subcat-thumb-size) * 0.14) !important;
-  height: calc(var(--jg-subcat-thumb-size) * 0.14) !important;
-
+  width: calc(var(--jg-subcat-thumb-size) * 0.13) !important;
+  height: calc(var(--jg-subcat-thumb-size) * 0.13) !important;
   border-top: 2px solid #001b44 !important;
   border-left: 2px solid #001b44 !important;
-
   display: block !important;
 }
 
@@ -407,9 +401,4 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 
 .jg-subcat-nav[hidden]{
   display: none !important;
-}
-
-.jg-subcat-nav:focus-visible{
-  outline: 3px solid #111111 !important;
-  outline-offset: 3px !important;
 }
