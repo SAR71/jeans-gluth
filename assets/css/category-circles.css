@@ -29,7 +29,7 @@
    ============================= */
 .jg-subcat-circles{
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 5px; 		/* <----- Abstand zwischen den Kreisen */
   flex: 1 1 auto;
   min-width: 0;
@@ -39,6 +39,13 @@
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto;      /* wichtig: kein Smooth-Jump beim Seitenwechsel */
   padding: 8px 0;             /* Platz für Hover-Skalierung */
+}
+
+/* Handy: Kreise links ausrichten */
+@media (max-width: 576px){
+  .jg-subcat-circles{
+    justify-content: flex-start;
+  }
 }
 
 /* Scrollbars ausblenden */
