@@ -107,7 +107,7 @@ add_action('woocommerce_cart_calculate_fees', function ($cart) {
         return;
     }
 
-    $discount = $cart->get_subtotal() * 0.10;   /*** -----> 10% Rabatt */
+    $discount = ($cart->get_subtotal() + $cart->get_subtotal_tax()) * 0.10;   /*** -----> 10% Rabatt */
 
     if ($discount <= 0) {
         return;
