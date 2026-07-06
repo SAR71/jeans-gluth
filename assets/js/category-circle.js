@@ -54,21 +54,6 @@
     nav.next.hidden = atEnd;
   }
 
-  function syncChevronCenterLine() {
-    const scroller = getScroller();
-    const carousel = getCarousel();
-    if (!scroller || !carousel) return;
-
-    const firstThumb = scroller.querySelector('.jg-subcat-thumb');
-    if (!firstThumb) return;
-
-    const thumbRect = firstThumb.getBoundingClientRect();
-    const carouselRect = carousel.getBoundingClientRect();
-    const centerY = thumbRect.top + (thumbRect.height / 2) - carouselRect.top;
-
-    carousel.style.setProperty('--jg-subcat-chevron-center-y', Math.round(centerY) + 'px');
-  }
-
   function clearClicked() {
     document.querySelectorAll('.jg-subcat-item.is-clicked')
       .forEach(el => el.classList.remove('is-clicked'));
@@ -229,11 +214,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindClicks();
     restoreScroller();
-    syncChevronCenterLine();
+
     syncOverflowAlignment();
 
     window.addEventListener('resize', () => {
-      syncChevronCenterLine();
       syncOverflowAlignment();
     }, { passive: true });
   });
@@ -241,7 +225,6 @@
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
     restoreScroller();
-    syncChevronCenterLine();
     syncOverflowAlignment();
   });
 })();
