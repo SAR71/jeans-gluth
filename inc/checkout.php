@@ -74,8 +74,7 @@ add_action('wp_footer', function () {
 }, 100);
 
 /****/
-/********** 10 % Rabatt bei Abholung vor Ort ********/
-
+/********** 10 % Rabatt bei Abholung vor Ort / Versand-ID: pickup_location */
 add_action('woocommerce_cart_calculate_fees', function ($cart) {
 
     if (is_admin() && !defined('DOING_AJAX')) {
@@ -92,50 +91,32 @@ add_action('woocommerce_cart_calculate_fees', function ($cart) {
         return;
     }
 
+    $is_pickup = false;
+
     foreach ($chosen_methods as $method) {
-        if (strpos($method, 'local_pickup') !== false) {
-
-            $discount = $cart->get_subtotal() * 0.10; /* ----> 10% Rabatt */
-
-            $cart->add_fee(
-                '10% Rabatt bei Abholung vor Ort',
-                -$discount,
-                false
-            );
-
+        if (
+            strpos($method, 'local_pickup') !== false ||
+            strpos($method, 'pickup_location') !== false
+        ) {
+            $is_pickup = true;
             break;
         }
     }
 
-}, 20);
-
-/**** VORRÜBERGEHEND */
-add_action('woocommerce_before_checkout_form', function () {
-
-    if (!current_user_can('manage_options')) {
+    if (!$is_pickup) {
         return;
     }
 
-    echo '<pre>';
+    $discount = $cart->get_subtotal() * 0.10;   /*** -----> 10% Rabatt */
 
-    echo "Gewählte Versandmethoden:\n";
-    print_r(WC()->session->get('chosen_shipping_methods'));
-
-    echo "\n\nVerfügbare Versandraten:\n";
-
-    $packages = WC()->shipping()->get_packages();
-
-    foreach ($packages as $package) {
-        if (!empty($package['rates'])) {
-            foreach ($package['rates'] as $rate_id => $rate) {
-                echo "Rate-ID: " . $rate_id . PHP_EOL;
-                echo "Label : " . $rate->get_label() . PHP_EOL;
-                echo "Methode: " . $rate->get_method_id() . PHP_EOL;
-                echo "------------------------" . PHP_EOL;
-            }
-        }
+    if ($discount <= 0) {
+        return;
     }
 
-    echo '</pre>';
+    $cart->add_fee(
+        '10% Rabatt bei Abholung vor Ort',
+        -$discount,
+        false
+    );
 
-}, 1);
+}, 20);
