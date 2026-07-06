@@ -328,118 +328,64 @@
 /* =================================================
    Chevrons bei Overflow
    ================================================= */
+.jg-subcat-carousel{
+  position: relative !important;
+}
 
 .jg-subcat-nav{
-    all: unset;
-    appearance: none;
+  all: unset !important;
+  appearance: none !important;
 
-    position: absolute;
-    top: calc((var(--jg-subcat-thumb-size) / 2) + 8px);
-    transform: translateY(-50%);
+  position: absolute !important;
+  top: calc((var(--jg-subcat-thumb-size) / 2) + 8px) !important;
+  transform: translateY(-50%) !important;
 
-    width: 54px;
-    height: 54px;
+  width: 54px !important;
+  height: 54px !important;
 
-    display: none;
-    align-items: center;
-    justify-content: center;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
 
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18) !important;
 
-    cursor: pointer;
-    z-index: 50;
-
-    transition:
-        background .25s,
-        box-shadow .25s;
+  cursor: pointer !important;
+  z-index: 999 !important;
 }
 
 .jg-subcat-carousel--overflow .jg-subcat-nav{
-    display: inline-flex;
-}
-
-.jg-subcat-nav:hover{
-    background: #ffffff;
-    box-shadow: 0 6px 20px rgba(0,0,0,.22);
+  display: inline-flex !important;
 }
 
 .jg-subcat-nav.jg-prev{
-    left: 18px;
+  left: 18px !important;
 }
 
 .jg-subcat-nav.jg-next{
-    right: 18px;
+  right: 18px !important;
 }
 
 .jg-subcat-nav::before{
-    content: "";
-    width: 12px;
-    height: 12px;
-    border-top: 2px solid #001b44;
-    border-left: 2px solid #001b44;
-    display: block;
+  content: "" !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-top: 2px solid #001b44 !important;
+  border-left: 2px solid #001b44 !important;
+  display: block !important;
 }
 
 .jg-subcat-nav.jg-prev::before{
-    transform: rotate(-45deg);
-    margin-left: 4px;
+  transform: rotate(-45deg) !important;
+  margin-left: 4px !important;
 }
 
 .jg-subcat-nav.jg-next::before{
-    transform: rotate(135deg);
-    margin-right: 4px;
+  transform: rotate(135deg) !important;
+  margin-right: 4px !important;
 }
 
 .jg-subcat-nav[hidden]{
-    display: none !important;
-}
-
-.jg-subcat-nav:focus-visible{
-    outline: 3px solid #111111;
-    outline-offset: 3px;
-}
-
-/* Tablet */
-
-@media (max-width:1023px){
-
-    .jg-subcat-nav{
-        width: 46px;
-        height: 46px;
-    }
-
-    .jg-subcat-nav.jg-prev{
-        left: 10px;
-    }
-
-    .jg-subcat-nav.jg-next{
-        right: 10px;
-    }
-
-}
-
-/* Handy */
-
-@media (max-width:576px){
-
-    .jg-subcat-nav{
-        width: 38px;
-        height: 38px;
-    }
-
-    .jg-subcat-nav::before{
-        width: 10px;
-        height: 10px;
-    }
-
-    .jg-subcat-nav.jg-prev{
-        left: 6px;
-    }
-
-    .jg-subcat-nav.jg-next{
-        right: 6px;
-    }
-
+  display: none !important;
 }
