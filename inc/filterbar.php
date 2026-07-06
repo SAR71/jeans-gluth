@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-21 00:00:01
+// LastChanged: 2026-07-06 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -151,107 +151,108 @@ if ( ! function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
 	}
 }
 
-if ( ! function_exists( 'jg_groessen_filter_size_maps' ) ) {
-	function jg_groessen_filter_size_maps() {
-		static $maps = null;
+if ( ! function_exists( 'jg_groessen_filter_size_groups' ) ) {
+	function jg_groessen_filter_size_groups( $gender ) {
+		$gender = sanitize_title( (string) $gender );
 
-		if ( $maps !== null ) {
-			return $maps;
+		$groups = [
+			'damen' => [
+				[ '28', '24' ],
+				[ '30', '25' ],
+				[ '32', 'xxs', '26' ],
+				[ '34', 'xs', '24' ],
+				[ '36', 's', '28' ],
+				[ '38', 'm', '29' ],
+				[ '40', 'l', '30', '31' ],
+				[ '42', 'xl', '32', '33' ],
+				[ '44', 'xxl', '34' ],
+				[ '46', '3xl', '36' ],
+			],
+			'herren' => [
+				[ '42', 'xxs', '28' ],
+				[ '44', 'xs', '29' ],
+				[ '46', 's', '30' ],
+				[ '48', 'm', '32' ],
+				[ '50', 'l', '34' ],
+				[ '52', 'xl', '36' ],
+				[ '54', 'xxl', '38' ],
+				[ '56', '3xl', '40' ],
+				[ '58', '4xl', '42' ],
+				[ '60', '5xl', '44' ],
+			],
+		];
+
+		return $groups[ $gender ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'jg_groessen_filter_display_size_keys' ) ) {
+	function jg_groessen_filter_display_size_keys() {
+		$rows = jg_groessen_filter_allowed_rows();
+		return array_fill_keys( array_merge( array_keys( $rows['int'] ), array_keys( $rows['eu'] ) ), true );
+	}
+}
+
+if ( ! function_exists( 'jg_groessen_filter_normalize_sizes' ) ) {
+	function jg_groessen_filter_normalize_sizes( $value ) {
+		$value = trim( wp_strip_all_tags( html_entity_decode( (string) $value ) ) );
+
+		if ( $value === '' ) {
+			return [];
 		}
 
-		$damen_groups = [
-			[ '28', '24' ],
-			[ '30', '25' ],
-			[ '32', 'xxs', '26' ],
-			[ '34', 'xs', '24' ],
-			[ '36', 's', '28' ],
-			[ '38', 'm', '29' ],
-			[ '40', 'l', '30', '31' ],
-			[ '42', 'xl', '32', '33' ],
-			[ '44', 'xxl', '34' ],
-			[ '46', '3xl', '36' ],
-		];
+		$slug = sanitize_title( $value );
 
-		$herren_groups = [
-			[ '42', 'xxs', '28' ],
-			[ '44', 'xs', '29' ],
-			[ '46', 's', '30' ],
-			[ '48', 'm', '32' ],
-			[ '50', 'l', '34' ],
-			[ '52', 'xl', '36' ],
-			[ '54', 'xxl', '38' ],
-			[ '56', '3xl', '40' ],
-			[ '58', '4xl', '42' ],
-			[ '60', '5xl', '44' ],
-		];
+		// Spezialfälle aus Kombi-Größen: L-28, XS-L00, M-L30 -> nur INT-Größe.
+		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)-/i', $slug, $m ) ) {
+			return [ strtolower( $m[1] ) ];
+		}
 
-		$build = static function( $groups ) {
-			$out = [];
-			foreach ( $groups as $group ) {
-				$group = array_values( array_unique( array_filter( array_map( 'sanitize_title', $group ) ) ) );
-				foreach ( $group as $size ) {
-					if ( ! isset( $out[ $size ] ) ) {
-						$out[ $size ] = [];
-					}
-					$out[ $size ] = array_values( array_unique( array_merge( $out[ $size ], $group ) ) );
-				}
+		// Normale INT-Größen.
+		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)$/i', $slug, $m ) ) {
+			return [ strtolower( $m[1] ) ];
+		}
+
+		// Größen wie 30/31 oder 32-33 werden als zwei mögliche Größen gelesen.
+		if ( preg_match( '/^(24|25|26|28|29|30|31|32|33|34|36|38|40|42|44|46|48|50|52|54|56|58|60)(?:-(24|25|26|28|29|30|31|32|33|34|36|38|40|42|44|46|48|50|52|54|56|58|60))?$/', $slug, $m ) ) {
+			$out = [ $m[1] ];
+			if ( ! empty( $m[2] ) ) {
+				$out[] = $m[2];
 			}
-			return $out;
-		};
+			return array_values( array_unique( $out ) );
+		}
 
-		$maps = [
-			'damen'  => $build( $damen_groups ),
-			'herren' => $build( $herren_groups ),
-		];
-
-		return $maps;
+		return [];
 	}
 }
 
 if ( ! function_exists( 'jg_groessen_filter_normalize_size' ) ) {
 	function jg_groessen_filter_normalize_size( $value ) {
-		$value = trim( wp_strip_all_tags( html_entity_decode( (string) $value ) ) );
-
-		if ( $value === '' ) {
-			return '';
-		}
-
-		$slug = sanitize_title( $value );
-
-		// Kombigrößen wie L-28, XS-L00, M-L30: relevant ist für den Filter der erste Teil.
-		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)-/i', $slug, $m ) ) {
-			return strtolower( $m[1] );
-		}
-
-		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)$/i', $slug, $m ) ) {
-			return strtolower( $m[1] );
-		}
-
-		// EU- und Inch-Größen. Angezeigt werden später nur die definierten Filtergrößen.
-		if ( preg_match( '/^(24|25|26|28|29|30|31|32|33|34|36|38|40|42|44|46|48|50|52|54|56|58|60)$/', $slug, $m ) ) {
-			return $m[1];
-		}
-
-		return '';
+		$sizes = jg_groessen_filter_normalize_sizes( $value );
+		return $sizes[0] ?? '';
 	}
 }
 
-if ( ! function_exists( 'jg_groessen_filter_product_gender' ) ) {
-	function jg_groessen_filter_product_gender( $product_id ) {
+if ( ! function_exists( 'jg_groessen_filter_product_genders' ) ) {
+	function jg_groessen_filter_product_genders( $product_id ) {
 		$product_id = absint( $product_id );
+
 		if ( ! $product_id ) {
-			return '';
+			return [];
 		}
 
-		static $gender_cache = [];
-		if ( array_key_exists( $product_id, $gender_cache ) ) {
-			return $gender_cache[ $product_id ];
+		static $cache = [];
+
+		if ( array_key_exists( $product_id, $cache ) ) {
+			return $cache[ $product_id ];
 		}
 
 		$terms = get_the_terms( $product_id, 'product_cat' );
+		$out   = [];
+
 		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			$gender_cache[ $product_id ] = '';
-			return '';
+			$cache[ $product_id ] = [];
+			return [];
 		}
 
 		foreach ( $terms as $term ) {
@@ -262,6 +263,7 @@ if ( ! function_exists( 'jg_groessen_filter_product_gender' ) ) {
 
 			foreach ( $check_ids as $check_id ) {
 				$check_term = get_term( $check_id, 'product_cat' );
+
 				if ( ! $check_term || is_wp_error( $check_term ) ) {
 					continue;
 				}
@@ -270,33 +272,58 @@ if ( ! function_exists( 'jg_groessen_filter_product_gender' ) ) {
 				$name = sanitize_title( $check_term->name );
 
 				if ( in_array( $slug, [ 'damen', 'frauen' ], true ) || in_array( $name, [ 'damen', 'frauen' ], true ) ) {
-					$gender_cache[ $product_id ] = 'damen';
-					return 'damen';
+					$out['damen'] = true;
 				}
 
 				if ( in_array( $slug, [ 'herren', 'maenner', 'manner' ], true ) || in_array( $name, [ 'herren', 'maenner', 'manner' ], true ) ) {
-					$gender_cache[ $product_id ] = 'herren';
-					return 'herren';
+					$out['herren'] = true;
 				}
 			}
 		}
 
-		$gender_cache[ $product_id ] = '';
-		return '';
+		$cache[ $product_id ] = array_keys( $out );
+		return $cache[ $product_id ];
 	}
 }
 
-if ( ! function_exists( 'jg_groessen_filter_expand_sizes_for_gender' ) ) {
-	function jg_groessen_filter_expand_sizes_for_gender( $sizes, $gender ) {
-		$sizes = array_values( array_filter( array_map( 'sanitize_title', (array) $sizes ) ) );
+if ( ! function_exists( 'jg_groessen_filter_equivalent_map_for_genders' ) ) {
+	function jg_groessen_filter_equivalent_map_for_genders( $genders ) {
+		$genders = array_values( array_filter( array_map( 'sanitize_title', (array) $genders ) ) );
+		$cache_key = implode( '|', $genders );
+		static $cache = [];
 
-		if ( empty( $sizes ) || ! in_array( $gender, [ 'damen', 'herren' ], true ) ) {
-			return $sizes;
+		if ( array_key_exists( $cache_key, $cache ) ) {
+			return $cache[ $cache_key ];
 		}
 
-		$maps = jg_groessen_filter_size_maps();
-		$map  = $maps[ $gender ];
-		$out  = $sizes;
+		$map = [];
+
+		foreach ( $genders as $gender ) {
+			foreach ( jg_groessen_filter_size_groups( $gender ) as $group ) {
+				$group = array_values( array_unique( array_filter( array_map( 'sanitize_title', $group ) ) ) );
+
+				foreach ( $group as $size ) {
+					if ( ! isset( $map[ $size ] ) ) {
+						$map[ $size ] = [];
+					}
+
+					$map[ $size ] = array_values( array_unique( array_merge( $map[ $size ], $group ) ) );
+				}
+			}
+		}
+
+		$cache[ $cache_key ] = $map;
+		return $map;
+	}
+}
+
+if ( ! function_exists( 'jg_groessen_filter_expand_sizes' ) ) {
+	function jg_groessen_filter_expand_sizes( $sizes, $product_id ) {
+		$sizes = array_values( array_filter( array_map( 'sanitize_title', (array) $sizes ) ) );
+		$out   = $sizes;
+
+		$genders = jg_groessen_filter_product_genders( $product_id );
+		$map     = jg_groessen_filter_equivalent_map_for_genders( $genders );
 
 		foreach ( $sizes as $size ) {
 			if ( isset( $map[ $size ] ) ) {
@@ -308,6 +335,34 @@ if ( ! function_exists( 'jg_groessen_filter_expand_sizes_for_gender' ) ) {
 	}
 }
 
+if ( ! function_exists( 'jg_groessen_filter_collect_sizes_from_product_object' ) ) {
+	function jg_groessen_filter_collect_sizes_from_product_object( $product ) {
+		if ( ! $product ) {
+			return [];
+		}
+
+		$sizes = [];
+
+		$attribute_value = $product->get_attribute( 'pa_groessen' );
+		if ( $attribute_value ) {
+			$parts = array_map( 'trim', explode( ',', $attribute_value ) );
+			foreach ( $parts as $part ) {
+				$sizes = array_merge( $sizes, jg_groessen_filter_normalize_sizes( $part ) );
+			}
+		}
+
+		$terms = wc_get_product_terms( $product->get_id(), 'pa_groessen', [ 'fields' => 'all' ] );
+		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+			foreach ( $terms as $term ) {
+				$sizes = array_merge( $sizes, jg_groessen_filter_normalize_sizes( $term->name ) );
+				$sizes = array_merge( $sizes, jg_groessen_filter_normalize_sizes( $term->slug ) );
+			}
+		}
+
+		return array_values( array_unique( array_filter( $sizes ) ) );
+	}
+}
+
 if ( ! function_exists( 'jg_groessen_filter_get_product_sizes' ) ) {
 	function jg_groessen_filter_get_product_sizes( $product ) {
 		if ( ! $product ) {
@@ -316,78 +371,72 @@ if ( ! function_exists( 'jg_groessen_filter_get_product_sizes' ) ) {
 
 		$product_id = (int) $product->get_id();
 		$parent_id  = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : $product_id;
-		$cache_key  = $product_id . '|' . $parent_id;
+		$cache_key  = $parent_id . '|actual';
+		static $cache = [];
 
-		static $size_cache = [];
-		if ( array_key_exists( $cache_key, $size_cache ) ) {
-			return $size_cache[ $cache_key ];
+		if ( array_key_exists( $cache_key, $cache ) ) {
+			return $cache[ $cache_key ];
 		}
 
 		$sizes = [];
 
-		$collect_from_product = static function( $p ) use ( &$sizes ) {
-			if ( ! $p ) {
-				return;
-			}
-
-			$attribute_value = $p->get_attribute( 'pa_groessen' );
-			if ( $attribute_value ) {
-				$parts = array_map( 'trim', explode( ',', $attribute_value ) );
-				foreach ( $parts as $part ) {
-					$normalized = jg_groessen_filter_normalize_size( $part );
-					if ( $normalized ) {
-						$sizes[] = $normalized;
-					}
-				}
-			}
-
-			$terms = wc_get_product_terms( $p->get_id(), 'pa_groessen', [ 'fields' => 'all' ] );
-			if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-				foreach ( $terms as $term ) {
-					$normalized_name = jg_groessen_filter_normalize_size( $term->name );
-					$normalized_slug = jg_groessen_filter_normalize_size( $term->slug );
-
-					if ( $normalized_name ) {
-						$sizes[] = $normalized_name;
-					} elseif ( $normalized_slug ) {
-						$sizes[] = $normalized_slug;
-					}
-				}
-			}
-		};
-
 		if ( $product->is_type( 'simple' ) ) {
-			if ( ! $product->is_in_stock() ) {
-				$size_cache[ $cache_key ] = [];
-				return [];
+			if ( $product->is_in_stock() ) {
+				$sizes = jg_groessen_filter_collect_sizes_from_product_object( $product );
 			}
-
-			$collect_from_product( $product );
-		}
-
-		if ( $product->is_type( 'variable' ) ) {
+		} elseif ( $product->is_type( 'variable' ) ) {
 			foreach ( $product->get_children() as $child_id ) {
 				$variation = jg_wc_get_product_cached( $child_id );
 
-				if ( ! $variation || ! $variation->exists() ) {
+				if ( ! $variation || ! $variation->exists() || ! $variation->variation_is_visible() || ! $variation->is_in_stock() ) {
 					continue;
 				}
 
-				if ( ! $variation->variation_is_visible() || ! $variation->is_in_stock() ) {
-					continue;
-				}
-
-				$collect_from_product( $variation );
+				$sizes = array_merge( $sizes, jg_groessen_filter_collect_sizes_from_product_object( $variation ) );
 			}
 
 			// Fallback, falls pa_groessen nur am Hauptprodukt gepflegt ist.
-			if ( empty( $sizes ) ) {
-				$collect_from_product( $product );
+			if ( empty( $sizes ) && $product->is_in_stock() ) {
+				$sizes = jg_groessen_filter_collect_sizes_from_product_object( $product );
+			}
+		} elseif ( $product->is_in_stock() ) {
+			$sizes = jg_groessen_filter_collect_sizes_from_product_object( $product );
+		}
+
+		$cache[ $cache_key ] = array_values( array_unique( array_filter( $sizes ) ) );
+		return $cache[ $cache_key ];
+	}
+}
+
+if ( ! function_exists( 'jg_groessen_filter_get_product_display_sizes' ) ) {
+	function jg_groessen_filter_get_product_display_sizes( $product ) {
+		if ( ! $product ) {
+			return [];
+		}
+
+		$product_id = (int) $product->get_id();
+		$parent_id  = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : $product_id;
+		$cache_key  = $parent_id . '|display';
+		static $cache = [];
+
+		if ( array_key_exists( $cache_key, $cache ) ) {
+			return $cache[ $cache_key ];
+		}
+
+		$actual       = jg_groessen_filter_get_product_sizes( $product );
+		$display_keys = jg_groessen_filter_display_size_keys();
+		$out          = [];
+
+		foreach ( $actual as $size ) {
+			foreach ( jg_groessen_filter_expand_sizes( [ $size ], $parent_id ) as $expanded ) {
+				if ( isset( $display_keys[ $expanded ] ) ) {
+					$out[] = $expanded;
+				}
 			}
 		}
 
-		$size_cache[ $cache_key ] = array_values( array_unique( array_filter( $sizes ) ) );
-		return $size_cache[ $cache_key ];
+		$cache[ $cache_key ] = array_values( array_unique( array_filter( $out ) ) );
+		return $cache[ $cache_key ];
 	}
 }
 
@@ -399,9 +448,8 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 
 		$product_id = (int) $product->get_id();
 		$parent_id  = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : $product_id;
-		$gender     = jg_groessen_filter_product_gender( $parent_id );
 
-		$selected_sizes = jg_groessen_filter_expand_sizes_for_gender( $selected_sizes, $gender );
+		$selected_sizes = jg_groessen_filter_expand_sizes( $selected_sizes, $parent_id );
 		$product_sizes  = jg_groessen_filter_get_product_sizes( $product );
 
 		return ! empty( array_intersect( $selected_sizes, $product_sizes ) );
@@ -412,7 +460,6 @@ if ( ! function_exists( 'jg_get_available_groessen_filter_rows' ) ) {
 	function jg_get_available_groessen_filter_rows( $exclude_filter_keys = [] ) {
 		$product_ids = jg_get_filtered_product_ids_for_context( $exclude_filter_keys );
 		$available   = [];
-		$allowed     = jg_groessen_filter_allowed_rows();
 
 		foreach ( $product_ids as $product_id ) {
 			$product = jg_wc_get_product_cached( $product_id );
@@ -420,19 +467,13 @@ if ( ! function_exists( 'jg_get_available_groessen_filter_rows' ) ) {
 				continue;
 			}
 
-			$gender = jg_groessen_filter_product_gender( $product_id );
-
-			foreach ( jg_groessen_filter_get_product_sizes( $product ) as $size ) {
+			foreach ( jg_groessen_filter_get_product_display_sizes( $product ) as $size ) {
 				$available[ $size ] = true;
-
-				// Wenn z. B. nur Inch gepflegt ist, werden die passenden EU/INT-Filter trotzdem angezeigt.
-				foreach ( jg_groessen_filter_expand_sizes_for_gender( [ $size ], $gender ) as $expanded_size ) {
-					$available[ $expanded_size ] = true;
-				}
 			}
 		}
 
-		$out = [
+		$allowed = jg_groessen_filter_allowed_rows();
+		$out     = [
 			'int' => [],
 			'num' => [],
 		];
