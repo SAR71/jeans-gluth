@@ -337,82 +337,79 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
    ================================================= */
 
 .jg-subcat-carousel{
-    position: relative !important;
-
-    /* Größe der Chevrons */
-    --jg-subcat-chevron-size: calc(var(--jg-subcat-thumb-size) * 0.33);
+  position: relative !important;
 }
 
 .jg-subcat-nav{
-    appearance: none !important;
-    border: 0 !important;
-    padding: 0 !important;
+  appearance: none !important;
+  border: 0 !important;
+  padding: 0 !important;
 
-    position: absolute;
-    top: calc((var(--jg-subcat-thumb-size) / 2) + 8px);
-    transform: translateY(-50%);
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(calc(-50% - 14px)) !important;
 
-    width: var(--jg-subcat-chevron-size);
-    height: var(--jg-subcat-chevron-size);
+  width: calc(var(--jg-subcat-thumb-size) * 0.55) !important;
+  height: calc(var(--jg-subcat-thumb-size) * 0.55) !important;
 
-    display: none;
-    align-items: center;
-    justify-content: center;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
 
-    border-radius: 50%;
-    background: #ffffff !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.18) !important;
-    cursor: pointer;
-    z-index: 999;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18) !important;
 
-    transition:
-        background .25s,
-        box-shadow .25s;
+  cursor: pointer !important;
+  z-index: 999 !important;
+
+  transition: background .25s, box-shadow .25s;
 }
 
 .jg-subcat-carousel--overflow .jg-subcat-nav{
-    display: inline-flex;
+  display: inline-flex !important;
 }
 
 .jg-subcat-nav:hover{
-    background: #ffffff;
-    box-shadow: 0 6px 20px rgba(0,0,0,.22);
+  background: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,.22) !important;
 }
 
 .jg-subcat-nav.jg-prev{
-    left: 12px;
+  left: 8px !important;
 }
 
 .jg-subcat-nav.jg-next{
-    right: 12px;
+  right: 8px !important;
 }
 
 .jg-subcat-nav::before{
-    content: "";
-    width: calc(var(--jg-subcat-chevron-size) * 0.30);
-    height: calc(var(--jg-subcat-chevron-size) * 0.30);
+  content: "" !important;
 
-    border-top: 2px solid #001b44;
-    border-left: 2px solid #001b44;
+  width: calc(var(--jg-subcat-thumb-size) * 0.14) !important;
+  height: calc(var(--jg-subcat-thumb-size) * 0.14) !important;
 
-    display: block;
+  border-top: 2px solid #001b44 !important;
+  border-left: 2px solid #001b44 !important;
+
+  display: block !important;
 }
 
 .jg-subcat-nav.jg-prev::before{
-    transform: rotate(-45deg);
-    margin-left: 2px;
+  transform: rotate(-45deg) !important;
+  margin-left: 3px !important;
 }
 
 .jg-subcat-nav.jg-next::before{
-    transform: rotate(135deg);
-    margin-right: 2px;
+  transform: rotate(135deg) !important;
+  margin-right: 3px !important;
 }
 
 .jg-subcat-nav[hidden]{
-    display: none !important;
+  display: none !important;
 }
 
 .jg-subcat-nav:focus-visible{
-    outline: 3px solid #111111;
-    outline-offset: 3px;
+  outline: 3px solid #111111 !important;
+  outline-offset: 3px !important;
 }
