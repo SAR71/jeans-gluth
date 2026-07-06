@@ -72,3 +72,39 @@ add_action('wp_footer', function () {
     </script>
     <?php
 }, 100);
+
+/****/
+/********** 10 % Rabatt bei Abholung vor Ort ********/
+
+add_action('woocommerce_cart_calculate_fees', function ($cart) {
+
+    if (is_admin() && !defined('DOING_AJAX')) {
+        return;
+    }
+
+    if (!$cart || $cart->is_empty()) {
+        return;
+    }
+
+    $chosen_methods = WC()->session->get('chosen_shipping_methods');
+
+    if (empty($chosen_methods)) {
+        return;
+    }
+
+    foreach ($chosen_methods as $method) {
+        if (strpos($method, 'local_pickup') !== false) {
+
+            $discount = $cart->get_subtotal() * 0.10; /* ----> 10% Rabatt */
+
+            $cart->add_fee(
+                '10% Rabatt bei Abholung vor Ort',
+                -$discount,
+                false
+            );
+
+            break;
+        }
+    }
+
+}, 20);
