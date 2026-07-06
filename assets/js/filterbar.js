@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:03
+// LastChanged: 2026-07-06 00:00:00
 (function () {
   function initFilterbar() {
     var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
@@ -27,7 +27,9 @@
     };
 
     panels.forEach(function (panel) {
-      document.body.appendChild(panel);
+      if (panel.parentElement !== document.body) {
+        document.body.appendChild(panel);
+      }
     });
 
     function getButtonByPanelId(panelId) {
@@ -108,6 +110,7 @@
       var spacing = 14;
       var viewportPad = 16;
       var btnRect = btn.getBoundingClientRect();
+
       panel.style.left = '0px';
       panel.style.top = '0px';
 
@@ -174,6 +177,21 @@
       if (label) {
         announce(label.textContent.trim() + ' geöffnet');
       }
+    }
+
+    function togglePanel(btn) {
+      var panelId = btn.getAttribute('data-jg-panel');
+      if (!panelId) return;
+
+      var expanded = btn.getAttribute('aria-expanded') === 'true';
+
+      if (expanded) {
+        closeAll(true);
+        announce('Dialog geschlossen');
+        return;
+      }
+
+      openPanel(panelId, btn);
     }
 
     function removeLegacyWooFilterParams(url) {
@@ -327,9 +345,7 @@
     refreshColorTooltipPlacement();
     updateBrandRowHighlights();
     updateAllCounts();
-
     closeAll(false);
-    checkFilterbarWrap();
 
     document.addEventListener('change', function (e) {
       var t = e.target;
@@ -362,20 +378,11 @@
 
     document.addEventListener('click', function (e) {
       var btn = e.target.closest('.jg-filterbtn[data-jg-panel]');
+
       if (btn && bar.contains(btn)) {
         e.preventDefault();
         e.stopPropagation();
-
-        var panelId = btn.getAttribute('data-jg-panel');
-        var expanded = btn.getAttribute('aria-expanded') === 'true';
-
-        if (expanded) {
-          closeAll(true);
-          announce('Dialog geschlossen');
-          return;
-        }
-
-        openPanel(panelId, btn);
+        togglePanel(btn);
         return;
       }
 
@@ -508,7 +515,6 @@
           clearPendingCommitFlagByPanelId(openPanelId);
           closeAll(true);
           announce('Dialog geschlossen');
-          return;
         }
       }
     });
@@ -555,14 +561,15 @@
     var resizeRaf = null;
     window.addEventListener('resize', function () {
       if (resizeRaf) return;
+
       resizeRaf = requestAnimationFrame(function () {
         resizeRaf = null;
 
-        checkFilterbarWrap();
         refreshColorTooltipPlacement();
 
         var openBtn = getOpenButton();
         var openPanelEl = getOpenPanel();
+
         if (!openBtn || !openPanelEl) return;
         positionPanel(openPanelEl, openBtn);
       });
@@ -571,10 +578,13 @@
     var scrollRaf = null;
     window.addEventListener('scroll', function () {
       if (scrollRaf) return;
+
       scrollRaf = requestAnimationFrame(function () {
         scrollRaf = null;
+
         var openBtn = getOpenButton();
         var openPanelEl = getOpenPanel();
+
         if (!openBtn || !openPanelEl) return;
         positionPanel(openPanelEl, openBtn);
       });
