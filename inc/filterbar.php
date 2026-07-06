@@ -128,7 +128,7 @@ if ( ! function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
 				'4xl' => '4XL',
 				'5xl' => '5XL',
 			],
-			'num' => [
+			'eu' => [
 				'28' => '28',
 				'30' => '30',
 				'32' => '32',
@@ -151,9 +151,65 @@ if ( ! function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
 	}
 }
 
+if ( ! function_exists( 'jg_groessen_filter_size_maps' ) ) {
+	function jg_groessen_filter_size_maps() {
+		static $maps = null;
+
+		if ( $maps !== null ) {
+			return $maps;
+		}
+
+		$damen_groups = [
+			[ '28', '24' ],
+			[ '30', '25' ],
+			[ '32', 'xxs', '26' ],
+			[ '34', 'xs', '24' ],
+			[ '36', 's', '28' ],
+			[ '38', 'm', '29' ],
+			[ '40', 'l', '30', '31' ],
+			[ '42', 'xl', '32', '33' ],
+			[ '44', 'xxl', '34' ],
+			[ '46', '3xl', '36' ],
+		];
+
+		$herren_groups = [
+			[ '42', 'xxs', '28' ],
+			[ '44', 'xs', '29' ],
+			[ '46', 's', '30' ],
+			[ '48', 'm', '32' ],
+			[ '50', 'l', '34' ],
+			[ '52', 'xl', '36' ],
+			[ '54', 'xxl', '38' ],
+			[ '56', '3xl', '40' ],
+			[ '58', '4xl', '42' ],
+			[ '60', '5xl', '44' ],
+		];
+
+		$build = static function( $groups ) {
+			$out = [];
+			foreach ( $groups as $group ) {
+				$group = array_values( array_unique( array_filter( array_map( 'sanitize_title', $group ) ) ) );
+				foreach ( $group as $size ) {
+					if ( ! isset( $out[ $size ] ) ) {
+						$out[ $size ] = [];
+					}
+					$out[ $size ] = array_values( array_unique( array_merge( $out[ $size ], $group ) ) );
+				}
+			}
+			return $out;
+		};
+
+		$maps = [
+			'damen'  => $build( $damen_groups ),
+			'herren' => $build( $herren_groups ),
+		];
+
+		return $maps;
+	}
+}
+
 if ( ! function_exists( 'jg_groessen_filter_normalize_size' ) ) {
 	function jg_groessen_filter_normalize_size( $value ) {
-
 		$value = trim( wp_strip_all_tags( html_entity_decode( (string) $value ) ) );
 
 		if ( $value === '' ) {
@@ -162,27 +218,17 @@ if ( ! function_exists( 'jg_groessen_filter_normalize_size' ) ) {
 
 		$slug = sanitize_title( $value );
 
-		/*
-		 * Spezialfälle:
-		 * L-28  -> L
-		 * XS-L00 -> XS
-		 * M-L30 -> M
-		 */
+		// Kombigrößen wie L-28, XS-L00, M-L30: relevant ist für den Filter der erste Teil.
 		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)-/i', $slug, $m ) ) {
 			return strtolower( $m[1] );
 		}
 
-		/*
-		 * Normale INT-Größen
-		 */
 		if ( preg_match( '/^(xxs|xs|s|m|l|xl|xxl|3xl|4xl|5xl)$/i', $slug, $m ) ) {
 			return strtolower( $m[1] );
 		}
 
-		/*
-		 * Normale EU-Größen
-		 */
-		if ( preg_match( '/^(28|30|32|34|36|38|40|42|44|46|48|50|52|54|56|58|60)$/', $slug, $m ) ) {
+		// EU- und Inch-Größen. Angezeigt werden später nur die definierten Filtergrößen.
+		if ( preg_match( '/^(24|25|26|28|29|30|31|32|33|34|36|38|40|42|44|46|48|50|52|54|56|58|60)$/', $slug, $m ) ) {
 			return $m[1];
 		}
 
@@ -190,42 +236,75 @@ if ( ! function_exists( 'jg_groessen_filter_normalize_size' ) ) {
 	}
 }
 
-if ( ! function_exists( 'jg_groessen_filter_product_is_hose_or_jeans' ) ) {
-	function jg_groessen_filter_product_is_hose_or_jeans( $product_id ) {
+if ( ! function_exists( 'jg_groessen_filter_product_gender' ) ) {
+	function jg_groessen_filter_product_gender( $product_id ) {
 		$product_id = absint( $product_id );
 		if ( ! $product_id ) {
-			return false;
+			return '';
+		}
+
+		static $gender_cache = [];
+		if ( array_key_exists( $product_id, $gender_cache ) ) {
+			return $gender_cache[ $product_id ];
 		}
 
 		$terms = get_the_terms( $product_id, 'product_cat' );
-
 		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			return false;
+			$gender_cache[ $product_id ] = '';
+			return '';
 		}
 
 		foreach ( $terms as $term ) {
-			$check_ids = [ (int) $term->term_id ];
-			$ancestors = get_ancestors( (int) $term->term_id, 'product_cat' );
-
-			if ( ! empty( $ancestors ) ) {
-				$check_ids = array_merge( $check_ids, array_map( 'absint', $ancestors ) );
-			}
+			$check_ids = array_merge(
+				[ (int) $term->term_id ],
+				array_map( 'absint', get_ancestors( (int) $term->term_id, 'product_cat' ) )
+			);
 
 			foreach ( $check_ids as $check_id ) {
 				$check_term = get_term( $check_id, 'product_cat' );
+				if ( ! $check_term || is_wp_error( $check_term ) ) {
+					continue;
+				}
 
-				if ( $check_term && ! is_wp_error( $check_term ) ) {
-					$slug = sanitize_title( $check_term->slug );
-					$name = sanitize_title( $check_term->name );
+				$slug = sanitize_title( $check_term->slug );
+				$name = sanitize_title( $check_term->name );
 
-					if ( in_array( $slug, [ 'hosen', 'jeans' ], true ) || in_array( $name, [ 'hosen', 'jeans' ], true ) ) {
-						return true;
-					}
+				if ( in_array( $slug, [ 'damen', 'frauen' ], true ) || in_array( $name, [ 'damen', 'frauen' ], true ) ) {
+					$gender_cache[ $product_id ] = 'damen';
+					return 'damen';
+				}
+
+				if ( in_array( $slug, [ 'herren', 'maenner', 'manner' ], true ) || in_array( $name, [ 'herren', 'maenner', 'manner' ], true ) ) {
+					$gender_cache[ $product_id ] = 'herren';
+					return 'herren';
 				}
 			}
 		}
 
-		return false;
+		$gender_cache[ $product_id ] = '';
+		return '';
+	}
+}
+
+if ( ! function_exists( 'jg_groessen_filter_expand_sizes_for_gender' ) ) {
+	function jg_groessen_filter_expand_sizes_for_gender( $sizes, $gender ) {
+		$sizes = array_values( array_filter( array_map( 'sanitize_title', (array) $sizes ) ) );
+
+		if ( empty( $sizes ) || ! in_array( $gender, [ 'damen', 'herren' ], true ) ) {
+			return $sizes;
+		}
+
+		$maps = jg_groessen_filter_size_maps();
+		$map  = $maps[ $gender ];
+		$out  = $sizes;
+
+		foreach ( $sizes as $size ) {
+			if ( isset( $map[ $size ] ) ) {
+				$out = array_merge( $out, $map[ $size ] );
+			}
+		}
+
+		return array_values( array_unique( array_filter( $out ) ) );
 	}
 }
 
@@ -237,9 +316,11 @@ if ( ! function_exists( 'jg_groessen_filter_get_product_sizes' ) ) {
 
 		$product_id = (int) $product->get_id();
 		$parent_id  = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : $product_id;
+		$cache_key  = $product_id . '|' . $parent_id;
 
-		if ( jg_groessen_filter_product_is_hose_or_jeans( $parent_id ) ) {
-			return [];
+		static $size_cache = [];
+		if ( array_key_exists( $cache_key, $size_cache ) ) {
+			return $size_cache[ $cache_key ];
 		}
 
 		$sizes = [];
@@ -277,6 +358,7 @@ if ( ! function_exists( 'jg_groessen_filter_get_product_sizes' ) ) {
 
 		if ( $product->is_type( 'simple' ) ) {
 			if ( ! $product->is_in_stock() ) {
+				$size_cache[ $cache_key ] = [];
 				return [];
 			}
 
@@ -298,145 +380,14 @@ if ( ! function_exists( 'jg_groessen_filter_get_product_sizes' ) ) {
 				$collect_from_product( $variation );
 			}
 
-			// Fallback, falls pa_groessen nur am Hauptprodukt gepflegt ist
+			// Fallback, falls pa_groessen nur am Hauptprodukt gepflegt ist.
 			if ( empty( $sizes ) ) {
 				$collect_from_product( $product );
 			}
 		}
 
-		return array_values( array_unique( array_filter( $sizes ) ) );
-	}
-}
-
-if ( ! function_exists( 'jg_groessen_filter_product_is_damen' ) ) {
-	function jg_groessen_filter_product_is_damen( $product_id ) {
-		$terms = get_the_terms( absint( $product_id ), 'product_cat' );
-
-		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			return false;
-		}
-
-		foreach ( $terms as $term ) {
-			$check_ids = array_merge(
-				[ (int) $term->term_id ],
-				array_map( 'absint', get_ancestors( (int) $term->term_id, 'product_cat' ) )
-			);
-
-			foreach ( $check_ids as $check_id ) {
-				$check_term = get_term( $check_id, 'product_cat' );
-
-				if ( $check_term && ! is_wp_error( $check_term ) ) {
-					$slug = sanitize_title( $check_term->slug );
-					$name = sanitize_title( $check_term->name );
-
-					if ( in_array( $slug, [ 'damen', 'frauen' ], true ) || in_array( $name, [ 'damen', 'frauen' ], true ) ) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-}
-
-if ( ! function_exists( 'jg_groessen_filter_product_is_herren' ) ) {
-	function jg_groessen_filter_product_is_herren( $product_id ) {
-		$terms = get_the_terms( absint( $product_id ), 'product_cat' );
-
-		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			return false;
-		}
-
-		foreach ( $terms as $term ) {
-			$check_ids = array_merge(
-				[ (int) $term->term_id ],
-				array_map( 'absint', get_ancestors( (int) $term->term_id, 'product_cat' ) )
-			);
-
-			foreach ( $check_ids as $check_id ) {
-				$check_term = get_term( $check_id, 'product_cat' );
-
-				if ( $check_term && ! is_wp_error( $check_term ) ) {
-					$slug = sanitize_title( $check_term->slug );
-					$name = sanitize_title( $check_term->name );
-
-					if ( in_array( $slug, [ 'herren', 'maenner', 'manner' ], true ) || in_array( $name, [ 'herren', 'maenner', 'manner' ], true ) ) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-}
-
-if ( ! function_exists( 'jg_groessen_filter_expand_selected_sizes_for_product' ) ) {
-	function jg_groessen_filter_expand_selected_sizes_for_product( $selected_sizes, $product_id ) {
-		$selected_sizes = array_values( array_filter( array_map( 'sanitize_title', (array) $selected_sizes ) ) );
-
-		$damen_map = [
-			'32'  => 'xxs',
-			'34'  => 'xs',
-			'36'  => 's',
-			'38'  => 'm',
-			'40'  => 'l',
-			'42'  => 'xl',
-			'44'  => 'xxl',
-			'46'  => '3xl',
-			'xxs' => '32',
-			'xs'  => '34',
-			's'   => '36',
-			'm'   => '38',
-			'l'   => '40',
-			'xl'  => '42',
-			'xxl' => '44',
-			'3xl' => '46',
-		];
-
-		$herren_map = [
-			'42'  => 'xxs',
-			'44'  => 'xs',
-			'46'  => 's',
-			'48'  => 'm',
-			'50'  => 'l',
-			'52'  => 'xl',
-			'54'  => 'xxl',
-			'56'  => '3xl',
-			'58'  => '4xl',
-			'60'  => '5xl',
-			'xxs' => '42',
-			'xs'  => '44',
-			's'   => '46',
-			'm'   => '48',
-			'l'   => '50',
-			'xl'  => '52',
-			'xxl' => '54',
-			'3xl' => '56',
-			'4xl' => '58',
-			'5xl' => '60',
-		];
-
-		$out = $selected_sizes;
-
-		if ( jg_groessen_filter_product_is_damen( $product_id ) ) {
-			foreach ( $selected_sizes as $size ) {
-				if ( isset( $damen_map[ $size ] ) ) {
-					$out[] = $damen_map[ $size ];
-				}
-			}
-		}
-
-		if ( jg_groessen_filter_product_is_herren( $product_id ) ) {
-			foreach ( $selected_sizes as $size ) {
-				if ( isset( $herren_map[ $size ] ) ) {
-					$out[] = $herren_map[ $size ];
-				}
-			}
-		}
-
-		return array_values( array_unique( array_filter( $out ) ) );
+		$size_cache[ $cache_key ] = array_values( array_unique( array_filter( $sizes ) ) );
+		return $size_cache[ $cache_key ];
 	}
 }
 
@@ -448,12 +399,9 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 
 		$product_id = (int) $product->get_id();
 		$parent_id  = $product->is_type( 'variation' ) ? (int) $product->get_parent_id() : $product_id;
+		$gender     = jg_groessen_filter_product_gender( $parent_id );
 
-		if ( jg_groessen_filter_product_is_hose_or_jeans( $parent_id ) ) {
-			return false;
-		}
-
-		$selected_sizes = jg_groessen_filter_expand_selected_sizes_for_product( $selected_sizes, $parent_id );
+		$selected_sizes = jg_groessen_filter_expand_sizes_for_gender( $selected_sizes, $gender );
 		$product_sizes  = jg_groessen_filter_get_product_sizes( $product );
 
 		return ! empty( array_intersect( $selected_sizes, $product_sizes ) );
@@ -463,18 +411,26 @@ if ( ! function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
 if ( ! function_exists( 'jg_get_available_groessen_filter_rows' ) ) {
 	function jg_get_available_groessen_filter_rows( $exclude_filter_keys = [] ) {
 		$product_ids = jg_get_filtered_product_ids_for_context( $exclude_filter_keys );
-
-		$available = [];
+		$available   = [];
+		$allowed     = jg_groessen_filter_allowed_rows();
 
 		foreach ( $product_ids as $product_id ) {
 			$product = jg_wc_get_product_cached( $product_id );
+			if ( ! $product ) {
+				continue;
+			}
+
+			$gender = jg_groessen_filter_product_gender( $product_id );
 
 			foreach ( jg_groessen_filter_get_product_sizes( $product ) as $size ) {
 				$available[ $size ] = true;
+
+				// Wenn z. B. nur Inch gepflegt ist, werden die passenden EU/INT-Filter trotzdem angezeigt.
+				foreach ( jg_groessen_filter_expand_sizes_for_gender( [ $size ], $gender ) as $expanded_size ) {
+					$available[ $expanded_size ] = true;
+				}
 			}
 		}
-
-		$allowed = jg_groessen_filter_allowed_rows();
 
 		$out = [
 			'int' => [],
@@ -490,7 +446,7 @@ if ( ! function_exists( 'jg_get_available_groessen_filter_rows' ) ) {
 			}
 		}
 
-		foreach ( $allowed['num'] as $slug => $label ) {
+		foreach ( $allowed['eu'] as $slug => $label ) {
 			if ( ! empty( $available[ $slug ] ) ) {
 				$out['num'][] = (object) [
 					'slug' => $slug,
