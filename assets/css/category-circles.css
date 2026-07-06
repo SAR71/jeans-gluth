@@ -324,6 +324,13 @@
   .jg-subcat-item--filter .jg-subcat-thumb{ transition: none; }
 }
 
+/* ===================
+Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt 
+=======================*/
+.jg-subcat-circles.jg-subcat-circles--overflow{
+  justify-content: flex-start !important;
+}
+
 
 /* =================================================
    Chevrons bei Overflow
