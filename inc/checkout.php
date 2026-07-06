@@ -123,13 +123,40 @@ add_action('woocommerce_cart_calculate_fees', function ($cart) {
 
 
 /* Checkout: Versandlabel nur in der Bestellübersicht anpassen */
+
+
 add_filter('woocommerce_cart_shipping_method_full_label', function ($label, $method) {
 
     if (
         isset($method->id) &&
         strpos($method->id, 'pickup_location') !== false
     ) {
-        return 'vor Ort abholen (@ Jeans Gluth Helmbrechts)'; /* default Versandlabel so lang */
+        return 'Abholung vor Ort @ Jeans Gluth Helmbrechts';
+    }
+
+    return $label;
+
+}, 20, 2);
+
+
+add_filter('woocommerce_shipping_rate_label', function ($label, $rate) {
+
+    // WooCommerce Blocks / Store API
+    if (
+        is_object($rate) &&
+        method_exists($rate, 'get_id') &&
+        strpos($rate->get_id(), 'pickup_location') !== false
+    ) {
+        return 'Abholung vor Ort @ Jeans Gluth Helmbrechts';
+    }
+
+    // Klassischer Checkout (Fallback)
+    if (
+        is_object($rate) &&
+        property_exists($rate, 'id') &&
+        strpos($rate->id, 'pickup_location') !== false
+    ) {
+        return 'vor Ort abholen (@ Jeans Gluth Helmbrechts)';
     }
 
     return $label;
