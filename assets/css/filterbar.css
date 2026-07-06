@@ -34,8 +34,26 @@
   justify-content: flex-start;
 }
 
-.jg-filterbar.jg-filterbar-is-wrapped{
-  display: none !important;
+
+@media (max-width: 1024px){
+  .jg-filterbar{
+    display: none !important;
+  }
+
+  .jgm-filterbar{
+    display: flex !important;
+  }
+}
+
+@media (min-width: 1025px){
+  .jg-filterbar{
+    display: flex !important;
+  }
+
+  .jgm-filterbar,
+  .jgm-panel{
+    display: none !important;
+  }
 }
 
 /* TYPO */
@@ -679,8 +697,4 @@
     transition: none !important;
     animation: none !important;
   }
-}
-/* Filterbar ausblenden, sobald sie umbrechen würde */
-.jg-filterbar.jg-filterbar-is-wrapped{
-  display: none !important;
 }

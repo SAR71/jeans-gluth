@@ -321,25 +321,6 @@
       });
     }
 
-    function checkFilterbarWrap() {
-      if (!bar) return;
-
-      bar.classList.remove('jg-filterbar-is-wrapped');
-
-      var items = Array.prototype.slice.call(bar.children).filter(function (el) {
-        return window.getComputedStyle(el).display !== 'none';
-      });
-
-      if (!items.length) return;
-
-      var firstTop = items[0].offsetTop;
-      var wrapped = items.some(function (el) {
-        return Math.abs(el.offsetTop - firstTop) > 2;
-      });
-
-      bar.classList.toggle('jg-filterbar-is-wrapped', wrapped);
-    }
-
     initStateFromDOM();
     syncUI('jg_filter_farben');
     syncUI('jg_filter_groessen');
