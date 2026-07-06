@@ -324,15 +324,6 @@
   .jg-subcat-item--filter .jg-subcat-thumb{ transition: none; }
 }
 
-/* Hauptmenü Damen/Herren aktiv markieren */
-.jg-main-cat-active > a,
-.jg-main-cat-active > a > span,
-.jg-main-cat-active > span > a{
-  color: #8d8d8d !important;
-  text-decoration: underline !important;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 8px;
-}
 
 /* =================================================
    Chevrons

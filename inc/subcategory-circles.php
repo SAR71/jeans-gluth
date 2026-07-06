@@ -191,3 +191,40 @@ add_shortcode('jg_top_subcats', function($atts) {
     <?php
     return ob_get_clean();
 });
+
+/* Hauptmenü Damen/Herren aktiv setzen, wenn Unterkategorie aktiv ist */
+add_filter('nav_menu_css_class', function($classes, $item) {
+
+    if (!function_exists('is_product_category') || !is_product_category()) {
+        return $classes;
+    }
+
+    if (empty($item->object) || $item->object !== 'product_cat') {
+        return $classes;
+    }
+
+    $current_term = get_queried_object();
+
+    if (!$current_term || empty($current_term->term_id) || $current_term->taxonomy !== 'product_cat') {
+        return $classes;
+    }
+
+    $current_id = (int) $current_term->term_id;
+
+    $top_id = $current_id;
+    $ancestors = get_ancestors($current_id, 'product_cat');
+
+    if (!empty($ancestors)) {
+        $top_id = (int) end($ancestors);
+    }
+
+    $menu_term_id = (int) $item->object_id;
+
+    if ($menu_term_id === $top_id) {
+        $classes[] = 'current-menu-item';
+        $classes[] = 'current_page_item';
+    }
+
+    return array_unique($classes);
+
+}, 10, 2);
