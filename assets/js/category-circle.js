@@ -2,8 +2,8 @@
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
-  const KEY = 'jgSubcatScrollLeft_v1';
-  const KEY_CLICKED = 'jgSubcatClickedTerm_v1';
+const KEY = 'jgSubcatScrollLeft_v2';
+const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
 
   function getScroller() {
     return document.querySelector('.jg-subcat-circles');
