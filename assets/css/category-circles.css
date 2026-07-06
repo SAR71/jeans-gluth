@@ -219,7 +219,7 @@
 .jg-subcat-title{
   margin-top: 10px;
   font-size: 20px; /* <-------------------- Schriftgröße*/
-  line-height: 1.2;
+  line-height: 1.45;
   letter-spacing: 0.06em;              /* besonderer Zeichenabstand: JA */
   text-align: center;
   text-transform: uppercase;
