@@ -344,8 +344,9 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 }
 
 .jg-subcat-nav{
-    all: unset;
-    appearance: none;
+    appearance: none !important;
+    border: 0 !important;
+    padding: 0 !important;
 
     position: absolute;
     top: calc((var(--jg-subcat-thumb-size) / 2) + 8px);
@@ -359,9 +360,8 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
     justify-content: center;
 
     border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 2px 12px rgba(0,0,0,.18);
-
+    background: #ffffff !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,.18) !important;
     cursor: pointer;
     z-index: 999;
 
