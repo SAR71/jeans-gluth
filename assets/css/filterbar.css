@@ -31,10 +31,7 @@
   align-items: center;
   gap: var(--jg-gap);
   flex-wrap: wrap;
-  height: 46px; /* Höhe der roten Zeile */
   justify-content: flex-start;
-
-  overflow: hidden !important;
 }
 
 .jg-filterbar.jg-filterbar-is-wrapped{

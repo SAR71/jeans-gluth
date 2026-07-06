@@ -3,8 +3,7 @@
 .jgm-filterbar {
 	display: none;
 }
-
-@media (max-width: 767.98px) {
+@media (max-width: 1024px) {
 	.jgm-filterbar {
 		--jgm-accent: #761611;
 		--jgm-text: #fbf0d8;
@@ -406,7 +405,7 @@
 	}
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1025px) {
 	.jgm-filterbar,
 	.jgm-panel {
 		display: none !important;
