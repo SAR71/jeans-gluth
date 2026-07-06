@@ -245,3 +245,29 @@
     syncOverflowAlignment();
   });
 })();
+
+/* Hauptmenü Damen/Herren aktiv markieren */
+
+document.addEventListener("DOMContentLoaded", function () {
+  const path = window.location.pathname.toLowerCase();
+
+  let mainCat = null;
+
+  if (path.includes("/product-category/damen")) {
+    mainCat = "damen";
+  }
+
+  if (path.includes("/product-category/herren")) {
+    mainCat = "herren";
+  }
+
+  if (!mainCat) return;
+
+  document.querySelectorAll(".menu-item").forEach(function (li) {
+    const a = li.querySelector('a[href*="/product-category/' + mainCat + '/"]');
+
+    if (a) {
+      li.classList.add("jg-main-cat-active");
+    }
+  });
+});
