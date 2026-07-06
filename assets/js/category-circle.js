@@ -59,25 +59,17 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
       .forEach(el => el.classList.remove('is-clicked'));
   }
 
-  function restoreScroller() {
-    const scroller = getScroller();
-    if (!scroller) return;
+function restoreScroller() {
+  const scroller = getScroller();
+  if (!scroller) return;
 
-    const saved = sessionStorage.getItem(KEY);
-    if (saved !== null) {
-      const x = parseInt(saved, 10);
-      if (!Number.isNaN(x)) scroller.scrollLeft = x;
-    }
+  scroller.scrollLeft = 0;
 
-    const clickedId = sessionStorage.getItem(KEY_CLICKED);
-    if (clickedId) {
-      const el = document.querySelector(`.jg-subcat-item[data-term-id="${clickedId}"]`);
-      if (el) {
-        clearClicked();
-        el.classList.add('is-clicked');
-      }
-    }
-  }
+  sessionStorage.removeItem(KEY);
+  sessionStorage.removeItem(KEY_CLICKED);
+
+  clearClicked();
+}
 
   function bindClicks() {
     const scroller = getScroller();
