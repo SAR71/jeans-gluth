@@ -326,9 +326,7 @@
 
 
 /* =================================================
-   Chevrons
-   - Standard: AUS (Desktop)
-   - NUR auf Tablet/Handy EIN
+   Chevrons bei Overflow
    ================================================= */
 
 .jg-subcat-nav{
@@ -337,51 +335,97 @@
   position: absolute;
   top: var(--jg-subcat-chevron-center-y);
   transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 0 !important;
-  border-radius: 0;
-  background: transparent !important;
-  box-shadow: none !important;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.16) !important;
   cursor: pointer;
-  z-index: 10;
+  z-index: 20;
+
   display: none;
   align-items: center;
   justify-content: center;
 }
 
-.jg-subcat-nav.jg-prev{ left: 2px; }
-.jg-subcat-nav.jg-next{ right: 2px; }
-
 .jg-subcat-carousel--overflow .jg-subcat-nav{
   display: inline-flex;
 }
 
+.jg-subcat-nav.jg-prev{
+  left: 24px;
+}
 
+.jg-subcat-nav.jg-next{
+  right: 24px;
+}
 
 .jg-subcat-nav::before{
-  content: "<";
-  font-size: 18px;
-  line-height: 1;
-  color: rgba(0,0,0,0.55);
-  font-weight: 700;
+  content: "";
+  width: 13px;
+  height: 13px;
+  border-top: 2px solid #0b1f3a;
+  border-left: 2px solid #0b1f3a;
+  display: block;
+}
+
+.jg-subcat-nav.jg-prev::before{
+  transform: rotate(-45deg);
+  margin-left: 5px;
 }
 
 .jg-subcat-nav.jg-next::before{
-  content: ">";
+  transform: rotate(135deg);
+  margin-right: 5px;
 }
 
-/* JS blendet Buttons aus, wenn nicht nötig */
-.jg-subcat-nav[hidden]{ display: none !important; }
+.jg-subcat-nav[hidden]{
+  display: none !important;
+}
+
+.jg-subcat-nav:hover{
+  background: #ffffff !important;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.22) !important;
+}
 
 .jg-subcat-nav:focus-visible{
   outline: 3px solid #111111;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
+/* Tablet */
 @media (max-width: 1023px){
   .jg-subcat-nav{
-    display: none !important;
+    width: 46px;
+    height: 46px;
+  }
+
+  .jg-subcat-nav.jg-prev{
+    left: 12px;
+  }
+
+  .jg-subcat-nav.jg-next{
+    right: 12px;
+  }
+}
+
+/* Handy */
+@media (max-width: 576px){
+  .jg-subcat-nav{
+    width: 38px;
+    height: 38px;
+  }
+
+  .jg-subcat-nav.jg-prev{
+    left: 6px;
+  }
+
+  .jg-subcat-nav.jg-next{
+    right: 6px;
+  }
+
+  .jg-subcat-nav::before{
+    width: 10px;
+    height: 10px;
   }
 }
