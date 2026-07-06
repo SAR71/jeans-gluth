@@ -63,12 +63,19 @@ function restoreScroller() {
   const scroller = getScroller();
   if (!scroller) return;
 
+  const activeItem = scroller.querySelector('.jg-subcat-item.is-active');
+
+  if (activeItem) {
+    const targetLeft =
+      activeItem.offsetLeft -
+      (scroller.clientWidth / 2) +
+      (activeItem.offsetWidth / 2);
+
+    scroller.scrollLeft = Math.max(0, targetLeft);
+    return;
+  }
+
   scroller.scrollLeft = 0;
-
-  sessionStorage.removeItem(KEY);
-  sessionStorage.removeItem(KEY_CLICKED);
-
-  clearClicked();
 }
 
   function bindClicks() {
