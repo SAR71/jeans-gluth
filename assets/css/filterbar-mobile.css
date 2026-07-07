@@ -249,22 +249,25 @@
 		gap: 12px;
 	}
 
-	.jgm-color-item {
-		appearance: none;
-		border: 0;
-		background: transparent;
-		width: 36px;
-		height: 36px;
-		border-radius: 999px;
-		padding: 0;
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-start;
-		height: auto;
-		width: 48px;
-	}
+.jgm-color-item {
+	appearance: none;
+	border: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	outline: none !important;
+
+	width: 48px;
+	height: auto;
+
+	padding: 0;
+	margin: 0;
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+}
 
 	.jgm-color-dot {
 		display: block;
