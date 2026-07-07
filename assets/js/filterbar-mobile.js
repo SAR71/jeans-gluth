@@ -74,6 +74,7 @@
 			}
 
 			backdrop.classList.remove('is-visible');
+			document.documentElement.classList.remove('jgm-lock-scroll');
 			document.body.classList.remove('jgm-lock-scroll');
 		}
 
@@ -103,8 +104,8 @@
 			panel.style.right = viewportPad + 'px';
 
 			backdrop.classList.add('is-visible');
-			document.body.classList.add('jgm-lock-scroll');
-
+		document.documentElement.classList.add('jgm-lock-scroll');
+		document.body.classList.add('jgm-lock-scroll');
 			var firstFocusable = panel.querySelector('button, input, [tabindex]:not([tabindex="-1"])');
 			if (firstFocusable && firstFocusable instanceof HTMLElement) {
 				firstFocusable.focus();

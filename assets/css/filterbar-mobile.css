@@ -96,11 +96,13 @@
 		display: block;
 	}
 
-	.jgm-panel-inner {
-		max-height: min(72vh, 680px);
-		overflow-y: auto;
-		padding: 0 12px 12px;
-	}
+.jgm-panel-inner {
+	max-height: min(72vh, 680px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	padding: 0 12px 12px;
+}
 
 	.jgm-panel-head {
 		display: flex;
@@ -388,7 +390,7 @@
 		border: 0 !important;
 	}
 
-	.jgm-backdrop {
+.jgm-backdrop {
 	position: fixed;
 	inset: 0;
 	z-index: 999998;
@@ -400,15 +402,28 @@
 .jgm-panel {
 	z-index: 1000001 !important;
 	pointer-events: auto;
+	overscroll-behavior: contain;
 }
+
 
 	.jgm-backdrop.is-visible {
 		display: block;
 	}
 
-	body.jgm-lock-scroll {
-		overflow: hidden;
-	}
+html.jgm-lock-scroll,
+body.jgm-lock-scroll {
+	overflow: hidden !important;
+	height: 100% !important;
+	touch-action: none;
+	overscroll-behavior: none;
+}
+
+body.jgm-lock-scroll {
+	position: fixed;
+	width: 100%;
+	left: 0;
+	right: 0;
+}
 }
 
 @media (min-width: 1025px) {
