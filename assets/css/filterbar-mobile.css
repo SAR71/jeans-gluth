@@ -12,7 +12,7 @@
 		--jgm-letter-spacing: 0.08em;
 
 		position: relative;
-		z-index: 2;
+		z-index: 1000000;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -389,12 +389,18 @@
 	}
 
 	.jgm-backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 999998;
-		background: rgba(0, 0, 0, 0.38);
-		display: none;
-	}
+	position: fixed;
+	inset: 0;
+	z-index: 999998;
+	background: rgba(0, 0, 0, 0.38);
+	display: none;
+	pointer-events: auto;
+}
+
+.jgm-panel {
+	z-index: 1000001 !important;
+	pointer-events: auto;
+}
 
 	.jgm-backdrop.is-visible {
 		display: block;
