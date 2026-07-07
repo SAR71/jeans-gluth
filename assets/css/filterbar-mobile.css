@@ -99,15 +99,14 @@
 		display: block;
 	}
 
-.jgm-panel-inner {
-	height: 100%;
-	max-height: 100%;
-	overflow-y: auto;
-	overscroll-behavior: contain;
-	-webkit-overflow-scrolling: touch;
-	padding: 0 16px 24px;
-	box-sizing: border-box;
-}
+	.jgm-panel-inner {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
 
 	.jgm-panel-head {
 		display: flex;
@@ -138,8 +137,10 @@
 	}
 
 	.jgm-mobile-sections {
-		display: grid;
-		gap: 0;
+		flex: 1;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		padding: 0 16px;
 	}
 
 	.jgm-mobile-section {
@@ -398,10 +399,14 @@
 	}
 
 	.jgm-actions {
+		flex-shrink: 0;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 8px;
-		margin-top: 10px;
+
+		padding: 14px 16px;
+		background: #fff;
+		border-top: 1px solid rgba(0,0,0,.12);
 	}
 
 	.jgm-apply,
@@ -538,13 +543,4 @@ body.jgm-woodmart-menu-open .jgm-backdrop {
 }
 .jgm-panel-inner {
 	padding-bottom: 0 !important;
-}
-
-.jgm-actions {
-	position: sticky;
-	bottom: 0;
-	z-index: 5;
-	background: #ffffff;
-	padding: 12px 0 16px;
-	border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
