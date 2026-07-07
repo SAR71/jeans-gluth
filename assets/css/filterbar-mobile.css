@@ -526,7 +526,11 @@ body.jgm-lock-scroll {
 .jgm-filter-count {
 	margin-left: 4px;
 }
-body.jgm-woodmart-menu-open .jgm-filterbar,
+body.jgm-woodmart-menu-open .jgm-filterbar {
+	z-index: 1 !important;
+	pointer-events: none;
+}
+
 body.jgm-woodmart-menu-open .jgm-panel,
 body.jgm-woodmart-menu-open .jgm-backdrop {
 	display: none !important;
