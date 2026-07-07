@@ -454,4 +454,41 @@
 			subtree: true
 		});
 	}
+
+	function initWoodmartMenuWatcher() {
+	function updateMenuState() {
+		var isOpen = !!document.querySelector(
+			'.mobile-nav.wd-opened, ' +
+			'.mobile-nav.act-mobile-menu, ' +
+			'.wd-side-hidden.wd-opened, ' +
+			'.wd-side-hidden.wd-opened-mobile, ' +
+			'.wd-close-side-opened, ' +
+			'.wd-side-hidden-overlay.wd-fill'
+		);
+
+		document.body.classList.toggle('jgm-woodmart-menu-open', isOpen);
+	}
+
+	updateMenuState();
+
+	if (window.MutationObserver) {
+		var observer = new MutationObserver(updateMenuState);
+		observer.observe(document.body, {
+			attributes: true,
+			childList: true,
+			subtree: true,
+			attributeFilter: ['class', 'style']
+		});
+	}
+
+	document.addEventListener('click', function () {
+		window.setTimeout(updateMenuState, 50);
+	}, true);
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initWoodmartMenuWatcher, { once: true });
+} else {
+	initWoodmartMenuWatcher();
+}
 })();
