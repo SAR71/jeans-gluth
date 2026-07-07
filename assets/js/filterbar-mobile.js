@@ -27,11 +27,12 @@
 			document.body.appendChild(backdrop);
 		}
 
-		var state = {
-			jg_filter_farben: new Set(),
-			jg_filter_groessen: new Set()
-		};
-
+	var state = {
+		jg_filter_farben: new Set(),
+		jg_filter_groessen: new Set(),
+		jg_sale: false,
+		jg_new: false
+};
 		function announce(message) {
 			if (!liveRegion || !message) return;
 			liveRegion.textContent = '';
@@ -169,6 +170,10 @@
 					}
 				});
 			});
+			['jg_sale', 'jg_new'].forEach(function (key) {
+				var el = bar.querySelector('[data-jgm-toggle-query="' + key + '"]');
+				state[key] = !!(el && el.classList.contains('is-active'));
+			});
 		}
 
 		function applyFilter() {
@@ -180,6 +185,8 @@
 			setQueryParam(url, 'jg_filter_marke', markeValues.length ? markeValues.join(',') : null);
 			setQueryParam(url, 'jg_filter_farben', state.jg_filter_farben.size ? Array.from(state.jg_filter_farben).join(',') : null);
 			setQueryParam(url, 'jg_filter_groessen', state.jg_filter_groessen.size ? Array.from(state.jg_filter_groessen).join(',') : null);
+			setQueryParam(url, 'jg_sale', state.jg_sale ? '1' : null);
+			setQueryParam(url, 'jg_new', state.jg_new ? '1' : null);
 			url.searchParams.delete('paged');
 			removeLegacyWooFilterParams(url);
 			announce('Filter werden angewendet');
@@ -287,7 +294,20 @@ closeAll(false);
 
 				return;
 			}
+				var queryToggle = event.target.closest('[data-jgm-toggle-query]');
+				if (queryToggle && bar.contains(queryToggle)) {
+					event.preventDefault();
 
+					var queryKey = queryToggle.getAttribute('data-jgm-toggle-query');
+					if (!queryKey || !(queryKey in state)) return;
+
+					state[queryKey] = !state[queryKey];
+
+					queryToggle.classList.toggle('is-active', state[queryKey]);
+					queryToggle.setAttribute('aria-pressed', state[queryKey] ? 'true' : 'false');
+
+					return;
+				}
 			var toggle = event.target.closest('[data-jgm-toggle][data-jgm-value]');
 			if (toggle && bar.contains(toggle)) {
 				event.preventDefault();

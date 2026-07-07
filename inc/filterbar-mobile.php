@@ -13,7 +13,6 @@ if ( ! function_exists( 'jg_filterbar_mobile_extract_swatch_color' ) ) {
 					return $found;
 				}
 			}
-
 			return '';
 		}
 
@@ -124,8 +123,15 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$selected_groessen = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_groessen' ) : [];
 		$selected_orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['orderby'] ) ) : '';
 
+		$sale_on = ( ! empty( $_GET['jg_sale'] ) && $_GET['jg_sale'] === '1' );
+		$new_on  = ( ! empty( $_GET['jg_new'] ) && $_GET['jg_new'] === '1' );
+
+		$show_sale_toggle = function_exists( 'jg_has_sale_products_in_context' ) ? jg_has_sale_products_in_context() : true;
+		$show_new_toggle  = function_exists( 'jg_has_new_products_in_context' ) ? jg_has_new_products_in_context() : true;
+
 		$typ_items     = [];
 		$typ_active_id = 0;
+
 		if ( is_product_category() ) {
 			$current_term = get_queried_object();
 			if ( $current_term && ! empty( $current_term->term_id ) && $current_term->taxonomy === 'product_cat' ) {
@@ -170,6 +176,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			static function( $a, $b ) use ( $int_order ) {
 				$pos_a = array_search( sanitize_title( $a->name ), $int_order, true );
 				$pos_b = array_search( sanitize_title( $b->name ), $int_order, true );
+
 				if ( $pos_a === false ) {
 					$pos_a = 999;
 				}
@@ -230,6 +237,35 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 					</div>
 
 					<div class="jgm-mobile-sections">
+
+						<?php if ( $show_new_toggle || $show_sale_toggle ) : ?>
+						<div class="jgm-mobile-section jgm-mobile-section-special">
+							<div class="jgm-special-filter-list">
+								<?php if ( $show_new_toggle ) : ?>
+									<button
+										type="button"
+										class="jgm-special-filter<?php echo $new_on ? ' is-active' : ''; ?>"
+										data-jgm-toggle-query="jg_new"
+										aria-pressed="<?php echo $new_on ? 'true' : 'false'; ?>"
+									>
+										NEU
+									</button>
+								<?php endif; ?>
+
+								<?php if ( $show_sale_toggle ) : ?>
+									<button
+										type="button"
+										class="jgm-special-filter<?php echo $sale_on ? ' is-active' : ''; ?>"
+										data-jgm-toggle-query="jg_sale"
+										aria-pressed="<?php echo $sale_on ? 'true' : 'false'; ?>"
+									>
+										SALE
+									</button>
+								<?php endif; ?>
+							</div>
+						</div>
+						<?php endif; ?>
+
 						<?php if ( ! empty( $typ_items ) ) : ?>
 						<div class="jgm-mobile-section">
 							<button type="button" class="jgm-section-toggle" data-jgm-section-toggle aria-expanded="false" aria-controls="jgm-section-typ">
@@ -363,6 +399,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 							</div>
 						</div>
 						<?php endif; ?>
+
 					</div>
 
 					<div class="jgm-actions">
@@ -393,5 +430,6 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		return ob_get_clean();
 	}
 }
+
 add_shortcode( 'jg_filterbar_mobile', 'jg_filterbar_mobile_shortcode' );
 add_shortcode( 'filterbar-mobile', 'jg_filterbar_mobile_shortcode' );
