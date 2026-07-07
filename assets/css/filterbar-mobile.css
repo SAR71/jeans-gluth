@@ -547,4 +547,8 @@ body.jgm-woodmart-menu-open .jgm-backdrop {
 .jgm-filterbar .jgm-apply,
 .jgm-panel .jgm-apply,
 .jgm-panel button.jgm-apply {
-	background-color: #02294
+	background: #02294e !important;
+	background-color: #02294e !important;
+	color: #ffffff !important;
+	border-color: #02294e !important;
+}
