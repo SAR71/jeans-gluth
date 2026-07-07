@@ -30,8 +30,9 @@
   display: flex;
   align-items: center;
   gap: var(--jg-gap);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-start;
+  overflow: hidden;
 }
 
 
@@ -696,5 +697,23 @@
   .jg-checkrow{
     transition: none !important;
     animation: none !important;
+  }
+}
+body.jg-use-mobile-filterbar .jg-filterbar{
+  display: none !important;
+}
+
+body.jg-use-mobile-filterbar .jgm-filterbar{
+  display: flex !important;
+}
+
+@media (min-width: 1025px){
+  body:not(.jg-use-mobile-filterbar) .jg-filterbar{
+    display: flex !important;
+  }
+
+  body:not(.jg-use-mobile-filterbar) .jgm-filterbar,
+  body:not(.jg-use-mobile-filterbar) .jgm-panel{
+    display: none !important;
   }
 }

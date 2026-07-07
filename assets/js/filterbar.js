@@ -597,4 +597,67 @@
   } else {
     boot();
   }
+    function initFilterbarOverflowSwitch() {
+    var desktopBar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
+    var mobileBar = document.querySelector('.jgm-filterbar[data-jgm-filterbar="1"]');
+
+    if (!desktopBar || !mobileBar) return;
+
+    var body = document.body;
+    var ticking = false;
+
+    function shouldUseMobile() {
+      if (window.innerWidth <= 1024) {
+        return true;
+      }
+
+      body.classList.remove('jg-use-mobile-filterbar');
+
+      var previousOverflow = desktopBar.style.overflow;
+      desktopBar.style.overflow = 'visible';
+
+      var useMobile = desktopBar.scrollWidth > desktopBar.clientWidth + 2;
+
+      desktopBar.style.overflow = previousOverflow;
+
+      return useMobile;
+    }
+
+    function update() {
+      ticking = false;
+
+      if (shouldUseMobile()) {
+        body.classList.add('jg-use-mobile-filterbar');
+      } else {
+        body.classList.remove('jg-use-mobile-filterbar');
+      }
+    }
+
+    function requestUpdate() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    update();
+
+    window.addEventListener('resize', requestUpdate);
+    window.addEventListener('orientationchange', requestUpdate);
+
+    if ('ResizeObserver' in window) {
+      var ro = new ResizeObserver(requestUpdate);
+      ro.observe(desktopBar);
+      ro.observe(document.body);
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(requestUpdate);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilterbarOverflowSwitch);
+  } else {
+    initFilterbarOverflowSwitch();
+  }
 })();
