@@ -93,10 +93,13 @@
 			panel.setAttribute('aria-modal', 'true');
 			btn.setAttribute('aria-expanded', 'true');
 
-		panel.style.top = '0';
-		panel.style.left = '0';
-		panel.style.right = '0';
-		panel.style.bottom = '0';
+		var barRect = bar.getBoundingClientRect();
+		var top = Math.round(barRect.bottom + 8);
+
+		panel.style.top = top + 'px';
+		panel.style.left = '12px';
+		panel.style.right = '12px';
+		panel.style.bottom = '12px';
 
 			backdrop.classList.add('is-visible');
 		document.documentElement.classList.add('jgm-lock-scroll');
