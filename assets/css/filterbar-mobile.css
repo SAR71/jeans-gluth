@@ -12,7 +12,7 @@
 		--jgm-letter-spacing: 0.08em;
 
 		position: relative;
-		z-index: 50;
+		z-index: 1000000;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
