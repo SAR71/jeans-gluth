@@ -230,11 +230,11 @@
 
 	.jgm-section-title {
 		margin: 0 0 8px;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		font-size: 13px;
+		font-size: 14px;
 		font-weight: 700;
-		color: #2d2d2d;
+		text-transform: uppercase;
+		letter-spacing: .08em;
+		color: #111;
 	}
 
 	.jgm-brand-list {
@@ -483,7 +483,8 @@ body.jgm-lock-scroll {
 
 .jgm-special-filter-list {
 	display: grid;
-	gap: 8px;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
 }
 
 .jgm-special-filter {

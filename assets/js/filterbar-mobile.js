@@ -186,33 +186,6 @@
 			countEl.textContent = count > 0 ? '(' + count + ')' : '';
 		}
 
-		function expandSectionsWithActiveFilters() {
-			bar.querySelectorAll('.jgm-mobile-section').forEach(function (section) {
-				var hasActiveFilter = section.querySelector(
-					'.jgm-check:checked, [data-jgm-toggle].is-active'
-				);
-
-				if (!hasActiveFilter) return;
-
-				var sectionToggle = section.querySelector('[data-jgm-section-toggle]');
-				if (!sectionToggle) return;
-
-				var contentId = sectionToggle.getAttribute('aria-controls');
-				if (!contentId) return;
-
-				var contentEl = bar.querySelector('#' + contentId);
-				if (!contentEl) return;
-
-				sectionToggle.setAttribute('aria-expanded', 'true');
-				contentEl.hidden = false;
-
-				var indicator = sectionToggle.querySelector('span[aria-hidden="true"]');
-				if (indicator) {
-					indicator.textContent = '−';
-				}
-			});
-		}
-
 		function initStateFromDom() {
 			['jg_filter_farben', 'jg_filter_groessen'].forEach(function (key) {
 				state[key] = new Set();
@@ -532,7 +505,23 @@
 		syncToggleUI('jg_filter_groessen');
 		syncSpecialToggles();
 		syncCheckRows();
-		expandSectionsWithActiveFilters();
+		bar.querySelectorAll('[data-jgm-section-toggle]').forEach(function(toggle){
+
+	toggle.setAttribute('aria-expanded','true');
+
+	var content = document.getElementById(
+		toggle.getAttribute('aria-controls')
+	);
+
+	if(content){
+		content.hidden = false;
+	}
+
+	var icon = toggle.querySelector('span[aria-hidden="true"]');
+	if(icon){
+		icon.textContent = '−';
+	}
+});
 		updateFilterCount();
 		closeAll(false);
 	}
