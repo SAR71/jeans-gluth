@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-06-27 00:00:00
+// LastChanged: 2026-07-07 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -131,9 +131,11 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 		$typ_items     = [];
 		$typ_active_id = 0;
+		$typ_base_link = '';
 
 		if ( is_product_category() ) {
 			$current_term = get_queried_object();
+
 			if ( $current_term && ! empty( $current_term->term_id ) && $current_term->taxonomy === 'product_cat' ) {
 				$current_id = (int) $current_term->term_id;
 				$ancestors  = get_ancestors( $current_id, 'product_cat' );
@@ -143,6 +145,11 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 					$level2_id = ( $depth_rel === 1 ) ? $current_id : (int) $current_term->parent;
 
 					if ( $level2_id > 0 ) {
+						$level2_link = get_term_link( $level2_id, 'product_cat' );
+						if ( ! is_wp_error( $level2_link ) ) {
+							$typ_base_link = $level2_link;
+						}
+
 						$typ_items = get_terms(
 							[
 								'taxonomy'   => 'product_cat',
@@ -218,7 +225,13 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 		ob_start();
 		?>
-		<div class="jgm-filterbar" data-jgm-filterbar="1" role="navigation" aria-label="Filter mobil">
+		<div
+			class="jgm-filterbar"
+			data-jgm-filterbar="1"
+			data-jgm-type-base-url="<?php echo esc_url( $typ_base_link ); ?>"
+			role="navigation"
+			aria-label="Filter mobil"
+		>
 			<span class="jgm-sr-only" aria-live="polite" aria-atomic="true" data-jgm-live-region></span>
 
 			<button class="jgm-btn" type="button" data-jgm-panel="jgm-panel-filter" aria-haspopup="dialog" aria-controls="jgm-panel-filter" aria-expanded="false" aria-label="Filter öffnen">
@@ -281,11 +294,21 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 										if ( is_wp_error( $typ_link ) ) {
 											continue;
 										}
+
 										$is_typ_active = $typ_active_id && ( (int) $typ_term->term_id === (int) $typ_active_id );
 										?>
-										<a href="<?php echo esc_url( $typ_link ); ?>" class="jgm-type-link<?php echo $is_typ_active ? ' is-active' : ''; ?>" <?php echo $is_typ_active ? 'aria-current="page"' : ''; ?>>
-											<?php echo esc_html( $typ_term->name ); ?>
-										</a>
+										<label class="jgm-checkrow<?php echo $is_typ_active ? ' is-active' : ''; ?>">
+											<input
+												type="checkbox"
+												class="jgm-check"
+												data-jgm-filter="jg_filter_typ"
+												data-jgm-typ-url="<?php echo esc_url( $typ_link ); ?>"
+												value="<?php echo esc_attr( sanitize_title( $typ_term->slug ) ); ?>"
+												<?php checked( $is_typ_active ); ?>
+											/>
+											<span class="jgm-checkbox-ui" aria-hidden="true"></span>
+											<span><?php echo esc_html( $typ_term->name ); ?></span>
+										</label>
 									<?php endforeach; ?>
 								</div>
 							</div>
