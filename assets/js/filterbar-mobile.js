@@ -319,17 +319,39 @@
 				if (queryToggle && bar.contains(queryToggle)) {
 					event.preventDefault();
 
-					var queryKey = queryToggle.getAttribute('data-jgm-toggle-query');
-					if (!queryKey || !(queryKey in state)) return;
+				var queryKey = queryToggle.getAttribute('data-jgm-toggle-query');
+				if (!queryKey || !(queryKey in state)) return;
 
-					state[queryKey] = !state[queryKey];
+				// Neu und Sale schließen sich gegenseitig aus
+				if (queryKey === 'jg_new') {
+					state.jg_new = !state.jg_new;
 
-					queryToggle.classList.toggle('is-active', state[queryKey]);
-					queryToggle.setAttribute('aria-pressed', state[queryKey] ? 'true' : 'false');
-					updateFilterCount();
-
-					return;
+					if (state.jg_new) {
+						state.jg_sale = false;
+					}
 				}
+
+				else if (queryKey === 'jg_sale') {
+					state.jg_sale = !state.jg_sale;
+
+					if (state.jg_sale) {
+						state.jg_new = false;
+					}
+				}
+
+				bar.querySelectorAll('[data-jgm-toggle-query="jg_new"]').forEach(function(el){
+					el.classList.toggle('is-active', state.jg_new);
+					el.setAttribute('aria-pressed', state.jg_new ? 'true' : 'false');
+				});
+
+				bar.querySelectorAll('[data-jgm-toggle-query="jg_sale"]').forEach(function(el){
+					el.classList.toggle('is-active', state.jg_sale);
+					el.setAttribute('aria-pressed', state.jg_sale ? 'true' : 'false');
+				});
+
+				updateFilterCount();
+				return;
+			}
 			var toggle = event.target.closest('[data-jgm-toggle][data-jgm-value]');
 			if (toggle && bar.contains(toggle)) {
 				event.preventDefault();
