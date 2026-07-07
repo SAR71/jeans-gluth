@@ -12,7 +12,7 @@
 		--jgm-letter-spacing: 0.08em;
 
 		position: relative;
-		z-index: 1000000;
+		z-index: 50;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -525,4 +525,10 @@ body.jgm-lock-scroll {
 }
 .jgm-filter-count {
 	margin-left: 4px;
+}
+body.mobile-menu-open .jgm-filterbar,
+body.wd-side-hidden-opened .jgm-filterbar,
+body.wd-side-hidden-shown .jgm-filterbar,
+body.act-mobile-menu .jgm-filterbar {
+	display: none !important;
 }
