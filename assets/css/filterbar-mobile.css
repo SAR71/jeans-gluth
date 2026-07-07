@@ -536,3 +536,15 @@ body.jgm-woodmart-menu-open .jgm-panel,
 body.jgm-woodmart-menu-open .jgm-backdrop {
 	display: none !important;
 }
+.jgm-panel-inner {
+	padding-bottom: 0 !important;
+}
+
+.jgm-actions {
+	position: sticky;
+	bottom: 0;
+	z-index: 5;
+	background: #ffffff;
+	padding: 12px 0 16px;
+	border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
