@@ -133,6 +133,33 @@
 			});
 		}
 
+		function expandSectionsWithActiveFilters() {
+	bar.querySelectorAll('.jgm-mobile-section').forEach(function (section) {
+		var hasActiveFilter = section.querySelector(
+			'.jgm-type-link.is-active, .jgm-check:checked, [data-jgm-toggle].is-active'
+		);
+
+		if (!hasActiveFilter) return;
+
+		var sectionToggle = section.querySelector('[data-jgm-section-toggle]');
+		if (!sectionToggle) return;
+
+		var contentId = sectionToggle.getAttribute('aria-controls');
+		if (!contentId) return;
+
+		var contentEl = bar.querySelector('#' + contentId);
+		if (!contentEl) return;
+
+		sectionToggle.setAttribute('aria-expanded', 'true');
+		contentEl.hidden = false;
+
+		var indicator = sectionToggle.querySelector('span[aria-hidden="true"]');
+		if (indicator) {
+			indicator.textContent = '−';
+		}
+	});
+}
+
 		function initStateFromDom() {
 			['jg_filter_farben', 'jg_filter_groessen'].forEach(function (key) {
 				state[key] = new Set();
@@ -175,7 +202,8 @@
 		syncToggleUI('jg_filter_farben');
 		syncToggleUI('jg_filter_groessen');
 		syncBrandRows();
-		closeAll(false);
+		expandSectionsWithActiveFilters();
+closeAll(false);
 
 		panelButtons.forEach(function (button) {
 			button.addEventListener('click', function (event) {
