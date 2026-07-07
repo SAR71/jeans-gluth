@@ -222,7 +222,8 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			<span class="jgm-sr-only" aria-live="polite" aria-atomic="true" data-jgm-live-region></span>
 
 			<button class="jgm-btn" type="button" data-jgm-panel="jgm-panel-filter" aria-haspopup="dialog" aria-controls="jgm-panel-filter" aria-expanded="false" aria-label="Filter öffnen">
-				<span>FILTER</span><span class="jgm-chev" aria-hidden="true">▾</span>
+				<span>FILTER <span class="jgm-filter-count" data-jgm-filter-count></span></span>
+				<span class="jgm-chev" aria-hidden="true">▾</span>
 			</button>
 
 			<button class="jgm-btn" type="button" data-jgm-panel="jgm-panel-sort" aria-haspopup="dialog" aria-controls="jgm-panel-sort" aria-expanded="false" aria-label="Sortierung öffnen">

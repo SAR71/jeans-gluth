@@ -133,6 +133,24 @@
 				row.classList.toggle('is-active', !!input.checked);
 			});
 		}
+		function updateFilterCount() {
+			var countEl = bar.querySelector('[data-jgm-filter-count]');
+			if (!countEl) return;
+
+			var count = 0;
+
+			count += getMarkeChecks().filter(function (input) {
+				return input.checked;
+			}).length;
+
+			count += state.jg_filter_farben ? state.jg_filter_farben.size : 0;
+			count += state.jg_filter_groessen ? state.jg_filter_groessen.size : 0;
+
+			if (state.jg_new) count++;
+			if (state.jg_sale) count++;
+
+			countEl.textContent = count > 0 ? '(' + count + ')' : '';
+		}
 
 		function expandSectionsWithActiveFilters() {
 	bar.querySelectorAll('.jgm-mobile-section').forEach(function (section) {
@@ -202,15 +220,17 @@
 			syncBrandRows();
 			syncToggleUI('jg_filter_farben');
 			syncToggleUI('jg_filter_groessen');
+			updateFilterCount();
 			announce('Filter zurückgesetzt');
 		}
 
 		initStateFromDom();
 		syncToggleUI('jg_filter_farben');
 		syncToggleUI('jg_filter_groessen');
-		syncBrandRows();
+			syncBrandRows();
 		expandSectionsWithActiveFilters();
-closeAll(false);
+		updateFilterCount();
+		closeAll(false);
 
 		panelButtons.forEach(function (button) {
 			button.addEventListener('click', function (event) {
@@ -246,6 +266,7 @@ closeAll(false);
 
 			if (target.matches('.jgm-check[data-jgm-filter="jg_filter_marke"]')) {
 				syncBrandRows();
+				updateFilterCount();
 			}
 		});
 
@@ -305,6 +326,7 @@ closeAll(false);
 
 					queryToggle.classList.toggle('is-active', state[queryKey]);
 					queryToggle.setAttribute('aria-pressed', state[queryKey] ? 'true' : 'false');
+					updateFilterCount();
 
 					return;
 				}
@@ -323,6 +345,7 @@ closeAll(false);
 				}
 
 				syncToggleUI(toggleKey);
+				updateFilterCount();
 				return;
 			}
 
