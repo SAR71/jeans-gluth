@@ -458,6 +458,19 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			}
 		}
 
+
+		/*
+		 * Wenn wir uns bereits auf einer Typ-Kategorie befinden, ist diese Kategorie
+		 * die Wahrheit. Das verhindert, dass ein alter/staler jg_filter_typ-Parameter
+		 * aus dem Browser-Back-Cache fälschlicherweise einen anderen Typ anhakt.
+		 */
+		if ( $typ_active_id > 0 ) {
+			$typ_active_term = get_term( $typ_active_id, 'product_cat' );
+			if ( $typ_active_term && ! is_wp_error( $typ_active_term ) && ! empty( $typ_active_term->slug ) ) {
+				$selected_typ = [ sanitize_title( $typ_active_term->slug ) ];
+			}
+		}
+
 		$terms_marke        = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] ) : [];
 		$terms_farben       = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] ) : [];
 		$terms_groessen_int = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] ) : [];

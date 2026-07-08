@@ -1,4 +1,4 @@
-// LastChanged: 2026-07-07 00:00:00
+// LastChanged: 2026-07-08 00:00:00
 (function () {
 	'use strict';
 
@@ -205,6 +205,60 @@
 			if (state.jg_new && state.jg_sale) {
 				state.jg_sale = false;
 			}
+		}
+
+		function normalizeUrlPath(value) {
+			if (!value) return '';
+
+			try {
+				var url = new URL(value, window.location.origin);
+				return url.pathname.replace(/\/+$/, '').toLowerCase();
+			} catch (error) {
+				return String(value).split('?')[0].replace(/\/+$/, '').toLowerCase();
+			}
+		}
+
+		function getTypeSlugFromCurrentCategoryUrl() {
+			var currentPath = normalizeUrlPath(window.location.href);
+			var basePath = normalizeUrlPath(bar.getAttribute('data-jgm-type-base-url') || '');
+			var matchedSlug = '';
+
+			getChecks('jg_filter_typ').some(function (input) {
+				var optionPath = normalizeUrlPath(input.getAttribute('data-jgm-typ-url') || '');
+
+				if (optionPath && optionPath !== basePath && optionPath === currentPath) {
+					matchedSlug = String(input.value || '').toLowerCase();
+					return true;
+				}
+
+				return false;
+			});
+
+			return matchedSlug;
+		}
+
+		function getTypeSlugsFromUrlParam() {
+			var raw = new URL(window.location.href).searchParams.get('jg_filter_typ') || '';
+
+			return raw
+				.split(',')
+				.map(function (value) { return value.trim().toLowerCase(); })
+				.filter(Boolean);
+		}
+
+		function syncTypeChecksFromLocation() {
+			var categorySlug = getTypeSlugFromCurrentCategoryUrl();
+			var selected = categorySlug ? [categorySlug] : getTypeSlugsFromUrlParam();
+			var selectedSet = new Set(selected);
+
+			getChecks('jg_filter_typ').forEach(function (input) {
+				var checked = selectedSet.has(String(input.value || '').toLowerCase());
+				input.checked = checked;
+				input.defaultChecked = checked;
+			});
+
+			syncCheckRows();
+			updateFilterCount();
 		}
 
 		function getSelectedTypUrl() {
@@ -614,7 +668,13 @@
 			announce('Dialog geschlossen');
 		});
 
+		window.addEventListener('pageshow', function () {
+			syncTypeChecksFromLocation();
+			requestLiveAvailability();
+		});
+
 		initStateFromDom();
+		syncTypeChecksFromLocation();
 		syncToggleUI('jg_filter_farben');
 		syncToggleUI('jg_filter_groessen');
 		syncSpecialToggles();
