@@ -371,6 +371,34 @@ if ( ! function_exists( 'jg_filterbar_mobile_ajax_options' ) ) {
 		$ids_for_farben   = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'farben' );
 		$ids_for_groessen = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'groessen' );
 		$ids_for_typ      = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'typ' );
+		$ids_for_sale     = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'sale' );
+		$ids_for_new      = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'new' );
+
+		$sale_available = false;
+		if ( function_exists( 'wc_get_product_ids_on_sale' ) ) {
+			$sale_ids = array_map( 'absint', (array) wc_get_product_ids_on_sale() );
+			$sale_available = ! empty( array_intersect( array_map( 'absint', (array) $ids_for_sale ), $sale_ids ) );
+		}
+
+		$new_available = false;
+		if ( ! empty( $ids_for_new ) ) {
+			$new_ids = get_posts( [
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'posts_per_page' => 1,
+				'no_found_rows'  => true,
+				'post__in'       => array_map( 'absint', (array) $ids_for_new ),
+				'date_query'     => [
+					[
+						'after'     => gmdate( 'Y-m-d', strtotime( '-30 days' ) ),
+						'inclusive' => true,
+						'column'    => 'post_date_gmt',
+					],
+				],
+			] );
+			$new_available = ! empty( $new_ids );
+		}
 
 		wp_send_json_success(
 			[
@@ -379,6 +407,8 @@ if ( ! function_exists( 'jg_filterbar_mobile_ajax_options' ) ) {
 					'farben'   => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_farben, 'pa_colorgroup' ),
 					'groessen' => jg_filterbar_mobile_size_slugs_for_products( $ids_for_groessen ),
 					'typ'      => jg_filterbar_mobile_type_slugs_for_products( $ids_for_typ, $context_term_id ),
+					'sale'     => $sale_available,
+					'new'      => $new_available,
 				],
 			]
 		);
@@ -410,8 +440,10 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$sale_on = ( ! empty( $_GET['jg_sale'] ) && $_GET['jg_sale'] === '1' );
 		$new_on  = ( ! empty( $_GET['jg_new'] ) && $_GET['jg_new'] === '1' );
 
-		$show_sale_toggle = function_exists( 'jg_has_sale_products_in_context' ) ? jg_has_sale_products_in_context() : true;
-		$show_new_toggle  = function_exists( 'jg_has_new_products_in_context' ) ? jg_has_new_products_in_context() : true;
+		// NEU und SALE werden immer angezeigt. Wenn aktuell keine passenden Produkte vorhanden sind,
+		// werden sie nur deaktiviert/ausgegraut, aber niemals ausgeblendet.
+		$sale_available = function_exists( 'jg_has_sale_products_in_context' ) ? jg_has_sale_products_in_context() : true;
+		$new_available  = function_exists( 'jg_has_new_products_in_context' ) ? jg_has_new_products_in_context() : true;
 
 		$typ_items     = [];
 		$typ_active_id = 0;
@@ -604,33 +636,31 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 					<div class="jgm-mobile-sections">
 
-						<?php if ( $show_new_toggle || $show_sale_toggle ) : ?>
 						<div class="jgm-mobile-section jgm-mobile-section-special">
 							<div class="jgm-special-filter-list">
-								<?php if ( $show_new_toggle ) : ?>
-									<button
-										type="button"
-										class="jgm-special-filter<?php echo $new_on ? ' is-active' : ''; ?>"
-										data-jgm-toggle-query="jg_new"
-										aria-pressed="<?php echo $new_on ? 'true' : 'false'; ?>"
-									>
-										NEU
-									</button>
-								<?php endif; ?>
+								<?php $new_disabled = ( ! $new_available && ! $new_on ); ?>
+								<button
+									type="button"
+									class="jgm-special-filter<?php echo $new_on ? ' is-active' : ''; ?><?php echo $new_disabled ? ' jgm-option-unavailable' : ''; ?>"
+									data-jgm-toggle-query="jg_new"
+									aria-pressed="<?php echo $new_on ? 'true' : 'false'; ?>"
+									<?php disabled( $new_disabled ); ?>
+								>
+									NEU
+								</button>
 
-								<?php if ( $show_sale_toggle ) : ?>
-									<button
-										type="button"
-										class="jgm-special-filter<?php echo $sale_on ? ' is-active' : ''; ?>"
-										data-jgm-toggle-query="jg_sale"
-										aria-pressed="<?php echo $sale_on ? 'true' : 'false'; ?>"
-									>
-										SALE
-									</button>
-								<?php endif; ?>
+								<?php $sale_disabled = ( ! $sale_available && ! $sale_on ); ?>
+								<button
+									type="button"
+									class="jgm-special-filter<?php echo $sale_on ? ' is-active' : ''; ?><?php echo $sale_disabled ? ' jgm-option-unavailable' : ''; ?>"
+									data-jgm-toggle-query="jg_sale"
+									aria-pressed="<?php echo $sale_on ? 'true' : 'false'; ?>"
+									<?php disabled( $sale_disabled ); ?>
+								>
+									SALE
+								</button>
 							</div>
 						</div>
-						<?php endif; ?>
 
 						<?php if ( ! empty( $typ_items ) ) : ?>
 						<div class="jgm-mobile-section">

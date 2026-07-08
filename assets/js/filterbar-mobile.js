@@ -371,6 +371,16 @@
 			});
 		}
 
+		function setSpecialAvailability(queryKey, isAvailable) {
+			bar.querySelectorAll('[data-jgm-toggle-query="' + queryKey + '"]').forEach(function (el) {
+				var isActive = el.classList.contains('is-active');
+				var disabled = !isAvailable && !isActive;
+
+				el.disabled = disabled;
+				el.classList.toggle('jgm-option-unavailable', disabled);
+			});
+		}
+
 		function applyLiveAvailability(payload) {
 			if (!payload || !payload.available) return;
 
@@ -378,6 +388,8 @@
 			setOptionAvailability('.jgm-check[data-jgm-filter="jg_filter_marke"]', payload.available.marke || []);
 			setOptionAvailability('[data-jgm-toggle="jg_filter_farben"][data-jgm-value]', payload.available.farben || []);
 			setOptionAvailability('[data-jgm-toggle="jg_filter_groessen"][data-jgm-value]', payload.available.groessen || []);
+			setSpecialAvailability('jg_sale', payload.available.sale === true);
+			setSpecialAvailability('jg_new', payload.available.new === true);
 		}
 
 		var liveUpdateTimer = null;
