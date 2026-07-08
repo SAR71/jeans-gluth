@@ -1,4 +1,4 @@
-// LastChanged: 2026-07-08 00:00:00 - Performance v3-safe
+// LastChanged: 2026-07-08 00:00:00
 (function () {
 	'use strict';
 
@@ -328,6 +328,7 @@
 			syncToggleUI('jg_filter_groessen');
 			syncSpecialToggles();
 			updateFilterCount();
+			requestLiveAvailability();
 
 			announce('Filter zurückgesetzt');
 		}
@@ -393,20 +394,6 @@
 
 		var liveUpdateTimer = null;
 		var liveUpdateController = null;
-		var liveAvailabilityCache = Object.create(null);
-		var lastLiveAvailabilityKey = '';
-
-		function getLiveAvailabilityCacheKey(filters) {
-			return JSON.stringify({
-				context: bar.getAttribute('data-jgm-context-term-id') || '0',
-				marke: (filters.marke || []).slice().sort(),
-				typ: (filters.typ || []).slice().sort(),
-				farben: (filters.farben || []).slice().sort(),
-				groessen: (filters.groessen || []).slice().sort(),
-				sale: filters.sale || '',
-				newFilter: filters.newFilter || ''
-			});
-		}
 
 		function requestLiveAvailability() {
 			var ajaxUrl = bar.getAttribute('data-jgm-ajax-url') || '';
@@ -414,36 +401,12 @@
 
 			if (!ajaxUrl || !nonce || !window.fetch) return;
 
-			var filters = collectLiveFilters();
-
-			/*
-			 * Performance-Schutz für sehr große Kategorien.
-			 * Beispiel: Damen. Ohne Typ-Eingrenzung kann die Live-Verfügbarkeit
-			 * auf Smartphones zu schwer werden. In diesem Fall erst nach Typ-Auswahl
-			 * live nachladen; normales Anwenden bleibt unverändert.
-			 */
-			var contextCount = parseInt(bar.getAttribute('data-jgm-context-count') || '0', 10);
-			if (contextCount > 800 && (!filters.typ || filters.typ.length === 0)) {
-				return;
-			}
-			var cacheKey = getLiveAvailabilityCacheKey(filters);
-
-			if (liveAvailabilityCache[cacheKey]) {
-				applyLiveAvailability(liveAvailabilityCache[cacheKey]);
-				lastLiveAvailabilityKey = cacheKey;
-				return;
-			}
-
-			if (cacheKey === lastLiveAvailabilityKey) {
-				return;
-			}
-
 			if (liveUpdateTimer) {
 				window.clearTimeout(liveUpdateTimer);
 			}
 
 			liveUpdateTimer = window.setTimeout(function () {
-				lastLiveAvailabilityKey = cacheKey;
+				var filters = collectLiveFilters();
 				var formData = new FormData();
 
 				formData.append('action', 'jg_filterbar_mobile_options');
@@ -471,14 +434,13 @@
 					.then(function (response) { return response.json(); })
 					.then(function (response) {
 						if (response && response.success && response.data) {
-							liveAvailabilityCache[cacheKey] = response.data;
 							applyLiveAvailability(response.data);
 						}
 					})
 					.catch(function (error) {
 						if (error && error.name === 'AbortError') return;
 					});
-			}, 450);
+			}, 160);
 		}
 
 		function handlePanelButtonClick(event) {
@@ -720,6 +682,7 @@
 
 		window.addEventListener('pageshow', function () {
 			syncTypeChecksFromLocation();
+			requestLiveAvailability();
 		});
 
 		initStateFromDom();
@@ -746,6 +709,7 @@
 	}
 });
 		updateFilterCount();
+		requestLiveAvailability();
 		closeAll(false);
 	}
 
@@ -796,4 +760,14 @@
 		boot();
 	}
 
+	if (window.MutationObserver) {
+		var observer = new MutationObserver(function () {
+			initMobileFilterbar();
+		});
+
+		observer.observe(document.documentElement, {
+			childList: true,
+			subtree: true
+		});
+	}
 })();
