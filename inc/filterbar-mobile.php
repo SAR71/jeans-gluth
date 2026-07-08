@@ -404,6 +404,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$selected_marke    = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_marke' ) : [];
 		$selected_farben   = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_farben' ) : [];
 		$selected_groessen = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_groessen' ) : [];
+		$selected_typ      = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_typ' ) : [];
 		$selected_orderby  = isset( $_GET['orderby'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['orderby'] ) ) : '';
 
 		$sale_on = ( ! empty( $_GET['jg_sale'] ) && $_GET['jg_sale'] === '1' );
@@ -461,6 +462,56 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$terms_farben       = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] ) : [];
 		$terms_groessen_int = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] ) : [];
 		$terms_groessen_eu  = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_eu', [ 'jg_filter_groessen' ] ) : [];
+
+		/*
+		 * Mobile Filter: Im Dropdown sollen immer alle grundsätzlich verfügbaren
+		 * Optionen des aktuellen Kategorie-Kontexts sichtbar bleiben. Nicht passende
+		 * Optionen werden per JS/AJAX deaktiviert, aber nicht aus dem DOM entfernt.
+		 * Dadurch bleiben sie auch nach Produktdetail -> Zurück korrekt sichtbar.
+		 */
+		if ( $typ_context_term_id > 0 && function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
+			$base_filters = [
+				'marke'    => [],
+				'farben'   => [],
+				'groessen' => [],
+				'typ'      => [],
+				'sale'     => false,
+				'new'      => false,
+			];
+
+			$base_product_ids = jg_filterbar_mobile_query_product_ids( $base_filters, $typ_context_term_id, '' );
+
+			if ( ! empty( $base_product_ids ) ) {
+				$base_marke_terms = wp_get_object_terms( $base_product_ids, $tax_marke, [ 'orderby' => 'name', 'order' => 'ASC' ] );
+				if ( ! is_wp_error( $base_marke_terms ) && ! empty( $base_marke_terms ) ) {
+					$terms_marke = array_values( array_filter( $base_marke_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
+				}
+
+				$base_farben_terms = wp_get_object_terms( $base_product_ids, $tax_farben, [ 'orderby' => 'name', 'order' => 'ASC' ] );
+				if ( ! is_wp_error( $base_farben_terms ) && ! empty( $base_farben_terms ) ) {
+					$terms_farben = array_values( array_filter( $base_farben_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
+				}
+
+				if ( function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) && function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
+					$available_size_slugs = array_fill_keys( jg_filterbar_mobile_size_slugs_for_products( $base_product_ids ), true );
+					$allowed_rows         = jg_groessen_filter_allowed_rows();
+					$terms_groessen_int   = [];
+					$terms_groessen_eu    = [];
+
+					foreach ( $allowed_rows['int'] as $slug => $label ) {
+						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
+							$terms_groessen_int[] = (object) [ 'slug' => $slug, 'name' => $label ];
+						}
+					}
+
+					foreach ( $allowed_rows['eu'] as $slug => $label ) {
+						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
+							$terms_groessen_eu[] = (object) [ 'slug' => $slug, 'name' => $label ];
+						}
+					}
+				}
+			}
+		}
 
 		$int_order = [ 'xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl', '3xl', '4xl', '5xl' ];
 		usort(
@@ -583,7 +634,8 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 											continue;
 										}
 
-										$is_typ_active = $typ_active_id && ( (int) $typ_term->term_id === (int) $typ_active_id );
+										$typ_slug      = sanitize_title( $typ_term->slug );
+										$is_typ_active = in_array( $typ_slug, $selected_typ, true ) || ( $typ_active_id && ( (int) $typ_term->term_id === (int) $typ_active_id ) );
 										?>
 										<label class="jgm-checkrow<?php echo $is_typ_active ? ' is-active' : ''; ?>">
 											<input
@@ -591,7 +643,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 												class="jgm-check"
 												data-jgm-filter="jg_filter_typ"
 												data-jgm-typ-url="<?php echo esc_url( $typ_link ); ?>"
-												value="<?php echo esc_attr( sanitize_title( $typ_term->slug ) ); ?>"
+												value="<?php echo esc_attr( $typ_slug ); ?>"
 												<?php checked( $is_typ_active ); ?>
 											/>
 											<span class="jgm-checkbox-ui" aria-hidden="true"></span>

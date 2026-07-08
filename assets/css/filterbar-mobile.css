@@ -584,3 +584,21 @@ body.jgm-woodmart-menu-open .jgm-backdrop {
 .jgm-filterbar .jgm-option-unavailable:not(.is-active) * {
 	cursor: not-allowed !important;
 }
+
+/* Nicht verfügbare mobile Filteroptionen deutlicher ausgrauen */
+.jgm-filterbar .jgm-option-unavailable:not(.is-active) {
+	opacity: 0.16 !important;
+	filter: grayscale(1) saturate(0.15) !important;
+}
+
+.jgm-filterbar .jgm-color-item.jgm-option-unavailable:not(.is-active) .jgm-color-dot,
+.jgm-filterbar .jgm-size-pill.jgm-option-unavailable:not(.is-active),
+.jgm-filterbar .jgm-checkrow.jgm-option-unavailable:not(.is-active) {
+	opacity: 0.18 !important;
+	filter: grayscale(1) saturate(0.1) !important;
+}
+
+.jgm-filterbar .jgm-option-unavailable:not(.is-active),
+.jgm-filterbar .jgm-option-unavailable:not(.is-active) * {
+	cursor: not-allowed !important;
+}
