@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-07-07 00:00:00
+// LastChanged: 2026-07-08 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -831,6 +831,88 @@ if ( ! function_exists( 'jg_filterbar_mobile_typ_pre_get_posts' ) ) {
 	}
 }
 add_action( 'pre_get_posts', 'jg_filterbar_mobile_typ_pre_get_posts', 25 );
+
+
+
+if ( ! function_exists( 'jg_filterbar_mobile_get_type_arg_for_current_archive' ) ) {
+	function jg_filterbar_mobile_get_type_arg_for_current_archive() {
+		$selected_typ = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_typ' ) : [];
+
+		if ( ! empty( $selected_typ ) ) {
+			return implode( ',', array_map( 'sanitize_title', $selected_typ ) );
+		}
+
+		if ( is_product_category() ) {
+			$current_term = get_queried_object();
+
+			if ( $current_term && ! empty( $current_term->term_id ) && $current_term->taxonomy === 'product_cat' ) {
+				$ancestors = get_ancestors( (int) $current_term->term_id, 'product_cat' );
+				$depth_rel = is_array( $ancestors ) ? count( $ancestors ) : 0;
+
+				// Ebene unterhalb der Typ-Übersicht, z. B. Blusen -> 3/4-Arm-Blusen.
+				if ( $depth_rel >= 2 ) {
+					return sanitize_title( $current_term->slug );
+				}
+			}
+		}
+
+		return '';
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_preserve_type_on_product_links' ) ) {
+	function jg_filterbar_mobile_preserve_type_on_product_links( $permalink, $post ) {
+		if ( is_admin() || ! $post || $post->post_type !== 'product' ) {
+			return $permalink;
+		}
+
+		if ( ! ( is_shop() || is_product_taxonomy() || is_product_category() || is_product_tag() ) ) {
+			return $permalink;
+		}
+
+		$type_arg = jg_filterbar_mobile_get_type_arg_for_current_archive();
+		if ( $type_arg === '' ) {
+			return $permalink;
+		}
+
+		return add_query_arg( 'jg_filter_typ', $type_arg, $permalink );
+	}
+}
+add_filter( 'post_type_link', 'jg_filterbar_mobile_preserve_type_on_product_links', 20, 2 );
+
+if ( ! function_exists( 'jg_filterbar_mobile_preserve_type_on_breadcrumbs' ) ) {
+	function jg_filterbar_mobile_preserve_type_on_breadcrumbs( $crumbs, $breadcrumb ) {
+		if ( ! is_product() || empty( $crumbs ) || ! is_array( $crumbs ) ) {
+			return $crumbs;
+		}
+
+		$selected_typ = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_typ' ) : [];
+		if ( empty( $selected_typ ) ) {
+			return $crumbs;
+		}
+
+		$type_arg = implode( ',', array_map( 'sanitize_title', $selected_typ ) );
+
+		foreach ( $crumbs as $index => $crumb ) {
+			if ( empty( $crumb[1] ) ) {
+				continue;
+			}
+
+			$url = $crumb[1];
+
+			if (
+				strpos( $url, '/shop/' ) !== false ||
+				strpos( $url, '/product-category/' ) !== false ||
+				strpos( $url, '/produkt-kategorie/' ) !== false
+			) {
+				$crumbs[ $index ][1] = add_query_arg( 'jg_filter_typ', $type_arg, $url );
+			}
+		}
+
+		return $crumbs;
+	}
+}
+add_filter( 'woocommerce_get_breadcrumb', 'jg_filterbar_mobile_preserve_type_on_breadcrumbs', 20, 2 );
 
 add_shortcode( 'jg_filterbar_mobile', 'jg_filterbar_mobile_shortcode' );
 add_shortcode( 'filterbar-mobile', 'jg_filterbar_mobile_shortcode' );

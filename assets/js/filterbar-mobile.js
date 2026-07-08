@@ -236,7 +236,12 @@
 			setQueryParam(url, 'jg_sale', state.jg_sale ? '1' : null);
 			setQueryParam(url, 'jg_new', state.jg_new ? '1' : null);
 
-			if (typValues.length > 1 || (!typUrl && typValues.length > 0)) {
+			/*
+			 * Typ zusätzlich immer als Query-Parameter behalten.
+			 * Auch wenn wir bei genau einem Typ auf dessen Kategorie-URL wechseln,
+			 * bleibt so der aktive Haken nach Produktdetail -> Zurück/Breadcrumb erhalten.
+			 */
+			if (typValues.length > 0) {
 				setQueryParam(url, 'jg_filter_typ', typValues.join(','));
 			} else {
 				url.searchParams.delete('jg_filter_typ');
