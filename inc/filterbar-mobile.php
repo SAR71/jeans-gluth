@@ -579,58 +579,47 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			}
 		}
 
-		$terms_marke        = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_marke, [ 'jg_filter_marke' ] ) : [];
-		$terms_farben       = function_exists( 'jg_get_tax_terms_for_filtered_products' ) ? jg_get_tax_terms_for_filtered_products( $tax_farben, [ 'jg_filter_farben' ] ) : [];
-		$terms_groessen_int = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_int', [ 'jg_filter_groessen' ] ) : [];
-		$terms_groessen_eu  = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_eu', [ 'jg_filter_groessen' ] ) : [];
-
 		/*
-		 * Mobile Filter: Im Dropdown sollen immer alle grundsätzlich verfügbaren
-		 * Optionen des aktuellen Kategorie-Kontexts sichtbar bleiben. Nicht passende
-		 * Optionen werden per JS/AJAX deaktiviert, aber nicht aus dem DOM entfernt.
-		 * Dadurch bleiben sie auch nach Produktdetail -> Zurück korrekt sichtbar.
+		 * Performance V3.2:
+		 * Beim Seitenaufbau KEINE Produktmenge/Variationen mehr berechnen.
+		 * Wir rendern die grundsätzlich vorhandenen Begriffe leichtgewichtig.
+		 * Die kontextbezogene Verfügbarkeit wird erst beim Öffnen des Filters per AJAX aktualisiert.
 		 */
-		if ( $typ_context_term_id > 0 && function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
-			$base_filters = [
-				'marke'    => [],
-				'farben'   => [],
-				'groessen' => [],
-				'typ'      => [],
-				'sale'     => false,
-				'new'      => false,
-			];
+		$terms_marke = get_terms(
+			[
+				'taxonomy'   => $tax_marke,
+				'hide_empty' => true,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			]
+		);
+		if ( is_wp_error( $terms_marke ) ) {
+			$terms_marke = [];
+		}
 
-			$base_product_ids = jg_filterbar_mobile_query_product_ids( $base_filters, $typ_context_term_id, '' );
+		$terms_farben = get_terms(
+			[
+				'taxonomy'   => $tax_farben,
+				'hide_empty' => true,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			]
+		);
+		if ( is_wp_error( $terms_farben ) ) {
+			$terms_farben = [];
+		}
 
-			if ( ! empty( $base_product_ids ) ) {
-				$base_marke_terms = wp_get_object_terms( $base_product_ids, $tax_marke, [ 'orderby' => 'name', 'order' => 'ASC' ] );
-				if ( ! is_wp_error( $base_marke_terms ) && ! empty( $base_marke_terms ) ) {
-					$terms_marke = array_values( array_filter( $base_marke_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
-				}
+		$terms_groessen_int = [];
+		$terms_groessen_eu  = [];
+		if ( function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
+			$allowed_rows = jg_groessen_filter_allowed_rows();
 
-				$base_farben_terms = wp_get_object_terms( $base_product_ids, $tax_farben, [ 'orderby' => 'name', 'order' => 'ASC' ] );
-				if ( ! is_wp_error( $base_farben_terms ) && ! empty( $base_farben_terms ) ) {
-					$terms_farben = array_values( array_filter( $base_farben_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
-				}
+			foreach ( (array) $allowed_rows['int'] as $slug => $label ) {
+				$terms_groessen_int[] = (object) [ 'slug' => sanitize_title( $slug ), 'name' => (string) $label ];
+			}
 
-				if ( function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) && function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
-					$available_size_slugs = array_fill_keys( jg_filterbar_mobile_size_slugs_for_products( $base_product_ids ), true );
-					$allowed_rows         = jg_groessen_filter_allowed_rows();
-					$terms_groessen_int   = [];
-					$terms_groessen_eu    = [];
-
-					foreach ( $allowed_rows['int'] as $slug => $label ) {
-						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
-							$terms_groessen_int[] = (object) [ 'slug' => $slug, 'name' => $label ];
-						}
-					}
-
-					foreach ( $allowed_rows['eu'] as $slug => $label ) {
-						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
-							$terms_groessen_eu[] = (object) [ 'slug' => $slug, 'name' => $label ];
-						}
-					}
-				}
+			foreach ( (array) $allowed_rows['eu'] as $slug => $label ) {
+				$terms_groessen_eu[] = (object) [ 'slug' => sanitize_title( $slug ), 'name' => (string) $label ];
 			}
 		}
 

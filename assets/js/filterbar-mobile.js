@@ -703,7 +703,8 @@
 
 		window.addEventListener('pageshow', function () {
 			syncTypeChecksFromLocation();
-			requestLiveAvailability();
+			syncCheckRows();
+			updateFilterCount();
 		});
 
 		initStateFromDom();
@@ -780,14 +781,10 @@
 		boot();
 	}
 
-	if (window.MutationObserver) {
-		var observer = new MutationObserver(function () {
-			initMobileFilterbar();
-		});
-
-		observer.observe(document.documentElement, {
-			childList: true,
-			subtree: true
-		});
-	}
+	/*
+	 * Performance V3.2:
+	 * Der globale MutationObserver wurde entfernt. Elementor/Woodmart erzeugen auf großen
+	 * Kategorien sehr viele DOM-Mutationen; dadurch wurde initMobileFilterbar() ständig
+	 * erneut angestoßen. Die Initialisierung läuft jetzt nur noch beim Boot.
+	 */
 })();
