@@ -105,6 +105,289 @@ if ( ! function_exists( 'jg_filterbar_mobile_get_swatch_for_term' ) ) {
 	}
 }
 
+
+if ( ! function_exists( 'jg_filterbar_mobile_parse_ajax_list' ) ) {
+	function jg_filterbar_mobile_parse_ajax_list( $key ) {
+		if ( ! isset( $_POST[ $key ] ) ) {
+			return [];
+		}
+
+		$raw = wp_unslash( $_POST[ $key ] );
+
+		if ( is_array( $raw ) ) {
+			$parts = $raw;
+		} else {
+			$parts = explode( ',', (string) $raw );
+		}
+
+		$parts = array_map( 'sanitize_title', $parts );
+		$parts = array_filter( $parts );
+
+		return array_values( array_unique( $parts ) );
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_current_ajax_filters' ) ) {
+	function jg_filterbar_mobile_current_ajax_filters() {
+		return [
+			'marke'    => jg_filterbar_mobile_parse_ajax_list( 'marke' ),
+			'farben'   => jg_filterbar_mobile_parse_ajax_list( 'farben' ),
+			'groessen' => jg_filterbar_mobile_parse_ajax_list( 'groessen' ),
+			'typ'      => jg_filterbar_mobile_parse_ajax_list( 'typ' ),
+			'sale'     => ! empty( $_POST['sale'] ) && (string) wp_unslash( $_POST['sale'] ) === '1',
+			'new'      => ! empty( $_POST['new'] ) && (string) wp_unslash( $_POST['new'] ) === '1',
+		];
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_product_has_type_term' ) ) {
+	function jg_filterbar_mobile_product_has_type_term( $product_id, $type_term_id ) {
+		$product_id   = absint( $product_id );
+		$type_term_id = absint( $type_term_id );
+
+		if ( ! $product_id || ! $type_term_id ) {
+			return false;
+		}
+
+		$terms = get_the_terms( $product_id, 'product_cat' );
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return false;
+		}
+
+		foreach ( $terms as $term ) {
+			if ( (int) $term->term_id === $type_term_id ) {
+				return true;
+			}
+
+			$ancestors = get_ancestors( (int) $term->term_id, 'product_cat' );
+			if ( in_array( $type_term_id, array_map( 'absint', (array) $ancestors ), true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
+	function jg_filterbar_mobile_query_product_ids( $filters, $context_term_id = 0, $exclude = '' ) {
+		$context_term_id = absint( $context_term_id );
+		$exclude         = (string) $exclude;
+
+		$tax_query = [ 'relation' => 'AND' ];
+		$meta_query = [
+			'relation' => 'AND',
+			[
+				'key'     => '_stock_status',
+				'value'   => 'instock',
+				'compare' => '=',
+			],
+		];
+
+		if ( $context_term_id > 0 ) {
+			$tax_query[] = [
+				'taxonomy'         => 'product_cat',
+				'field'            => 'term_id',
+				'terms'            => [ $context_term_id ],
+				'operator'         => 'IN',
+				'include_children' => true,
+			];
+		}
+
+		if ( $exclude !== 'typ' && ! empty( $filters['typ'] ) ) {
+			$tax_query[] = [
+				'taxonomy'         => 'product_cat',
+				'field'            => 'slug',
+				'terms'            => array_values( (array) $filters['typ'] ),
+				'operator'         => 'IN',
+				'include_children' => true,
+			];
+		}
+
+		if ( $exclude !== 'marke' && ! empty( $filters['marke'] ) ) {
+			$tax_query[] = [
+				'taxonomy'         => 'pa_marke',
+				'field'            => 'slug',
+				'terms'            => array_values( (array) $filters['marke'] ),
+				'operator'         => 'IN',
+				'include_children' => false,
+			];
+		}
+
+		if ( $exclude !== 'farben' && ! empty( $filters['farben'] ) ) {
+			$tax_query[] = [
+				'taxonomy'         => 'pa_colorgroup',
+				'field'            => 'slug',
+				'terms'            => array_values( (array) $filters['farben'] ),
+				'operator'         => 'IN',
+				'include_children' => false,
+			];
+		}
+
+		$args = [
+			'post_type'              => 'product',
+			'post_status'            => 'publish',
+			'fields'                 => 'ids',
+			'posts_per_page'         => -1,
+			'no_found_rows'          => true,
+			'cache_results'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+			'meta_query'             => $meta_query,
+		];
+
+		if ( count( $tax_query ) > 1 ) {
+			$args['tax_query'] = $tax_query;
+		}
+
+		if ( $exclude !== 'sale' && ! empty( $filters['sale'] ) && function_exists( 'wc_get_product_ids_on_sale' ) ) {
+			$sale_ids = array_map( 'absint', (array) wc_get_product_ids_on_sale() );
+			$args['post__in'] = ! empty( $sale_ids ) ? $sale_ids : [ 0 ];
+		}
+
+		if ( $exclude !== 'new' && ! empty( $filters['new'] ) ) {
+			$args['date_query'] = [
+				[
+					'after'     => gmdate( 'Y-m-d', strtotime( '-30 days' ) ),
+					'inclusive' => true,
+					'column'    => 'post_date_gmt',
+				],
+			];
+		}
+
+		$product_ids = get_posts( $args );
+		$product_ids = array_map( 'absint', (array) $product_ids );
+
+		if ( $exclude !== 'groessen' && ! empty( $filters['groessen'] ) && function_exists( 'jg_wc_get_product_cached' ) && function_exists( 'jg_product_matches_selected_sizes_instock' ) ) {
+			$matched = [];
+			foreach ( $product_ids as $product_id ) {
+				$product = jg_wc_get_product_cached( $product_id );
+				if ( jg_product_matches_selected_sizes_instock( $product, $filters['groessen'] ) ) {
+					$matched[] = $product_id;
+				}
+			}
+			$product_ids = $matched;
+		}
+
+		return array_values( array_unique( array_filter( $product_ids ) ) );
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_tax_slugs_for_products' ) ) {
+	function jg_filterbar_mobile_tax_slugs_for_products( $product_ids, $taxonomy ) {
+		$product_ids = array_values( array_filter( array_map( 'absint', (array) $product_ids ) ) );
+		if ( empty( $product_ids ) ) {
+			return [];
+		}
+
+		$terms = wp_get_object_terms( $product_ids, $taxonomy, [ 'fields' => 'slugs' ] );
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return [];
+		}
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_title', (array) $terms ) ) ) );
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) ) {
+	function jg_filterbar_mobile_size_slugs_for_products( $product_ids ) {
+		$product_ids = array_values( array_filter( array_map( 'absint', (array) $product_ids ) ) );
+		if ( empty( $product_ids ) ) {
+			return [];
+		}
+
+		$out = [];
+		foreach ( $product_ids as $product_id ) {
+			if ( function_exists( 'jg_wc_get_product_cached' ) ) {
+				$product = jg_wc_get_product_cached( $product_id );
+			} else {
+				$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+			}
+
+			if ( ! $product ) {
+				continue;
+			}
+
+			if ( function_exists( 'jg_groessen_filter_get_product_display_sizes' ) ) {
+				$out = array_merge( $out, jg_groessen_filter_get_product_display_sizes( $product ) );
+				continue;
+			}
+
+			foreach ( [ 'pa_int', 'pa_eu', 'pa_groessen' ] as $tax ) {
+				$slugs = wc_get_product_terms( $product_id, $tax, [ 'fields' => 'slugs' ] );
+				if ( ! is_wp_error( $slugs ) && ! empty( $slugs ) ) {
+					$out = array_merge( $out, array_map( 'sanitize_title', (array) $slugs ) );
+				}
+			}
+		}
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_title', $out ) ) ) );
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_type_slugs_for_products' ) ) {
+	function jg_filterbar_mobile_type_slugs_for_products( $product_ids, $context_term_id ) {
+		$product_ids      = array_values( array_filter( array_map( 'absint', (array) $product_ids ) ) );
+		$context_term_id  = absint( $context_term_id );
+		$available        = [];
+
+		if ( empty( $product_ids ) || ! $context_term_id ) {
+			return [];
+		}
+
+		$type_terms = get_terms(
+			[
+				'taxonomy'   => 'product_cat',
+				'parent'     => $context_term_id,
+				'hide_empty' => false,
+			]
+		);
+
+		if ( is_wp_error( $type_terms ) || empty( $type_terms ) ) {
+			return [];
+		}
+
+		foreach ( $type_terms as $type_term ) {
+			foreach ( $product_ids as $product_id ) {
+				if ( jg_filterbar_mobile_product_has_type_term( $product_id, (int) $type_term->term_id ) ) {
+					$available[] = sanitize_title( $type_term->slug );
+					break;
+				}
+			}
+		}
+
+		return array_values( array_unique( array_filter( $available ) ) );
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_ajax_options' ) ) {
+	function jg_filterbar_mobile_ajax_options() {
+		check_ajax_referer( 'jg_filterbar_mobile_options', 'nonce' );
+
+		$context_term_id = isset( $_POST['context_term_id'] ) ? absint( wp_unslash( $_POST['context_term_id'] ) ) : 0;
+		$filters         = jg_filterbar_mobile_current_ajax_filters();
+
+		$ids_for_marke    = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'marke' );
+		$ids_for_farben   = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'farben' );
+		$ids_for_groessen = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'groessen' );
+		$ids_for_typ      = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'typ' );
+
+		wp_send_json_success(
+			[
+				'available' => [
+					'marke'    => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_marke, 'pa_marke' ),
+					'farben'   => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_farben, 'pa_colorgroup' ),
+					'groessen' => jg_filterbar_mobile_size_slugs_for_products( $ids_for_groessen ),
+					'typ'      => jg_filterbar_mobile_type_slugs_for_products( $ids_for_typ, $context_term_id ),
+				],
+			]
+		);
+	}
+}
+
+add_action( 'wp_ajax_jg_filterbar_mobile_options', 'jg_filterbar_mobile_ajax_options' );
+add_action( 'wp_ajax_nopriv_jg_filterbar_mobile_options', 'jg_filterbar_mobile_ajax_options' );
+
 if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 	function jg_filterbar_mobile_shortcode() {
 		if ( ! function_exists( 'is_shop' ) ) {
@@ -132,6 +415,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$typ_items     = [];
 		$typ_active_id = 0;
 		$typ_base_link = '';
+		$typ_context_term_id = 0;
 
 		if ( is_product_category() ) {
 			$current_term = get_queried_object();
@@ -145,6 +429,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 					$level2_id = ( $depth_rel === 1 ) ? $current_id : (int) $current_term->parent;
 
 					if ( $level2_id > 0 ) {
+						$typ_context_term_id = (int) $level2_id;
 						$level2_link = get_term_link( $level2_id, 'product_cat' );
 						if ( ! is_wp_error( $level2_link ) ) {
 							$typ_base_link = $level2_link;
@@ -229,6 +514,9 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			class="jgm-filterbar"
 			data-jgm-filterbar="1"
 			data-jgm-type-base-url="<?php echo esc_url( $typ_base_link ); ?>"
+			data-jgm-context-term-id="<?php echo esc_attr( (string) $typ_context_term_id ); ?>"
+			data-jgm-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
+			data-jgm-ajax-nonce="<?php echo esc_attr( wp_create_nonce( 'jg_filterbar_mobile_options' ) ); ?>"
 			role="navigation"
 			aria-label="Filter mobil"
 		>
@@ -414,7 +702,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 										$checked = in_array( $slug, $selected_marke, true );
 										?>
 										<label class="jgm-checkrow<?php echo $checked ? ' is-active' : ''; ?>">
-											<input type="checkbox" class="jgm-check" data-jgm-filter="jg_filter_marke" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $checked ); ?> />
+											<input type="checkbox" class="jgm-check" data-jgm-filter="jg_filter_marke" data-jgm-available-key="marke" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $checked ); ?> />
 											<span class="jgm-checkbox-ui" aria-hidden="true"></span>
 											<span><?php echo esc_html( $t->name ); ?></span>
 										</label>
@@ -454,6 +742,43 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		return ob_get_clean();
 	}
 }
+
+
+
+if ( ! function_exists( 'jg_filterbar_mobile_typ_pre_get_posts' ) ) {
+	function jg_filterbar_mobile_typ_pre_get_posts( $q ) {
+		if ( is_admin() || ! $q->is_main_query() ) {
+			return;
+		}
+
+		if ( ! ( is_shop() || is_product_taxonomy() || is_product_category() || is_product_tag() ) ) {
+			return;
+		}
+
+		$selected_typ = function_exists( 'jg_get_list_param' ) ? jg_get_list_param( 'jg_filter_typ' ) : [];
+		if ( empty( $selected_typ ) ) {
+			return;
+		}
+
+		$tax_query = $q->get( 'tax_query' );
+		if ( ! is_array( $tax_query ) ) {
+			$tax_query = [];
+		}
+
+		$tax_query[] = [
+			'taxonomy'         => 'product_cat',
+			'field'            => 'slug',
+			'terms'            => $selected_typ,
+			'operator'         => 'IN',
+			'include_children' => true,
+		];
+
+		$tax_query = array_values( $tax_query );
+		array_unshift( $tax_query, [ 'relation' => 'AND' ] );
+		$q->set( 'tax_query', $tax_query );
+	}
+}
+add_action( 'pre_get_posts', 'jg_filterbar_mobile_typ_pre_get_posts', 25 );
 
 add_shortcode( 'jg_filterbar_mobile', 'jg_filterbar_mobile_shortcode' );
 add_shortcode( 'filterbar-mobile', 'jg_filterbar_mobile_shortcode' );

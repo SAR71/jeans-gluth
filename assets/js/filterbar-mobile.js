@@ -224,6 +224,7 @@
 		}
 
 		function applyFilter() {
+			var typValues = getCheckedValues('jg_filter_typ');
 			var typUrl = getSelectedTypUrl();
 			var url = typUrl ? new URL(typUrl, window.location.origin) : new URL(window.location.href);
 
@@ -235,7 +236,12 @@
 			setQueryParam(url, 'jg_sale', state.jg_sale ? '1' : null);
 			setQueryParam(url, 'jg_new', state.jg_new ? '1' : null);
 
-			url.searchParams.delete('jg_filter_typ');
+			if (typValues.length > 1 || (!typUrl && typValues.length > 0)) {
+				setQueryParam(url, 'jg_filter_typ', typValues.join(','));
+			} else {
+				url.searchParams.delete('jg_filter_typ');
+			}
+
 			url.searchParams.delete('paged');
 
 			removeLegacyWooFilterParams(url);
@@ -263,10 +269,110 @@
 			syncToggleUI('jg_filter_groessen');
 			syncSpecialToggles();
 			updateFilterCount();
+			requestLiveAvailability();
 
 			announce('Filter zurückgesetzt');
 		}
-				function handlePanelButtonClick(event) {
+		
+		function collectLiveFilters() {
+			return {
+				marke: getCheckedValues('jg_filter_marke'),
+				typ: getCheckedValues('jg_filter_typ'),
+				farben: Array.from(state.jg_filter_farben),
+				groessen: Array.from(state.jg_filter_groessen),
+				sale: state.jg_sale ? '1' : '',
+				newFilter: state.jg_new ? '1' : ''
+			};
+		}
+
+		function setOptionAvailability(selector, availableSlugs) {
+			var available = new Set((availableSlugs || []).map(function (value) {
+				return String(value);
+			}));
+
+			bar.querySelectorAll(selector).forEach(function (el) {
+				var value = el.value || el.getAttribute('data-jgm-value') || '';
+				var isActive = false;
+
+				if (el.matches('input[type="checkbox"]')) {
+					isActive = !!el.checked;
+				} else {
+					isActive = el.classList.contains('is-active');
+				}
+
+				var isAvailable = available.has(value) || isActive;
+
+				el.disabled = !isAvailable;
+				el.classList.toggle('jgm-option-unavailable', !isAvailable);
+
+				var row = el.closest('.jgm-checkrow');
+				if (row) {
+					row.classList.toggle('jgm-option-unavailable', !isAvailable);
+				}
+			});
+		}
+
+		function applyLiveAvailability(payload) {
+			if (!payload || !payload.available) return;
+
+			setOptionAvailability('.jgm-check[data-jgm-filter="jg_filter_typ"]', payload.available.typ || []);
+			setOptionAvailability('.jgm-check[data-jgm-filter="jg_filter_marke"]', payload.available.marke || []);
+			setOptionAvailability('[data-jgm-toggle="jg_filter_farben"][data-jgm-value]', payload.available.farben || []);
+			setOptionAvailability('[data-jgm-toggle="jg_filter_groessen"][data-jgm-value]', payload.available.groessen || []);
+		}
+
+		var liveUpdateTimer = null;
+		var liveUpdateController = null;
+
+		function requestLiveAvailability() {
+			var ajaxUrl = bar.getAttribute('data-jgm-ajax-url') || '';
+			var nonce = bar.getAttribute('data-jgm-ajax-nonce') || '';
+
+			if (!ajaxUrl || !nonce || !window.fetch) return;
+
+			if (liveUpdateTimer) {
+				window.clearTimeout(liveUpdateTimer);
+			}
+
+			liveUpdateTimer = window.setTimeout(function () {
+				var filters = collectLiveFilters();
+				var formData = new FormData();
+
+				formData.append('action', 'jg_filterbar_mobile_options');
+				formData.append('nonce', nonce);
+				formData.append('context_term_id', bar.getAttribute('data-jgm-context-term-id') || '0');
+				formData.append('marke', filters.marke.join(','));
+				formData.append('typ', filters.typ.join(','));
+				formData.append('farben', filters.farben.join(','));
+				formData.append('groessen', filters.groessen.join(','));
+				formData.append('sale', filters.sale);
+				formData.append('new', filters.newFilter);
+
+				if (liveUpdateController) {
+					liveUpdateController.abort();
+				}
+
+				liveUpdateController = new AbortController();
+
+				fetch(ajaxUrl, {
+					method: 'POST',
+					body: formData,
+					credentials: 'same-origin',
+					signal: liveUpdateController.signal
+				})
+					.then(function (response) { return response.json(); })
+					.then(function (response) {
+						if (response && response.success && response.data) {
+							applyLiveAvailability(response.data);
+						}
+					})
+					.catch(function (error) {
+						if (error && error.name === 'AbortError') return;
+					});
+			}, 160);
+		}
+
+		function handlePanelButtonClick(event) {
 			var button = event.target.closest('.jgm-btn[data-jgm-panel]');
 			if (!button || !bar.contains(button)) return false;
 
@@ -338,6 +444,7 @@
 
 			syncSpecialToggles();
 			updateFilterCount();
+			requestLiveAvailability();
 
 			return true;
 		}
@@ -361,6 +468,7 @@
 
 			syncToggleUI(key);
 			updateFilterCount();
+			requestLiveAvailability();
 
 			return true;
 		}
@@ -457,6 +565,7 @@
 			) {
 				syncCheckRows();
 				updateFilterCount();
+				requestLiveAvailability();
 			}
 		});
 
@@ -523,6 +632,7 @@
 	}
 });
 		updateFilterCount();
+		requestLiveAvailability();
 		closeAll(false);
 	}
 
