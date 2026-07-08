@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-07-08 00:00:00 - Performance v3
+// LastChanged: 2026-07-08 00:00:00 - Performance v3-safe
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -475,13 +475,16 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 		// NEU und SALE werden immer angezeigt. Wenn aktuell keine passenden Produkte vorhanden sind,
 		// werden sie nur deaktiviert/ausgegraut, aber niemals ausgeblendet.
-		$sale_available = function_exists( 'jg_has_sale_products_in_context' ) ? jg_has_sale_products_in_context() : true;
-		$new_available  = function_exists( 'jg_has_new_products_in_context' ) ? jg_has_new_products_in_context() : true;
+		// Performance: NEU und SALE immer zunächst sichtbar lassen.
+		// Die echte Verfügbarkeit wird nur bei Bedarf per AJAX aktualisiert.
+		$sale_available = true;
+		$new_available  = true;
 
 		$typ_items     = [];
 		$typ_active_id = 0;
 		$typ_base_link = '';
 		$typ_context_term_id = 0;
+		$typ_context_count   = 0;
 
 		if ( is_product_category() ) {
 			$current_term = get_queried_object();
@@ -496,6 +499,10 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 					if ( $level2_id > 0 ) {
 						$typ_context_term_id = (int) $level2_id;
+						$level2_term_obj = get_term( $level2_id, 'product_cat' );
+						if ( $level2_term_obj && ! is_wp_error( $level2_term_obj ) ) {
+							$typ_context_count = isset( $level2_term_obj->count ) ? (int) $level2_term_obj->count : 0;
+						}
 						$level2_link = get_term_link( $level2_id, 'product_cat' );
 						if ( ! is_wp_error( $level2_link ) ) {
 							$typ_base_link = $level2_link;
@@ -542,54 +549,12 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 		$terms_groessen_eu  = function_exists( 'jg_get_size_terms_for_filtered_products' ) ? jg_get_size_terms_for_filtered_products( 'pa_eu', [ 'jg_filter_groessen' ] ) : [];
 
 		/*
-		 * Mobile Filter: Im Dropdown sollen immer alle grundsätzlich verfügbaren
-		 * Optionen des aktuellen Kategorie-Kontexts sichtbar bleiben. Nicht passende
-		 * Optionen werden per JS/AJAX deaktiviert, aber nicht aus dem DOM entfernt.
-		 * Dadurch bleiben sie auch nach Produktdetail -> Zurück korrekt sichtbar.
+		 * Performance v3-safe:
+		 * Keine komplette Basismengen-Berechnung mehr beim Seitenaufbau.
+		 * Gerade große Kategorien wie Damen dürfen initial nur ihre bereits
+		 * vorhandenen/normal berechneten Optionen ausgeben. Live-Verfügbarkeit
+		 * wird erst bei echter Filteränderung per JS/AJAX nachgeladen.
 		 */
-		if ( $typ_context_term_id > 0 && function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
-			$base_filters = [
-				'marke'    => [],
-				'farben'   => [],
-				'groessen' => [],
-				'typ'      => [],
-				'sale'     => false,
-				'new'      => false,
-			];
-
-			$base_product_ids = jg_filterbar_mobile_query_product_ids( $base_filters, $typ_context_term_id, '' );
-
-			if ( ! empty( $base_product_ids ) ) {
-				$base_marke_terms = wp_get_object_terms( $base_product_ids, $tax_marke, [ 'orderby' => 'name', 'order' => 'ASC' ] );
-				if ( ! is_wp_error( $base_marke_terms ) && ! empty( $base_marke_terms ) ) {
-					$terms_marke = array_values( array_filter( $base_marke_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
-				}
-
-				$base_farben_terms = wp_get_object_terms( $base_product_ids, $tax_farben, [ 'orderby' => 'name', 'order' => 'ASC' ] );
-				if ( ! is_wp_error( $base_farben_terms ) && ! empty( $base_farben_terms ) ) {
-					$terms_farben = array_values( array_filter( $base_farben_terms, static function( $term ) { return $term instanceof WP_Term; } ) );
-				}
-
-				if ( function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) && function_exists( 'jg_groessen_filter_allowed_rows' ) ) {
-					$available_size_slugs = array_fill_keys( jg_filterbar_mobile_size_slugs_for_products( $base_product_ids ), true );
-					$allowed_rows         = jg_groessen_filter_allowed_rows();
-					$terms_groessen_int   = [];
-					$terms_groessen_eu    = [];
-
-					foreach ( $allowed_rows['int'] as $slug => $label ) {
-						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
-							$terms_groessen_int[] = (object) [ 'slug' => $slug, 'name' => $label ];
-						}
-					}
-
-					foreach ( $allowed_rows['eu'] as $slug => $label ) {
-						if ( ! empty( $available_size_slugs[ $slug ] ) ) {
-							$terms_groessen_eu[] = (object) [ 'slug' => $slug, 'name' => $label ];
-						}
-					}
-				}
-			}
-		}
 
 		$int_order = [ 'xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl', '3xl', '4xl', '5xl' ];
 		usort(
@@ -644,6 +609,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 			data-jgm-filterbar="1"
 			data-jgm-type-base-url="<?php echo esc_url( $typ_base_link ); ?>"
 			data-jgm-context-term-id="<?php echo esc_attr( (string) $typ_context_term_id ); ?>"
+			data-jgm-context-count="<?php echo esc_attr( (string) $typ_context_count ); ?>"
 			data-jgm-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
 			data-jgm-ajax-nonce="<?php echo esc_attr( wp_create_nonce( 'jg_filterbar_mobile_options' ) ); ?>"
 			role="navigation"

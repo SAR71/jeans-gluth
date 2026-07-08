@@ -1,4 +1,4 @@
-// LastChanged: 2026-07-08 00:00:00 - Performance v3
+// LastChanged: 2026-07-08 00:00:00 - Performance v3-safe
 (function () {
 	'use strict';
 
@@ -328,7 +328,6 @@
 			syncToggleUI('jg_filter_groessen');
 			syncSpecialToggles();
 			updateFilterCount();
-			requestLiveAvailability();
 
 			announce('Filter zurückgesetzt');
 		}
@@ -416,6 +415,17 @@
 			if (!ajaxUrl || !nonce || !window.fetch) return;
 
 			var filters = collectLiveFilters();
+
+			/*
+			 * Performance-Schutz für sehr große Kategorien.
+			 * Beispiel: Damen. Ohne Typ-Eingrenzung kann die Live-Verfügbarkeit
+			 * auf Smartphones zu schwer werden. In diesem Fall erst nach Typ-Auswahl
+			 * live nachladen; normales Anwenden bleibt unverändert.
+			 */
+			var contextCount = parseInt(bar.getAttribute('data-jgm-context-count') || '0', 10);
+			if (contextCount > 800 && (!filters.typ || filters.typ.length === 0)) {
+				return;
+			}
 			var cacheKey = getLiveAvailabilityCacheKey(filters);
 
 			if (liveAvailabilityCache[cacheKey]) {
@@ -487,11 +497,6 @@
 				closeAll(true);
 			} else {
 				openPanel(panelId, button);
-
-				// Performance: Live-Verfügbarkeit erst laden, wenn der Filter tatsächlich geöffnet ist.
-				if (panelId === 'jgm-panel-filter') {
-					requestLiveAvailability();
-				}
 			}
 
 			return true;
