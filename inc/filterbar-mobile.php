@@ -174,6 +174,18 @@ if ( ! function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
 		$context_term_id = absint( $context_term_id );
 		$exclude         = (string) $exclude;
 
+		$cache_key = 'jgm_qids_' . md5( wp_json_encode( [
+			'v'       => function_exists( 'jg_filterbar_mobile_cache_version' ) ? jg_filterbar_mobile_cache_version() : 1,
+			'filters' => $filters,
+			'ctx'     => $context_term_id,
+			'exclude' => $exclude,
+		] ) );
+
+		$cached = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return array_map( 'absint', $cached );
+		}
+
 		$tax_query = [ 'relation' => 'AND' ];
 		$meta_query = [
 			'relation' => 'AND',
@@ -269,7 +281,10 @@ if ( ! function_exists( 'jg_filterbar_mobile_query_product_ids' ) ) {
 			$product_ids = $matched;
 		}
 
-		return array_values( array_unique( array_filter( $product_ids ) ) );
+		$product_ids = array_values( array_unique( array_filter( $product_ids ) ) );
+		set_transient( $cache_key, $product_ids, 15 * MINUTE_IN_SECONDS );
+
+		return $product_ids;
 	}
 }
 
@@ -280,12 +295,35 @@ if ( ! function_exists( 'jg_filterbar_mobile_tax_slugs_for_products' ) ) {
 			return [];
 		}
 
-		$terms = wp_get_object_terms( $product_ids, $taxonomy, [ 'fields' => 'slugs' ] );
-		if ( is_wp_error( $terms ) || empty( $terms ) ) {
-			return [];
+		$cache_key = 'jgm_tax_' . md5( wp_json_encode( [ function_exists( 'jg_filterbar_mobile_cache_version' ) ? jg_filterbar_mobile_cache_version() : 1, $taxonomy, $product_ids ] ) );
+		$cached = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return $cached;
 		}
 
-		return array_values( array_unique( array_filter( array_map( 'sanitize_title', (array) $terms ) ) ) );
+		global $wpdb;
+
+		$placeholders = implode( ',', array_fill( 0, count( $product_ids ), '%d' ) );
+		$sql = "
+			SELECT DISTINCT t.slug
+			FROM {$wpdb->terms} t
+			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = t.term_id
+			INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+			WHERE tt.taxonomy = %s
+			AND tr.object_id IN ($placeholders)
+		";
+
+		$params = array_merge( [ $taxonomy ], $product_ids );
+		$terms  = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
+
+		if ( empty( $terms ) ) {
+			$terms = [];
+		}
+
+		$terms = array_values( array_unique( array_filter( array_map( 'sanitize_title', (array) $terms ) ) ) );
+		set_transient( $cache_key, $terms, 15 * MINUTE_IN_SECONDS );
+
+		return $terms;
 	}
 }
 
@@ -294,6 +332,12 @@ if ( ! function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) ) {
 		$product_ids = array_values( array_filter( array_map( 'absint', (array) $product_ids ) ) );
 		if ( empty( $product_ids ) ) {
 			return [];
+		}
+
+		$cache_key = 'jgm_sizes_' . md5( wp_json_encode( [ function_exists( 'jg_filterbar_mobile_cache_version' ) ? jg_filterbar_mobile_cache_version() : 1, $product_ids ] ) );
+		$cached = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return $cached;
 		}
 
 		$out = [];
@@ -321,7 +365,10 @@ if ( ! function_exists( 'jg_filterbar_mobile_size_slugs_for_products' ) ) {
 			}
 		}
 
-		return array_values( array_unique( array_filter( array_map( 'sanitize_title', $out ) ) ) );
+		$out = array_values( array_unique( array_filter( array_map( 'sanitize_title', $out ) ) ) );
+		set_transient( $cache_key, $out, 15 * MINUTE_IN_SECONDS );
+
+		return $out;
 	}
 }
 
@@ -360,12 +407,39 @@ if ( ! function_exists( 'jg_filterbar_mobile_type_slugs_for_products' ) ) {
 	}
 }
 
+
+if ( ! function_exists( 'jg_filterbar_mobile_cache_version' ) ) {
+	function jg_filterbar_mobile_cache_version() {
+		$version = (int) get_option( 'jg_filterbar_mobile_cache_version', 1 );
+		return $version > 0 ? $version : 1;
+	}
+}
+
+if ( ! function_exists( 'jg_filterbar_mobile_bump_cache_version' ) ) {
+	function jg_filterbar_mobile_bump_cache_version() {
+		update_option( 'jg_filterbar_mobile_cache_version', time(), false );
+	}
+}
+add_action( 'save_post_product', 'jg_filterbar_mobile_bump_cache_version', 20 );
+add_action( 'woocommerce_product_set_stock_status', 'jg_filterbar_mobile_bump_cache_version', 20 );
+add_action( 'woocommerce_variation_set_stock_status', 'jg_filterbar_mobile_bump_cache_version', 20 );
+
 if ( ! function_exists( 'jg_filterbar_mobile_ajax_options' ) ) {
 	function jg_filterbar_mobile_ajax_options() {
 		check_ajax_referer( 'jg_filterbar_mobile_options', 'nonce' );
 
 		$context_term_id = isset( $_POST['context_term_id'] ) ? absint( wp_unslash( $_POST['context_term_id'] ) ) : 0;
 		$filters         = jg_filterbar_mobile_current_ajax_filters();
+
+		$response_cache_key = 'jgm_ajax_' . md5( wp_json_encode( [
+			'v'       => function_exists( 'jg_filterbar_mobile_cache_version' ) ? jg_filterbar_mobile_cache_version() : 1,
+			'ctx'     => $context_term_id,
+			'filters' => $filters,
+		] ) );
+		$cached_response = get_transient( $response_cache_key );
+		if ( is_array( $cached_response ) ) {
+			wp_send_json_success( $cached_response );
+		}
 
 		$ids_for_marke    = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'marke' );
 		$ids_for_farben   = jg_filterbar_mobile_query_product_ids( $filters, $context_term_id, 'farben' );
@@ -400,18 +474,20 @@ if ( ! function_exists( 'jg_filterbar_mobile_ajax_options' ) ) {
 			$new_available = ! empty( $new_ids );
 		}
 
-		wp_send_json_success(
-			[
-				'available' => [
-					'marke'    => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_marke, 'pa_marke' ),
-					'farben'   => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_farben, 'pa_colorgroup' ),
-					'groessen' => jg_filterbar_mobile_size_slugs_for_products( $ids_for_groessen ),
-					'typ'      => jg_filterbar_mobile_type_slugs_for_products( $ids_for_typ, $context_term_id ),
-					'sale'     => $sale_available,
-					'new'      => $new_available,
-				],
-			]
-		);
+		$response = [
+			'available' => [
+				'marke'    => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_marke, 'pa_marke' ),
+				'farben'   => jg_filterbar_mobile_tax_slugs_for_products( $ids_for_farben, 'pa_colorgroup' ),
+				'groessen' => jg_filterbar_mobile_size_slugs_for_products( $ids_for_groessen ),
+				'typ'      => jg_filterbar_mobile_type_slugs_for_products( $ids_for_typ, $context_term_id ),
+				'sale'     => $sale_available,
+				'new'      => $new_available,
+			],
+		];
+
+		set_transient( $response_cache_key, $response, 15 * MINUTE_IN_SECONDS );
+
+		wp_send_json_success( $response );
 	}
 }
 

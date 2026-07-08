@@ -120,6 +120,10 @@
 			if (focusTarget instanceof HTMLElement) {
 				focusTarget.focus();
 			}
+
+			if (panelId === 'jgm-panel-filter') {
+				requestLiveAvailability();
+			}
 		}
 				function getChecks(filterKey) {
 			return Array.from(
@@ -394,6 +398,7 @@
 
 		var liveUpdateTimer = null;
 		var liveUpdateController = null;
+		var liveAvailabilityCache = new Map();
 
 		function requestLiveAvailability() {
 			var ajaxUrl = bar.getAttribute('data-jgm-ajax-url') || '';
@@ -407,6 +412,21 @@
 
 			liveUpdateTimer = window.setTimeout(function () {
 				var filters = collectLiveFilters();
+				var cacheKey = JSON.stringify({
+					context: bar.getAttribute('data-jgm-context-term-id') || '0',
+					marke: filters.marke.slice().sort(),
+					typ: filters.typ.slice().sort(),
+					farben: filters.farben.slice().sort(),
+					groessen: filters.groessen.slice().sort(),
+					sale: filters.sale,
+					newFilter: filters.newFilter
+				});
+
+				if (liveAvailabilityCache.has(cacheKey)) {
+					applyLiveAvailability(liveAvailabilityCache.get(cacheKey));
+					return;
+				}
+
 				var formData = new FormData();
 
 				formData.append('action', 'jg_filterbar_mobile_options');
@@ -434,13 +454,14 @@
 					.then(function (response) { return response.json(); })
 					.then(function (response) {
 						if (response && response.success && response.data) {
+							liveAvailabilityCache.set(cacheKey, response.data);
 							applyLiveAvailability(response.data);
 						}
 					})
 					.catch(function (error) {
 						if (error && error.name === 'AbortError') return;
 					});
-			}, 160);
+			}, 380);
 		}
 
 		function handlePanelButtonClick(event) {
@@ -709,7 +730,6 @@
 	}
 });
 		updateFilterCount();
-		requestLiveAvailability();
 		closeAll(false);
 	}
 
