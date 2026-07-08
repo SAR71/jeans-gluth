@@ -1,4 +1,4 @@
-// LastChanged: 2026-07-08 00:00:00
+// LastChanged: 2026-07-08 00:00:00 - Performance v3
 (function () {
 	'use strict';
 
@@ -394,6 +394,20 @@
 
 		var liveUpdateTimer = null;
 		var liveUpdateController = null;
+		var liveAvailabilityCache = Object.create(null);
+		var lastLiveAvailabilityKey = '';
+
+		function getLiveAvailabilityCacheKey(filters) {
+			return JSON.stringify({
+				context: bar.getAttribute('data-jgm-context-term-id') || '0',
+				marke: (filters.marke || []).slice().sort(),
+				typ: (filters.typ || []).slice().sort(),
+				farben: (filters.farben || []).slice().sort(),
+				groessen: (filters.groessen || []).slice().sort(),
+				sale: filters.sale || '',
+				newFilter: filters.newFilter || ''
+			});
+		}
 
 		function requestLiveAvailability() {
 			var ajaxUrl = bar.getAttribute('data-jgm-ajax-url') || '';
@@ -401,12 +415,25 @@
 
 			if (!ajaxUrl || !nonce || !window.fetch) return;
 
+			var filters = collectLiveFilters();
+			var cacheKey = getLiveAvailabilityCacheKey(filters);
+
+			if (liveAvailabilityCache[cacheKey]) {
+				applyLiveAvailability(liveAvailabilityCache[cacheKey]);
+				lastLiveAvailabilityKey = cacheKey;
+				return;
+			}
+
+			if (cacheKey === lastLiveAvailabilityKey) {
+				return;
+			}
+
 			if (liveUpdateTimer) {
 				window.clearTimeout(liveUpdateTimer);
 			}
 
 			liveUpdateTimer = window.setTimeout(function () {
-				var filters = collectLiveFilters();
+				lastLiveAvailabilityKey = cacheKey;
 				var formData = new FormData();
 
 				formData.append('action', 'jg_filterbar_mobile_options');
@@ -434,13 +461,14 @@
 					.then(function (response) { return response.json(); })
 					.then(function (response) {
 						if (response && response.success && response.data) {
+							liveAvailabilityCache[cacheKey] = response.data;
 							applyLiveAvailability(response.data);
 						}
 					})
 					.catch(function (error) {
 						if (error && error.name === 'AbortError') return;
 					});
-			}, 160);
+			}, 450);
 		}
 
 		function handlePanelButtonClick(event) {
@@ -459,6 +487,11 @@
 				closeAll(true);
 			} else {
 				openPanel(panelId, button);
+
+				// Performance: Live-Verfügbarkeit erst laden, wenn der Filter tatsächlich geöffnet ist.
+				if (panelId === 'jgm-panel-filter') {
+					requestLiveAvailability();
+				}
 			}
 
 			return true;
@@ -682,7 +715,6 @@
 
 		window.addEventListener('pageshow', function () {
 			syncTypeChecksFromLocation();
-			requestLiveAvailability();
 		});
 
 		initStateFromDom();
@@ -709,7 +741,6 @@
 	}
 });
 		updateFilterCount();
-		requestLiveAvailability();
 		closeAll(false);
 	}
 
@@ -760,14 +791,4 @@
 		boot();
 	}
 
-	if (window.MutationObserver) {
-		var observer = new MutationObserver(function () {
-			initMobileFilterbar();
-		});
-
-		observer.observe(document.documentElement, {
-			childList: true,
-			subtree: true
-		});
-	}
 })();
