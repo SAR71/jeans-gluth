@@ -1,8 +1,20 @@
-add_action('wp_footer', function () {
-    echo '<div style="position:fixed;bottom:20px;left:20px;background:red;color:#fff;padding:20px;z-index:999999">
-    FUNCTIONS.PHP LÄUFT
-    </div>';
-});
+<?php
+
+add_action( 'wp_footer', function () {
+	echo '<div style="
+		position:fixed;
+		bottom:20px;
+		left:20px;
+		background:red;
+		color:#fff;
+		padding:20px;
+		z-index:999999;
+	">
+		FUNCTIONS.PHP LÄUFT
+	</div>';
+} );
+
+
 
 /**
  * Jeans Gluth – individuelle Produktsortierung
