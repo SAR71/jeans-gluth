@@ -1,136 +1,325 @@
-<?php
 /**
- * Jeans Gluth – individuelle Sortierung der Produktarchive
+ * Jeans Gluth – individuelle Produktsortierung
  *
- * Sortierung:
+ * Reihenfolge:
  *
- * 1. Produkte mit aktivem Woodmart-„NEU“-Label
- * 2. Innerhalb davon nach Kategoriepriorität
- * 3. Danach ältere Produkte
- * 4. Innerhalb davon erneut nach Kategoriepriorität
- * 5. Innerhalb jeder Gruppe nach Veröffentlichungsdatum absteigend
+ * 1. Produkte, die maximal 30 Tage alt sind
+ * 2. Innerhalb der neuen Produkte nach Kategorie
+ * 3. Danach alle älteren Produkte
+ * 4. Innerhalb der älteren Produkte dieselbe Kategorie-Reihenfolge
+ * 5. Innerhalb jeder Gruppe neuestes Veröffentlichungsdatum zuerst
  *
- * Der Code greift nur bei „Neueste zuerst“.
+ * Greift nur auf den Archiven Damen und Herren.
  */
 
-defined( 'ABSPATH' ) || exit;
+add_filter( 'posts_clauses', 'jg_custom_product_archive_order', 999, 2 );
 
+function jg_custom_product_archive_order( $clauses, $query ) {
+	global $wpdb;
 
-/**
- * Cache-Schlüssel für die aktuell als „NEU“ erkannten Produkte.
- */
-function jg_new_product_sort_cache_key() {
-	return 'jg_new_product_sort_ids_v1';
+	/*
+	 * Backend-Abfragen nicht verändern.
+	 * AJAX muss erlaubt bleiben, weil Woodmart AJAX Shop verwendet.
+	 */
+	if ( is_admin() && ! wp_doing_ajax() ) {
+		return $clauses;
+	}
+
+	/*
+	 * Nur Produktabfragen bearbeiten.
+	 */
+	$post_type = $query->get( 'post_type' );
+
+	if (
+		'product' !== $post_type &&
+		! ( is_array( $post_type ) && in_array( 'product', $post_type, true ) )
+	) {
+		return $clauses;
+	}
+
+	/*
+	 * Ermitteln, ob wir uns im Damen- oder Herrenbereich befinden.
+	 */
+	$archive_type = jg_get_product_archive_type( $query );
+
+	if ( ! in_array( $archive_type, array( 'damen', 'herren' ), true ) ) {
+		return $clauses;
+	}
+
+	/*
+	 * Nur bei "Neueste zuerst" beziehungsweise der bei dir
+	 * eingestellten Standardsortierung eingreifen.
+	 */
+	$orderby = isset( $_REQUEST['orderby'] )
+		? sanitize_key( wp_unslash( $_REQUEST['orderby'] ) )
+		: '';
+
+	if ( '' === $orderby ) {
+		$orderby = get_option(
+			'woocommerce_default_catalog_orderby',
+			'date'
+		);
+	}
+
+	if ( 'date' !== $orderby ) {
+		return $clauses;
+	}
+
+	/*
+	 * Woodmart-Neu-Zeitraum:
+	 * 30 Tage nach Erstellung/Veröffentlichung.
+	 */
+	$cutoff_timestamp = current_time( 'timestamp' ) - ( 30 * DAY_IN_SECONDS );
+	$cutoff_date      = wp_date(
+		'Y-m-d H:i:s',
+		$cutoff_timestamp,
+		wp_timezone()
+	);
+
+	$new_priority_sql = $wpdb->prepare(
+		"
+		CASE
+			WHEN {$wpdb->posts}.post_date >= %s THEN 0
+			ELSE 1
+		END ASC
+		",
+		$cutoff_date
+	);
+
+	if ( 'damen' === $archive_type ) {
+
+		/*
+		 * Damen:
+		 * 10 Shirts & Tops
+		 * 20 Blusen
+		 * 30 Kleider
+		 * 40 Pullover & Strick
+		 * 50 Röcke
+		 * 500 sonstige Produkte
+		 * 999 Accessoires
+		 */
+		$category_priority_sql = jg_build_category_priority_sql(
+			array(
+				'accessoires-damen' => 999,
+				'shirts-tops'       => 10,
+				'bluse-damen'       => 20,
+				'kleid'             => 30,
+				'pullover_strick'   => 40,
+				'rock'              => 50,
+			)
+		);
+
+	} else {
+
+		/*
+		 * Herren:
+		 * 10 Shirts
+		 * 20 Poloshirts
+		 * 30 Hemden
+		 * 500 sonstige Produkte
+		 * 999 Accessoires
+		 */
+		$category_priority_sql = jg_build_category_priority_sql(
+			array(
+				'accessoires-herren' => 999,
+				'shirts'             => 10,
+				'poloshirts'         => 20,
+				'hemden'             => 30,
+			)
+		);
+	}
+
+	/*
+	 * Endgültige Reihenfolge:
+	 *
+	 * 1. Neu oder alt
+	 * 2. Kategoriepriorität
+	 * 3. Veröffentlichungsdatum
+	 * 4. Produkt-ID
+	 */
+	$clauses['orderby'] = "
+		{$new_priority_sql},
+		{$category_priority_sql},
+		{$wpdb->posts}.post_date DESC,
+		{$wpdb->posts}.ID DESC
+	";
+
+	return $clauses;
 }
 
 
 /**
- * Ermittelt anhand der originalen Woodmart-Funktion,
- * welche Produkte aktuell das „NEU“-Label erhalten.
- *
- * Das Ergebnis wird zwischengespeichert, damit nicht bei jedem
- * Seitenaufruf alle Produkte erneut geprüft werden müssen.
+ * Erkennt, ob die aktuelle Produktabfrage zum Damen-
+ * oder Herrenarchiv gehört.
  */
-function jg_get_woodmart_new_product_ids() {
+function jg_get_product_archive_type( $query ) {
 
-	$cache_key = jg_new_product_sort_cache_key();
-	$cached    = get_transient( $cache_key );
+	$category_slug = '';
 
-	if ( false !== $cached && is_array( $cached ) ) {
-		return array_map( 'absint', $cached );
-	}
+	/*
+	 * Reguläres Produktkategorie-Archiv.
+	 */
+	if ( is_product_category() ) {
+		$queried_object = get_queried_object();
 
-	$product_ids = get_posts(
-		array(
-			'post_type'              => 'product',
-			'post_status'            => 'publish',
-			'posts_per_page'         => -1,
-			'fields'                 => 'ids',
-			'orderby'                => 'ID',
-			'order'                  => 'ASC',
-			'no_found_rows'          => true,
-			'suppress_filters'       => false,
-			'update_post_meta_cache' => true,
-			'update_post_term_cache' => false,
-		)
-	);
-
-	$new_product_ids = array();
-
-	foreach ( $product_ids as $product_id ) {
-
-		/*
-		 * Woodmarts originale Prüfung verwenden.
-		 * Dadurch entspricht die Sortierung dem sichtbaren NEU-Kreis.
-		 */
 		if (
-			function_exists( 'woodmart_is_new_label_needed' )
-			&& woodmart_is_new_label_needed( $product_id )
+			$queried_object instanceof WP_Term &&
+			'product_cat' === $queried_object->taxonomy
 		) {
-			$new_product_ids[] = absint( $product_id );
-			continue;
-		}
-
-		/*
-		 * Fallback für ältere Woodmart-Versionen.
-		 */
-		if ( ! function_exists( 'woodmart_is_new_label_needed' ) ) {
-			$permanent_new = get_post_meta(
-				$product_id,
-				'_woodmart_new_label',
-				true
-			);
-
-			if ( ! empty( $permanent_new ) ) {
-				$new_product_ids[] = absint( $product_id );
-			}
+			$category_slug = $queried_object->slug;
 		}
 	}
 
 	/*
-	 * Kurzer Cache, damit ablaufende NEU-Zeiträume zeitnah
-	 * berücksichtigt werden.
+	 * Fallback für Woodmart-AJAX-Abfragen.
 	 */
-	set_transient(
-		$cache_key,
-		$new_product_ids,
-		15 * MINUTE_IN_SECONDS
+	if ( '' === $category_slug ) {
+		$query_product_cat = $query->get( 'product_cat' );
+
+		if ( is_string( $query_product_cat ) ) {
+			$category_slug = sanitize_title( $query_product_cat );
+		}
+	}
+
+	/*
+	 * Noch ein Fallback für übertragene Request-Parameter.
+	 */
+	if ( '' === $category_slug && isset( $_REQUEST['product_cat'] ) ) {
+		$category_slug = sanitize_title(
+			wp_unslash( $_REQUEST['product_cat'] )
+		);
+	}
+
+	if ( '' === $category_slug ) {
+		return '';
+	}
+
+	$term = get_term_by(
+		'slug',
+		$category_slug,
+		'product_cat'
 	);
 
-	return $new_product_ids;
+	if ( ! $term || is_wp_error( $term ) ) {
+		return '';
+	}
+
+	$term_ids = array( (int) $term->term_id );
+
+	$ancestors = get_ancestors(
+		$term->term_id,
+		'product_cat',
+		'taxonomy'
+	);
+
+	if ( ! empty( $ancestors ) ) {
+		$term_ids = array_merge(
+			$term_ids,
+			array_map( 'intval', $ancestors )
+		);
+	}
+
+	foreach ( $term_ids as $term_id ) {
+		$category = get_term( $term_id, 'product_cat' );
+
+		if ( ! $category || is_wp_error( $category ) ) {
+			continue;
+		}
+
+		if ( 'damen' === $category->slug ) {
+			return 'damen';
+		}
+
+		if ( 'herren' === $category->slug ) {
+			return 'herren';
+		}
+	}
+
+	return '';
 }
 
 
 /**
- * Gibt alle term_taxonomy_ids einer Produktkategorie
- * einschließlich ihrer Unterkategorien zurück.
+ * Erstellt den SQL-CASE-Ausdruck für die Kategorieprioritäten.
  *
- * Das ist wichtig, weil Produkte häufig nur der konkreten
- * Unterkategorie zugeordnet sind, beispielsweise „T-Shirts“,
- * nicht zusätzlich der Oberkategorie „Shirts & Tops“.
+ * Auch Unterkategorien werden berücksichtigt.
  */
-function jg_get_product_category_tree_tt_ids( $slug ) {
+function jg_build_category_priority_sql( $category_priorities ) {
+	global $wpdb;
 
-	static $category_cache = array();
+	$case_parts = array();
 
-	if ( isset( $category_cache[ $slug ] ) ) {
-		return $category_cache[ $slug ];
+	foreach ( $category_priorities as $slug => $priority ) {
+		$term_taxonomy_ids = jg_get_category_tree_tt_ids( $slug );
+
+		if ( empty( $term_taxonomy_ids ) ) {
+			continue;
+		}
+
+		$id_list = implode(
+			',',
+			array_map( 'absint', $term_taxonomy_ids )
+		);
+
+		$alias = 'jg_rel_' . md5( $slug );
+
+		$case_parts[] = "
+			WHEN EXISTS (
+				SELECT 1
+				FROM {$wpdb->term_relationships} AS {$alias}
+				WHERE {$alias}.object_id = {$wpdb->posts}.ID
+				  AND {$alias}.term_taxonomy_id IN ({$id_list})
+			)
+			THEN " . absint( $priority );
 	}
 
-	$term = get_term_by( 'slug', $slug, 'product_cat' );
+	if ( empty( $case_parts ) ) {
+		return '500 ASC';
+	}
+
+	return "
+		CASE
+			" . implode( "\n", $case_parts ) . "
+			ELSE 500
+		END ASC
+	";
+}
+
+
+/**
+ * Gibt die term_taxonomy_ids einer Kategorie und aller
+ * darunterliegenden Kategorien zurück.
+ */
+function jg_get_category_tree_tt_ids( $slug ) {
+
+	static $cache = array();
+
+	if ( isset( $cache[ $slug ] ) ) {
+		return $cache[ $slug ];
+	}
+
+	$term = get_term_by(
+		'slug',
+		$slug,
+		'product_cat'
+	);
 
 	if ( ! $term || is_wp_error( $term ) ) {
-		$category_cache[ $slug ] = array();
+		$cache[ $slug ] = array();
 		return array();
 	}
 
-	$term_ids = array( absint( $term->term_id ) );
-	$children = get_term_children( $term->term_id, 'product_cat' );
+	$term_ids = array( (int) $term->term_id );
+
+	$children = get_term_children(
+		$term->term_id,
+		'product_cat'
+	);
 
 	if ( ! is_wp_error( $children ) && ! empty( $children ) ) {
 		$term_ids = array_merge(
 			$term_ids,
-			array_map( 'absint', $children )
+			array_map( 'intval', $children )
 		);
 	}
 
@@ -142,335 +331,18 @@ function jg_get_product_category_tree_tt_ids( $slug ) {
 		)
 	);
 
-	$taxonomy_ids = array();
-
-	if ( ! is_wp_error( $terms ) ) {
-		foreach ( $terms as $category_term ) {
-			$taxonomy_ids[] = absint(
-				$category_term->term_taxonomy_id
-			);
-		}
+	if ( is_wp_error( $terms ) ) {
+		$cache[ $slug ] = array();
+		return array();
 	}
 
-	$category_cache[ $slug ] = array_unique( $taxonomy_ids );
+	$term_taxonomy_ids = array();
 
-	return $category_cache[ $slug ];
-}
-
-
-/**
- * Baut die SQL-Bedingung für eine Kategorie inklusive Unterkategorien.
- */
-function jg_product_has_category_sql( $taxonomy_ids, $alias ) {
-	global $wpdb;
-
-	$taxonomy_ids = array_filter(
-		array_map( 'absint', (array) $taxonomy_ids )
-	);
-
-	if ( empty( $taxonomy_ids ) ) {
-		return '0 = 1';
+	foreach ( $terms as $category_term ) {
+		$term_taxonomy_ids[] = (int) $category_term->term_taxonomy_id;
 	}
 
-	$id_list = implode( ',', $taxonomy_ids );
+	$cache[ $slug ] = array_unique( $term_taxonomy_ids );
 
-	return "
-		EXISTS (
-			SELECT 1
-			FROM {$wpdb->term_relationships} AS {$alias}
-			WHERE {$alias}.object_id = {$wpdb->posts}.ID
-			  AND {$alias}.term_taxonomy_id IN ({$id_list})
-		)
-	";
+	return $cache[ $slug ];
 }
-
-
-/**
- * Die WooCommerce-Produktabfrage für unsere Sortierung markieren.
- */
-add_action(
-	'woocommerce_product_query',
-	function ( $query ) {
-
-		if ( is_admin() && ! wp_doing_ajax() ) {
-			return;
-		}
-
-		/*
-		 * Nur Produktarchive beeinflussen.
-		 */
-		if (
-			! is_shop()
-			&& ! is_product_taxonomy()
-			&& ! wp_doing_ajax()
-		) {
-			return;
-		}
-
-		$requested_orderby = isset( $_GET['orderby'] )
-			? wc_clean( wp_unslash( $_GET['orderby'] ) )
-			: '';
-
-		if ( '' === $requested_orderby ) {
-			$requested_orderby = get_option(
-				'woocommerce_default_catalog_orderby',
-				'menu_order'
-			);
-		}
-
-		/*
-		 * Nur bei „Neueste zuerst“ eingreifen.
-		 * Preis, Beliebtheit, Bewertung usw. bleiben unverändert.
-		 */
-		if ( 'date' !== $requested_orderby ) {
-			return;
-		}
-
-		$query->set( 'jg_custom_archive_sort', true );
-	},
-	50
-);
-
-
-/**
- * Eigentliche SQL-Sortierung.
- */
-add_filter(
-	'posts_clauses',
-	function ( $clauses, $query ) {
-		global $wpdb;
-
-		if ( ! $query->get( 'jg_custom_archive_sort' ) ) {
-			return $clauses;
-		}
-
-		/*
-		 * Kategoriegruppen inklusive aller Unterkategorien.
-		 *
-		 * Damen:
-		 * 10 Shirts & Tops
-		 * 20 Blusen
-		 * 30 Kleider
-		 * 40 Pullover & Strick
-		 * 50 Röcke
-		 * 500 Sonstige
-		 * 999 Accessoires
-		 *
-		 * Herren:
-		 * 10 Shirts
-		 * 20 Poloshirts
-		 * 30 Hemden
-		 * 500 Sonstige
-		 * 999 Accessoires
-		 */
-
-		$damen_accessoires = jg_get_product_category_tree_tt_ids(
-			'accessoires-damen'
-		);
-
-		$herren_accessoires = jg_get_product_category_tree_tt_ids(
-			'accessoires-herren'
-		);
-
-		$damen_shirts = jg_get_product_category_tree_tt_ids(
-			'shirts-tops'
-		);
-
-		$damen_blusen = jg_get_product_category_tree_tt_ids(
-			'bluse-damen'
-		);
-
-		$damen_kleider = jg_get_product_category_tree_tt_ids(
-			'kleid'
-		);
-
-		$damen_pullover = jg_get_product_category_tree_tt_ids(
-			'pullover_strick'
-		);
-
-		$damen_roecke = jg_get_product_category_tree_tt_ids(
-			'rock'
-		);
-
-		$herren_shirts = jg_get_product_category_tree_tt_ids(
-			'shirts'
-		);
-
-		$herren_poloshirts = jg_get_product_category_tree_tt_ids(
-			'poloshirts'
-		);
-
-		$herren_hemden = jg_get_product_category_tree_tt_ids(
-			'hemden'
-		);
-
-
-		/*
-		 * NEU-Produkte über die originale Woodmart-Prüfung bestimmen.
-		 */
-		$new_product_ids = jg_get_woodmart_new_product_ids();
-
-		if ( ! empty( $new_product_ids ) ) {
-			$new_ids_sql = implode(
-				',',
-				array_map( 'absint', $new_product_ids )
-			);
-
-			$new_priority_sql = "
-				CASE
-					WHEN {$wpdb->posts}.ID IN ({$new_ids_sql})
-					THEN 0
-					ELSE 1
-				END ASC
-			";
-		} else {
-			$new_priority_sql = '1 ASC';
-		}
-
-
-		/*
-		 * Kategoriebedingungen vorbereiten.
-		 *
-		 * Accessoires werden zuerst geprüft, damit sie auch dann
-		 * hinten landen, wenn ein Produkt zusätzlich noch einer
-		 * anderen Kategorie zugeordnet wurde.
-		 *
-		 * Poloshirts werden vor Shirts geprüft, weil Poloshirts
-		 * eine Unterkategorie von Shirts sein können.
-		 */
-		$accessoires_sql = '('
-			. jg_product_has_category_sql(
-				$damen_accessoires,
-				'jg_tr_acc_d'
-			)
-			. ' OR '
-			. jg_product_has_category_sql(
-				$herren_accessoires,
-				'jg_tr_acc_h'
-			)
-			. ')';
-
-		$herren_poloshirts_sql = jg_product_has_category_sql(
-			$herren_poloshirts,
-			'jg_tr_h_polo'
-		);
-
-		$damen_shirts_sql = jg_product_has_category_sql(
-			$damen_shirts,
-			'jg_tr_d_shirts'
-		);
-
-		$herren_shirts_sql = jg_product_has_category_sql(
-			$herren_shirts,
-			'jg_tr_h_shirts'
-		);
-
-		$damen_blusen_sql = jg_product_has_category_sql(
-			$damen_blusen,
-			'jg_tr_d_blusen'
-		);
-
-		$herren_hemden_sql = jg_product_has_category_sql(
-			$herren_hemden,
-			'jg_tr_h_hemden'
-		);
-
-		$damen_kleider_sql = jg_product_has_category_sql(
-			$damen_kleider,
-			'jg_tr_d_kleider'
-		);
-
-		$damen_pullover_sql = jg_product_has_category_sql(
-			$damen_pullover,
-			'jg_tr_d_pullover'
-		);
-
-		$damen_roecke_sql = jg_product_has_category_sql(
-			$damen_roecke,
-			'jg_tr_d_roecke'
-		);
-
-
-		/*
-		 * Kategoriepriorität.
-		 */
-		$category_priority_sql = "
-			CASE
-				WHEN {$accessoires_sql}
-					THEN 999
-
-				WHEN {$herren_poloshirts_sql}
-					THEN 20
-
-				WHEN {$damen_shirts_sql}
-					THEN 10
-
-				WHEN {$herren_shirts_sql}
-					THEN 10
-
-				WHEN {$damen_blusen_sql}
-					THEN 20
-
-				WHEN {$herren_hemden_sql}
-					THEN 30
-
-				WHEN {$damen_kleider_sql}
-					THEN 30
-
-				WHEN {$damen_pullover_sql}
-					THEN 40
-
-				WHEN {$damen_roecke_sql}
-					THEN 50
-
-				ELSE 500
-			END ASC
-		";
-
-
-		/*
-		 * Endgültige Reihenfolge:
-		 *
-		 * 1. NEU / Alt
-		 * 2. Kategoriepriorität
-		 * 3. Veröffentlichungsdatum
-		 * 4. Produkt-ID als eindeutige Zusatzsortierung
-		 */
-		$clauses['orderby'] = "
-			{$new_priority_sql},
-			{$category_priority_sql},
-			{$wpdb->posts}.post_date DESC,
-			{$wpdb->posts}.ID DESC
-		";
-
-		return $clauses;
-	},
-	100,
-	2
-);
-
-
-/**
- * Cache löschen, sobald sich ein Produkt ändert.
- */
-function jg_clear_new_product_sort_cache() {
-	delete_transient( jg_new_product_sort_cache_key() );
-}
-
-add_action(
-	'save_post_product',
-	'jg_clear_new_product_sort_cache',
-	20
-);
-
-add_action(
-	'deleted_post',
-	'jg_clear_new_product_sort_cache',
-	20
-);
-
-add_action(
-	'woocommerce_update_product',
-	'jg_clear_new_product_sort_cache',
-	20
-);
