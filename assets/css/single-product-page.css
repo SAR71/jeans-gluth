@@ -84,27 +84,16 @@
 
 /* Bildcontainer behält seine Größe */
 .product-benefits > .product-benefits_image {
-    display: flex !important;
+   display: flex !important;
 
-    flex: 0 0 auto !important;
-    flex-grow: 0 !important;
-    flex-shrink: 0 !important;
+    flex: 0 0 180px !important;
+    /* ggf. 170 oder 190 px anpassen */
 
-    /*
-     * Das Bild wird innerhalb seines Containers
-     * horizontal und vertikal zentriert.
-     */
     justify-content: center !important;
     align-items: center !important;
 
-    width: auto !important;
-
-    /*
-     * Zusätzlicher Sicherheitsabstand zum rechten Rand.
-     * Zusammen mit padding-right am Elterncontainer
-     * bleibt das Bild sicher vom Rand entfernt.
-     */
-    margin-right: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box;
 }
 
 
@@ -173,21 +162,19 @@
 /* Bildcontainer direkt unter die Liste setzen */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
+
     display: flex !important;
 
     width: 100% !important;
-    flex: 0 0 auto !important;
 
     justify-content: center !important;
     align-items: flex-start !important;
-    align-self: stretch !important;
 
-    /*
-     * Kein alter Außenabstand.
-     * Der Abstand zur Liste kommt nur aus gap: 10px.
-     */
     margin: 0 !important;
-    padding: 0 !important;
+
+    padding: 0 0 5px 0 !important;
+
+    box-sizing: border-box;
 }
 
 
