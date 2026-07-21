@@ -2,132 +2,326 @@
    Produkt Benefits Layout
    =========================== */
 document.addEventListener('DOMContentLoaded', function () {
-    const wrappers = document.querySelectorAll('.product-benefits');
-
-    console.log(
-        'Product-Benefits-Container gefunden:',
-        wrappers.length
+    const benefitContainers = document.querySelectorAll(
+        '.product-benefits'
     );
 
-    wrappers.forEach(function (wrapper) {
+    if (!benefitContainers.length) {
+        console.warn(
+            'Product Benefits: Elterncontainer nicht gefunden.'
+        );
+        return;
+    }
+
+    benefitContainers.forEach(function (wrapper) {
+        const listContainer = wrapper.querySelector(
+            '.product-benefits__list'
+        );
+
+        const imageContainer = wrapper.querySelector(
+            '.product-benefits__image'
+        );
+
         const textElements = wrapper.querySelectorAll(
             '.product-benefits__list .elementor-icon-list-text'
         );
 
-        if (!textElements.length) {
+        if (
+            !listContainer ||
+            !imageContainer ||
+            !textElements.length
+        ) {
             console.warn(
-                'Keine Texte der Icon List gefunden:',
-                wrapper
+                'Product Benefits: Erforderliche Elemente fehlen.',
+                {
+                    wrapper,
+                    listContainer,
+                    imageContainer,
+                    textElements: textElements.length
+                }
             );
+
             return;
         }
 
-        let scheduled = false;
+        let checkScheduled = false;
 
-        /*
-         * Ermittelt anhand der Textzeilen, ob ein Text umgebrochen ist.
+        /**
+         * Ermittelt die Breite, die ein Text ohne Zeilenumbruch benötigt.
          */
-        function textIsWrapped(element) {
-            const range = document.createRange();
+        function getRequiredTextWidth(element) {
+            const clone = element.cloneNode(true);
+            const computedStyle = window.getComputedStyle(element);
 
-            range.selectNodeContents(element);
+            clone.style.position = 'fixed';
+            clone.style.left = '-10000px';
+            clone.style.top = '-10000px';
+            clone.style.visibility = 'hidden';
+            clone.style.pointerEvents = 'none';
 
-            const rectangles = Array.from(range.getClientRects())
-                .filter(function (rectangle) {
-                    return (
-                        rectangle.width > 0 &&
-                        rectangle.height > 0
-                    );
-                });
+            clone.style.display = 'inline-block';
+            clone.style.width = 'auto';
+            clone.style.maxWidth = 'none';
+            clone.style.minWidth = '0';
+            clone.style.whiteSpace = 'nowrap';
 
-            if (rectangles.length <= 1) {
-                return false;
-            }
+            clone.style.fontFamily = computedStyle.fontFamily;
+            clone.style.fontSize = computedStyle.fontSize;
+            clone.style.fontWeight = computedStyle.fontWeight;
+            clone.style.fontStyle = computedStyle.fontStyle;
+            clone.style.letterSpacing = computedStyle.letterSpacing;
+            clone.style.textTransform = computedStyle.textTransform;
 
-            /*
-             * Mehrere Rechtecke können auch durch HTML-Unterelemente
-             * entstehen. Deshalb werden unterschiedliche vertikale
-             * Textpositionen gezählt.
-             */
-            const linePositions = [];
+            document.body.appendChild(clone);
 
-            rectangles.forEach(function (rectangle) {
-                const top = Math.round(rectangle.top);
+            const requiredWidth =
+                clone.getBoundingClientRect().width;
 
-                const alreadyExists = linePositions.some(
-                    function (savedTop) {
-                        return Math.abs(savedTop - top) <= 2;
-                    }
+            clone.remove();
+
+            return requiredWidth;
+        }
+
+        /**
+         * Prüft, ob mindestens ein Text in der aktuellen
+         * Nebeneinander-Darstellung umbrechen müsste.
+         */
+        function textWouldWrap() {
+            return Array.from(textElements).some(function (text) {
+                const availableWidth =
+                    text.getBoundingClientRect().width;
+
+                const requiredWidth =
+                    getRequiredTextWidth(text);
+
+                return requiredWidth > availableWidth + 1;
+            });
+        }
+
+        function applyRowLayout() {
+            wrapper.style.setProperty(
+                'display',
+                'flex',
+                'important'
+            );
+
+            wrapper.style.setProperty(
+                'flex-direction',
+                'row',
+                'important'
+            );
+
+            wrapper.style.setProperty(
+                'flex-wrap',
+                'nowrap',
+                'important'
+            );
+
+            wrapper.style.setProperty(
+                'align-items',
+                'center',
+                'important'
+            );
+
+            listContainer.style.setProperty(
+                'flex',
+                '1 1 auto',
+                'important'
+            );
+
+            listContainer.style.setProperty(
+                'min-width',
+                '0',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'flex',
+                '0 0 auto',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'width',
+                'auto',
+                'important'
+            );
+
+            imageContainer.style.removeProperty(
+                'margin-top'
+            );
+        }
+
+        function applyStackedLayout() {
+            wrapper.style.setProperty(
+                'display',
+                'flex',
+                'important'
+            );
+
+            wrapper.style.setProperty(
+                'flex-direction',
+                'column',
+                'important'
+            );
+
+            wrapper.style.setProperty(
+                'align-items',
+                'stretch',
+                'important'
+            );
+
+            listContainer.style.setProperty(
+                'width',
+                '100%',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'display',
+                'flex',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'width',
+                '100%',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'justify-content',
+                'center',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'align-items',
+                'center',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'margin-top',
+                '15px',
+                'important'
+            );
+
+            const imageWidget =
+                imageContainer.querySelector(
+                    '.elementor-widget-image'
                 );
 
-                if (!alreadyExists) {
-                    linePositions.push(top);
-                }
-            });
+            if (imageWidget) {
+                imageWidget.style.setProperty(
+                    'width',
+                    'auto',
+                    'important'
+                );
 
-            return linePositions.length > 1;
+                imageWidget.style.setProperty(
+                    'margin-left',
+                    'auto',
+                    'important'
+                );
+
+                imageWidget.style.setProperty(
+                    'margin-right',
+                    'auto',
+                    'important'
+                );
+            }
+
+            const image =
+                imageContainer.querySelector('img');
+
+            if (image) {
+                image.style.setProperty(
+                    'display',
+                    'block',
+                    'important'
+                );
+
+                image.style.setProperty(
+                    'margin-left',
+                    'auto',
+                    'important'
+                );
+
+                image.style.setProperty(
+                    'margin-right',
+                    'auto',
+                    'important'
+                );
+            }
         }
 
-        function hasWrappedText() {
-            return Array.from(textElements).some(textIsWrapped);
-        }
-
-        function checkLayout() {
-            if (scheduled) {
+        function updateLayout() {
+            if (checkScheduled) {
                 return;
             }
 
-            scheduled = true;
+            checkScheduled = true;
 
-            requestAnimationFrame(function () {
-                scheduled = false;
+            window.requestAnimationFrame(function () {
+                checkScheduled = false;
 
                 /*
-                 * Erst immer den Ausgangszustand nebeneinander herstellen.
+                 * Zum Messen immer zunächst die beiden Container
+                 * nebeneinander darstellen.
                  */
-                wrapper.classList.remove(
-                    'product-benefits--stacked'
-                );
+                applyRowLayout();
 
                 /*
-                 * Layout-Neuberechnung erzwingen.
+                 * Browser zur Layoutberechnung zwingen.
                  */
                 void wrapper.offsetWidth;
 
-                const mustStack = hasWrappedText();
+                const mustStack = textWouldWrap();
 
-                wrapper.classList.toggle(
-                    'product-benefits--stacked',
-                    mustStack
-                );
+                if (mustStack) {
+                    applyStackedLayout();
+                } else {
+                    applyRowLayout();
+                }
 
                 console.log(
                     'Product Benefits:',
                     mustStack
-                        ? 'Bild wird darunter gesetzt'
-                        : 'Container bleiben nebeneinander'
+                        ? 'Bild unter der Icon List'
+                        : 'Bild neben der Icon List'
                 );
             });
         }
 
-        const resizeObserver = new ResizeObserver(checkLayout);
+        const resizeObserver = new ResizeObserver(
+            updateLayout
+        );
 
         resizeObserver.observe(wrapper);
 
+        window.addEventListener(
+            'resize',
+            updateLayout,
+            { passive: true }
+        );
+
         if (document.fonts?.ready) {
-            document.fonts.ready.then(checkLayout);
+            document.fonts.ready.then(updateLayout);
         }
 
-        wrapper.querySelectorAll('img').forEach(function (image) {
-            if (!image.complete) {
-                image.addEventListener(
-                    'load',
-                    checkLayout,
-                    { once: true }
-                );
+        wrapper.querySelectorAll('img').forEach(
+            function (image) {
+                if (!image.complete) {
+                    image.addEventListener(
+                        'load',
+                        updateLayout,
+                        { once: true }
+                    );
+                }
             }
-        });
+        );
 
-        checkLayout();
+        updateLayout();
     });
 });
