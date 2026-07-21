@@ -4,240 +4,75 @@
 (function () {
     'use strict';
 
-    const WRAPPER_SELECTOR = '.product-benefits';
-    const LIST_SELECTOR = '.product-benefits_list';
-    const IMAGE_SELECTOR = '.product-benefits_image';
-    const TEXT_SELECTOR = '.elementor-icon-list-text';
-    const STACKED_CLASS = 'product-benefits_stacked';
+    const wrappers = document.querySelectorAll(
+        '.product-benefits'
+    );
 
-    function initializeProductBenefits(wrapper) {
-        const listContainer = wrapper.querySelector(
-            LIST_SELECTOR
+    wrappers.forEach(function (wrapper) {
+        const list = wrapper.querySelector(
+            '.product-benefits_list'
         );
 
-        const imageContainer = wrapper.querySelector(
-            IMAGE_SELECTOR
-        );
-
-        if (!listContainer || !imageContainer) {
-            console.error(
-                'Product Benefits: Listen- oder Bildcontainer wurde nicht gefunden.',
-                {
-                    wrapper: wrapper,
-                    listContainer: listContainer,
-                    imageContainer: imageContainer
-                }
-            );
-
+        if (!list) {
             return;
         }
 
-        let updateScheduled = false;
-        let resizeTimer = null;
+        let timer = null;
 
-        /*
-         * Prüft, ob ein Text mehr als eine Zeile hoch ist.
-         */
-        function textIsWrapped(textElement) {
-            const computedStyle =
-                window.getComputedStyle(textElement);
+        function isWrapped(element) {
+            const style = getComputedStyle(element);
+            const lineHeight =
+                parseFloat(style.lineHeight) ||
+                parseFloat(style.fontSize) * 1.2;
 
-            let lineHeight = parseFloat(
-                computedStyle.lineHeight
-            );
-
-            if (!Number.isFinite(lineHeight)) {
-                const fontSize =
-                    parseFloat(computedStyle.fontSize) || 16;
-
-                lineHeight = fontSize * 1.2;
-            }
-
-            const actualHeight =
-                textElement.getBoundingClientRect().height;
-
-            /*
-             * Bei dir ist eine Zeile ungefähr 33,6 px hoch
-             * und zwei Zeilen ungefähr 67,2 px.
-             */
-            return actualHeight > lineHeight * 1.5;
-        }
-
-        /*
-         * Prüft alle Texte der Icon List.
-         */
-        function hasWrappedText() {
-            const textElements = Array.from(
-                listContainer.querySelectorAll(
-                    TEXT_SELECTOR
-                )
-            );
-
-            return textElements.some(
-                textIsWrapped
+            return (
+                element.getBoundingClientRect().height >
+                lineHeight * 1.45
             );
         }
 
-        /*
-         * Aktualisiert die Ausrichtung.
-         */
-        function updateLayout() {
-            if (updateScheduled) {
-                return;
-            }
+        function update() {
+            wrapper.classList.remove(
+                'product-benefits_stacked'
+            );
 
-            updateScheduled = true;
+            void wrapper.offsetWidth;
 
-            window.requestAnimationFrame(function () {
-                /*
-                 * Zum Messen immer zuerst nebeneinander anzeigen.
-                 */
-                wrapper.classList.remove(
-                    STACKED_CLASS
+            requestAnimationFrame(function () {
+                const wrapped = Array.from(
+                    list.querySelectorAll(
+                        '.elementor-icon-list-text'
+                    )
+                ).some(isWrapped);
+
+                wrapper.classList.toggle(
+                    'product-benefits_stacked',
+                    wrapped
                 );
 
-                /*
-                 * Browser zur Layout-Neuberechnung zwingen.
-                 */
-                void wrapper.offsetWidth;
-
-                window.requestAnimationFrame(function () {
-                    const mustStack =
-                        hasWrappedText();
-
-                    wrapper.classList.toggle(
-                        STACKED_CLASS,
-                        mustStack
-                    );
-
-                    wrapper.setAttribute(
-                        'data-benefits-layout',
-                        mustStack
-                            ? 'stacked'
-                            : 'row'
-                    );
-
-                    wrapper.setAttribute(
-                        'data-benefits-initialized',
-                        'true'
-                    );
-
-                    updateScheduled = false;
-
-                    console.log(
-                        'Product Benefits:',
-                        mustStack
-                            ? 'Bild unter der Icon-Liste'
-                            : 'Bild neben der Icon-Liste'
-                    );
-                });
+                wrapper.setAttribute(
+                    'data-benefits-layout',
+                    wrapped ? 'stacked' : 'row'
+                );
             });
         }
 
-        /*
-         * Auf Änderungen der Containerbreite reagieren.
-         */
-        const resizeObserver =
-            new ResizeObserver(function () {
-                window.clearTimeout(resizeTimer);
+        function scheduleUpdate() {
+            clearTimeout(timer);
+            timer = setTimeout(update, 150);
+        }
 
-                resizeTimer =
-                    window.setTimeout(
-                        updateLayout,
-                        80
-                    );
-            });
-
-        resizeObserver.observe(wrapper);
-        resizeObserver.observe(listContainer);
-
-        /*
-         * Zusätzlich auf Fenstergrößenänderungen reagieren.
-         */
         window.addEventListener(
             'resize',
-            function () {
-                window.clearTimeout(resizeTimer);
-
-                resizeTimer =
-                    window.setTimeout(
-                        updateLayout,
-                        80
-                    );
-            },
-            {
-                passive: true
-            }
+            scheduleUpdate,
+            { passive: true }
         );
 
-        /*
-         * Nach dem Laden der Schriftarten erneut prüfen.
-         */
-        if (
-            document.fonts &&
-            document.fonts.ready
-        ) {
-            document.fonts.ready.then(
-                updateLayout
-            );
+        if (document.fonts?.ready) {
+            document.fonts.ready.then(update);
         }
 
-        /*
-         * Nach dem Laden des Bildes erneut prüfen.
-         */
-        imageContainer
-            .querySelectorAll('img')
-            .forEach(function (image) {
-                if (!image.complete) {
-                    image.addEventListener(
-                        'load',
-                        updateLayout,
-                        {
-                            once: true
-                        }
-                    );
-                }
-            });
-
-        /*
-         * Initiale Prüfungen.
-         */
-        updateLayout();
-
-        window.setTimeout(
-            updateLayout,
-            250
-        );
-
-        window.setTimeout(
-            updateLayout,
-            1000
-        );
-    }
-
-    function startProductBenefits() {
-        document
-            .querySelectorAll(
-                WRAPPER_SELECTOR
-            )
-            .forEach(
-                initializeProductBenefits
-            );
-    }
-
-    if (
-        document.readyState === 'loading'
-    ) {
-        document.addEventListener(
-            'DOMContentLoaded',
-            startProductBenefits
-        );
-    } else {
-        startProductBenefits();
-    }
-
-    window.addEventListener(
-        'load',
-        startProductBenefits
-    );
+        window.addEventListener('load', update);
+        update();
+    });
 })();
