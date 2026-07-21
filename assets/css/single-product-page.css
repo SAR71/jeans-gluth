@@ -49,31 +49,32 @@
     display: none !important;
 }
 
-/* ===========================
-   Produkt Benefits Layout
-   =========================== */
 
 /* =========================================================
    PRODUCT BENEFITS
-   Klassen:
-   Elterncontainer:        product-benefits
-   Icon-List-Container:    product-benefits_list
-   Bild-Container:         product-benefits_image
+   Elterncontainer:     product-benefits
+   Icon-List-Container: product-benefits_list
+   Bild-Container:      product-benefits_image
    ========================================================= */
 
 
-/* Standardzustand: Icon-Liste und Bild nebeneinander */
+/* Standardzustand: Liste und Bild nebeneinander */
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
+
+    /* Abstand zwischen Liste und Bild */
     gap: 20px !important;
+
+    /* Mindestens 10 px Abstand zum rechten Rand */
+    padding-right: 10px !important;
 }
 
 
-/* Icon-Liste bekommt den verbleibenden Platz */
+/* Icon-Liste nutzt den verfügbaren Platz */
 .product-benefits > .product-benefits_list {
     flex: 1 1 auto !important;
     min-width: 0 !important;
@@ -81,13 +82,43 @@
 }
 
 
-/* Bild-Container behält seine Elementor-Größe */
+/* Bildcontainer behält seine Größe */
 .product-benefits > .product-benefits_image {
+    display: flex !important;
+
     flex: 0 0 auto !important;
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
+
+    /*
+     * Das Bild wird innerhalb seines Containers
+     * horizontal und vertikal zentriert.
+     */
+    justify-content: center !important;
+    align-items: center !important;
+
     width: auto !important;
-    min-width: 0 !important;
+
+    /*
+     * Zusätzlicher Sicherheitsabstand zum rechten Rand.
+     * Zusammen mit padding-right am Elterncontainer
+     * bleibt das Bild sicher vom Rand entfernt.
+     */
+    margin-right: 10px !important;
+}
+
+
+/* Elementor-Bildwidget im Bildcontainer zentrieren */
+.product-benefits > .product-benefits_image
+.elementor-widget-image {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    width: auto !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
 
@@ -95,56 +126,92 @@
 .product-benefits > .product-benefits_image img {
     display: block !important;
     height: auto !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
 
 /* =========================================================
    STACKED-ZUSTAND:
-   Bild unter der Icon-Liste
+   Bild unterhalb der Icon-Liste
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
+
+    /*
+     * Kleiner Abstand zwischen Liste und Bild.
+     * Der Abstand wird ausschließlich über gap gesteuert.
+     */
+    gap: 10px !important;
+
+    /*
+     * Im gestapelten Zustand kein zusätzlicher
+     * rechter Innenabstand erforderlich.
+     */
+    padding-right: 0 !important;
 }
 
 
-/* Icon-Liste nimmt im gestapelten Zustand die volle Breite ein */
+/* Icon-Liste nimmt die volle Breite ein */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     width: 100% !important;
     flex: 0 0 auto !important;
+
+    /*
+     * Elementor-Abstände am Listencontainer entfernen,
+     * damit unterhalb kein großer Leerraum entsteht.
+     */
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 
-/* Bild-Container unterhalb der Liste */
+/* Bildcontainer direkt unter die Liste setzen */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
     display: flex !important;
+
     width: 100% !important;
     flex: 0 0 auto !important;
-    align-self: stretch !important;
+
     justify-content: center !important;
-    align-items: center !important;
-    margin-top: 20px !important;
+    align-items: flex-start !important;
+    align-self: stretch !important;
+
+    /*
+     * Kein alter Außenabstand.
+     * Der Abstand zur Liste kommt nur aus gap: 10px.
+     */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
-/* Elementor-Bildwidget mittig ausrichten */
+/* Elementor-Bildwidget im gestapelten Zustand */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-image {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+
     width: auto !important;
     max-width: 100% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
 }
 
 
-/* Bild selbst mittig ausrichten */
+/* Bild direkt oben im Bildcontainer positionieren */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image img {
     display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
 }
