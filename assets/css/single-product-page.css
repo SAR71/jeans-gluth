@@ -53,19 +53,59 @@
    Produkt Benefits Layout
    =========================== */
 
+/* Standard: Liste links, Bild rechts */
 .product-benefits {
-    gap: 20px;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
 }
 
-.product-benefits__list {
-    min-width: 0;
+.product-benefits > .product-benefits__list {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
 }
 
-.product-benefits__image {
-    flex-shrink: 0;
+.product-benefits > .product-benefits__image {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: auto !important;
 }
 
-.product-benefits__image img {
-    display: block;
-    height: auto;
+/* Sobald ein Text umbricht */
+.product-benefits.product-benefits--stacked {
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+
+.product-benefits.product-benefits--stacked
+> .product-benefits__list {
+    width: 100% !important;
+}
+
+.product-benefits.product-benefits--stacked
+> .product-benefits__image {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 15px !important;
+}
+
+.product-benefits.product-benefits--stacked
+> .product-benefits__image
+.elementor-widget-image {
+    width: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.product-benefits.product-benefits--stacked
+> .product-benefits__image img {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
