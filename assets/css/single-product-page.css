@@ -59,203 +59,69 @@
    ========================================================= */
 
 
-/* ---------------------------------------------------------
-   Standard: Liste und Bild nebeneinander
-   --------------------------------------------------------- */
-
+/* Standard: Icon-Liste und Bild nebeneinander */
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-
     gap: 20px !important;
 
-    /*
-     * Mindestens 10 px Abstand zum rechten grauen Rand.
-     */
-    padding-right: 10px !important;
-
     box-sizing: border-box !important;
+    padding-right: 10px !important;
 }
 
-
-/* Icon-Liste verwendet den freien Platz */
+/* Icon-Liste erhält den verfügbaren Platz */
 .product-benefits > .product-benefits_list {
-    flex: 1 1 auto !important;
+    flex: 1 1 0 !important;
     min-width: 0 !important;
 }
 
-
-/* Bildcontainer schrumpft nicht */
+/* Bildcontainer darf nicht schrumpfen */
 .product-benefits > .product-benefits_image {
-    display: flex !important;
-
-    flex: 0 0 auto !important;
+    flex-grow: 0 !important;
     flex-shrink: 0 !important;
 
+    display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-
-    /*
-     * Keine eigene Bildgrößenänderung.
-     * Die in Elementor eingestellte Größe bleibt erhalten.
-     */
-    margin: 0 !important;
-    padding: 0 !important;
 }
 
-
-/* Elementor-Bildwidget innerhalb seines Containers zentrieren */
-.product-benefits
-> .product-benefits_image
-> .elementor-widget-image {
-    display: block !important;
-
-    margin-left: auto !important;
-    margin-right: auto !important;
-
-    /*
-     * Alte fehlerhafte Breitenregeln zurücksetzen.
-     */
-    max-width: 100% !important;
-}
-
-
-/* Inneren Elementor-Container zentrieren */
-.product-benefits
-> .product-benefits_image
-.elementor-widget-container {
-    text-align: center !important;
-}
-
-
-/* Bild auf keinen Fall über seinen Container hinaus vergrößern */
-.product-benefits
-> .product-benefits_image
-img {
-    display: inline-block !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-    height: auto !important;
-
-    margin: 0 auto !important;
-}
-
-
-/* ---------------------------------------------------------
-   Gestapelt: Liste oben, Bild direkt darunter
-   --------------------------------------------------------- */
+/* =========================================================
+   Gestapelt: Icon-Liste oben, Bild darunter
+   ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
 
-    /*
-     * Maximal 10 px zwischen Textbereich und Bildcontainer.
-     */
+    /* Maximal 10 px zwischen Text und Bild */
     gap: 10px !important;
 
-    /*
-     * 5 px zwischen Bildbereich und unterem grauen Rand.
-     */
+    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-right: 0 !important;
     padding-bottom: 5px !important;
 }
 
-
-/* Listencontainer ohne zusätzlichen unteren Leerraum */
+/* Liste über die verfügbare Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
-    width: 100% !important;
-
     flex: 0 0 auto !important;
-
-    margin: 0 !important;
-    padding-bottom: 0 !important;
-
+    width: 100% !important;
     min-height: 0 !important;
-    height: auto !important;
-}
-
-
-/* Icon-List-Widget ohne zusätzlichen unteren Abstand */
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-widget-icon-list,
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-widget-container,
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-icon-list-items {
     margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-
-    min-height: 0 !important;
-    height: auto !important;
 }
 
-
-/* Letzter Listeneintrag ohne zusätzlichen Abstand */
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-icon-list-item:last-child {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-
-/* Bildcontainer direkt unterhalb der Liste */
+/* Bildcontainer direkt unter der Liste */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
-    display: flex !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-
     flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
 
     justify-content: center !important;
     align-items: flex-start !important;
 
     margin: 0 !important;
-    padding: 0 !important;
-
-    min-height: 0 !important;
-    height: auto !important;
-}
-
-
-/* Bildwidget mittig, ohne es zu vergrößern */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image
-> .elementor-widget-image {
-    display: block !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-
-    margin: 0 auto !important;
-    padding: 0 !important;
-
-    min-height: 0 !important;
-    height: auto !important;
-}
-
-
-/* Bild behält die in Elementor definierte Größe */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image
-img {
-    display: block !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-    height: auto !important;
-
-    margin: 0 auto !important;
     padding: 0 !important;
 }
