@@ -7,22 +7,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wrappers.forEach(wrapper => {
 
-        const list = wrapper.querySelector(".product-benefits__list");
+        const texts = wrapper.querySelectorAll(".elementor-icon-list-text");
 
-        if (!list) return;
+        if (!texts.length) return;
 
         function hasWrappedText() {
 
-            const items = list.querySelectorAll("li");
+            for (const text of texts) {
 
-            for (const item of items) {
+                const style = window.getComputedStyle(text);
 
-                const text =
-                    item.querySelector(".elementor-icon-list-text") ??
-                    item.querySelector("span") ??
-                    item;
+                let lineHeight = parseFloat(style.lineHeight);
 
-                if (text.getClientRects().length > 1) {
+                // Falls line-height = normal
+                if (isNaN(lineHeight)) {
+                    lineHeight = parseFloat(style.fontSize) * 1.2;
+                }
+
+                if (text.offsetHeight > lineHeight * 1.4) {
                     return true;
                 }
             }
@@ -46,7 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateLayout();
 
-        new ResizeObserver(updateLayout).observe(wrapper);
+        const observer = new ResizeObserver(updateLayout);
+        observer.observe(wrapper);
 
         window.addEventListener("load", updateLayout);
 
