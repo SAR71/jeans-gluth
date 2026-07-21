@@ -4,27 +4,22 @@
 (function () {
     'use strict';
 
-    function initProductBenefits() {
+    function initializeProductBenefits() {
         const wrappers = document.querySelectorAll(
-            '.product-benefits:not([data-benefits-initialized])'
+            '.product-benefits:not([data-product-benefits-ready])'
         );
 
         wrappers.forEach(function (wrapper) {
-            wrapper.setAttribute(
-                'data-benefits-initialized',
-                'true'
-            );
-
             const listContainer = wrapper.querySelector(
-                ':scope > .product-benefits__list'
+                ':scope > .product-benefits_list'
             );
 
             const imageContainer = wrapper.querySelector(
-                ':scope > .product-benefits__image'
+                ':scope > .product-benefits_image'
             );
 
             const textElements = wrapper.querySelectorAll(
-                '.elementor-icon-list-text'
+                '.product-benefits_list .elementor-icon-list-text'
             );
 
             if (
@@ -32,36 +27,33 @@
                 !imageContainer ||
                 !textElements.length
             ) {
-                console.error(
+                console.warn(
                     'Product Benefits: Elemente nicht gefunden.',
                     {
-                        wrapper: wrapper,
-                        listContainer: listContainer,
-                        imageContainer: imageContainer,
-                        texts: textElements.length
+                        parent: wrapper,
+                        list: listContainer,
+                        image: imageContainer,
+                        textCount: textElements.length
                     }
                 );
 
                 return;
             }
 
+            wrapper.setAttribute(
+                'data-product-benefits-ready',
+                'true'
+            );
+
             let scheduled = false;
+            let observerActive = true;
 
-            function setRowLayout() {
-                wrapper.classList.remove(
-                    'product-benefits--stacked'
-                );
-            }
-
-            function setStackedLayout() {
-                wrapper.classList.add(
-                    'product-benefits--stacked'
-                );
-            }
-
+            /**
+             * Prüft anhand der tatsächlichen Textzeilen,
+             * ob ein Listentext umgebrochen wurde.
+             */
             function textIsWrapped(textElement) {
                 const range = document.createRange();
-
                 range.selectNodeContents(textElement);
 
                 const rectangles = Array.from(
@@ -73,28 +65,50 @@
                     );
                 });
 
-                const lineTops = [];
+                const linePositions = [];
 
                 rectangles.forEach(function (rectangle) {
                     const top = Math.round(rectangle.top);
 
-                    const exists = lineTops.some(
-                        function (savedTop) {
-                            return Math.abs(savedTop - top) <= 2;
+                    const alreadyRecorded = linePositions.some(
+                        function (recordedTop) {
+                            return Math.abs(recordedTop - top) <= 2;
                         }
                     );
 
-                    if (!exists) {
-                        lineTops.push(top);
+                    if (!alreadyRecorded) {
+                        linePositions.push(top);
                     }
                 });
 
-                return lineTops.length > 1;
+                return linePositions.length > 1;
             }
 
             function hasWrappedText() {
                 return Array.from(textElements).some(
                     textIsWrapped
+                );
+            }
+
+            function setRowLayout() {
+                wrapper.classList.remove(
+                    'product-benefits_stacked'
+                );
+
+                wrapper.setAttribute(
+                    'data-product-benefits-layout',
+                    'row'
+                );
+            }
+
+            function setStackedLayout() {
+                wrapper.classList.add(
+                    'product-benefits_stacked'
+                );
+
+                wrapper.setAttribute(
+                    'data-product-benefits-layout',
+                    'stacked'
                 );
             }
 
@@ -105,49 +119,50 @@
 
                 scheduled = true;
 
-                requestAnimationFrame(function () {
+                window.requestAnimationFrame(function () {
                     scheduled = false;
 
                     /*
-                     * Zum Prüfen zunächst immer nebeneinander.
+                     * Immer zuerst nebeneinander messen.
                      */
                     setRowLayout();
 
                     /*
-                     * Browser zur Neuberechnung zwingen.
+                     * Layout-Neuberechnung erzwingen.
                      */
                     void wrapper.offsetWidth;
 
-                    const mustStack = hasWrappedText();
-
-                    if (mustStack) {
+                    if (hasWrappedText()) {
                         setStackedLayout();
+                    } else {
+                        setRowLayout();
                     }
-
-                    wrapper.setAttribute(
-                        'data-benefits-layout',
-                        mustStack ? 'stacked' : 'row'
-                    );
-
-                    console.log(
-                        'Product Benefits:',
-                        mustStack
-                            ? 'untereinander'
-                            : 'nebeneinander'
-                    );
                 });
             }
 
-            const resizeObserver = new ResizeObserver(
-                updateLayout
-            );
+            const resizeObserver = new ResizeObserver(function () {
+                if (observerActive) {
+                    updateLayout();
+                }
+            });
 
             resizeObserver.observe(wrapper);
-            resizeObserver.observe(listContainer);
 
-            if (document.fonts?.ready) {
+            if (document.fonts && document.fonts.ready) {
                 document.fonts.ready.then(updateLayout);
             }
+
+            imageContainer
+                .querySelectorAll('img')
+                .forEach(function (image) {
+                    if (!image.complete) {
+                        image.addEventListener(
+                            'load',
+                            updateLayout,
+                            { once: true }
+                        );
+                    }
+                });
 
             window.addEventListener(
                 'resize',
@@ -155,45 +170,23 @@
                 { passive: true }
             );
 
-            setTimeout(updateLayout, 0);
-            setTimeout(updateLayout, 300);
-            setTimeout(updateLayout, 1000);
+            updateLayout();
+            window.setTimeout(updateLayout, 300);
+            window.setTimeout(updateLayout, 1000);
         });
     }
 
-    /*
-     * Funktioniert unabhängig davon, ob das Script im Header
-     * oder Footer geladen wird.
-     */
     if (document.readyState === 'loading') {
         document.addEventListener(
             'DOMContentLoaded',
-            initProductBenefits
+            initializeProductBenefits
         );
     } else {
-        initProductBenefits();
+        initializeProductBenefits();
     }
 
     window.addEventListener(
         'load',
-        initProductBenefits
+        initializeProductBenefits
     );
-
-    /*
-     * Falls Elementor Inhalte nachträglich rendert.
-     */
-    const mutationObserver = new MutationObserver(
-        initProductBenefits
-    );
-
-    mutationObserver.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-    });
 })();
-
-console.log('WOODMART CUSTOM JS LÄUFT');
-document.documentElement.setAttribute(
-    'data-woodmart-js-test',
-    'true'
-);
