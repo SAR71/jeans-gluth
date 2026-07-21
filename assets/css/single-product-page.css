@@ -53,9 +53,62 @@
    Produkt Benefits Layout
    =========================== */
 
-.product-benefits_image img {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
+/* Standard: Liste und Bild nebeneinander */
+.product-benefits {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+/* Icon-Liste bekommt den verbleibenden Platz */
+.product-benefits > .product-benefits_list {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+/* Bildcontainer darf nicht kleiner werden */
+.product-benefits > .product-benefits_image {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+}
+
+/*
+ * Keine Breitenvorgabe für das Bild.
+ * Die in Elementor eingestellte Bildgröße bleibt erhalten.
+ */
+.product-benefits > .product-benefits_image img {
+    height: auto !important;
+}
+
+/* Bild unter die Icon-Liste setzen */
+.product-benefits.product-benefits_stacked {
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+
+/* Icon-Liste im Stapelmodus über volle Breite */
+.product-benefits.product-benefits_stacked
+> .product-benefits_list {
+    width: 100% !important;
+}
+
+/* Bildbereich unten zentrieren */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 20px !important;
+}
+
+/* Elementor-Bildwidget mittig ausrichten */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image
+.elementor-widget-image {
+    width: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
