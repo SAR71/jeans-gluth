@@ -48,3 +48,50 @@
 .single-product .reset_variations {
     display: none !important;
 }
+
+/* ===========================
+   Produkt Benefits Layout
+   =========================== */
+
+.product-benefits{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:40px;
+    flex-wrap:nowrap;
+}
+
+.product-benefits__list{
+    flex:1 1 auto;
+    min-width:0;
+}
+
+.product-benefits__image{
+    flex:0 0 auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.product-benefits__image img{
+    display:block;
+    max-width:100%;
+    height:auto;
+}
+
+/* Wird per JavaScript aktiviert */
+
+.product-benefits.stack-layout{
+    flex-direction:column;
+    align-items:stretch;
+}
+
+.product-benefits.stack-layout .product-benefits__image{
+    width:100%;
+    margin-top:20px;
+    justify-content:center;
+}
+
+.product-benefits.stack-layout .product-benefits__image img{
+    margin:auto;
+}
