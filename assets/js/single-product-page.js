@@ -4,235 +4,240 @@
 (function () {
     'use strict';
 
-    function initProductBenefits() {
-        const wrappers = document.querySelectorAll(
-            '.product-benefits:not([data-benefits-initialized])'
+    const WRAPPER_SELECTOR = '.product-benefits';
+    const LIST_SELECTOR = '.product-benefits_list';
+    const IMAGE_SELECTOR = '.product-benefits_image';
+    const TEXT_SELECTOR = '.elementor-icon-list-text';
+    const STACKED_CLASS = 'product-benefits_stacked';
+
+    function initializeProductBenefits(wrapper) {
+        const listContainer = wrapper.querySelector(
+            LIST_SELECTOR
         );
 
-        wrappers.forEach(function (wrapper) {
-            try {
-                const listContainer = wrapper.querySelector(
-                    '.product-benefits_list'
+        const imageContainer = wrapper.querySelector(
+            IMAGE_SELECTOR
+        );
+
+        if (!listContainer || !imageContainer) {
+            console.error(
+                'Product Benefits: Listen- oder Bildcontainer wurde nicht gefunden.',
+                {
+                    wrapper: wrapper,
+                    listContainer: listContainer,
+                    imageContainer: imageContainer
+                }
+            );
+
+            return;
+        }
+
+        let updateScheduled = false;
+        let resizeTimer = null;
+
+        /*
+         * Prüft, ob ein Text mehr als eine Zeile hoch ist.
+         */
+        function textIsWrapped(textElement) {
+            const computedStyle =
+                window.getComputedStyle(textElement);
+
+            let lineHeight = parseFloat(
+                computedStyle.lineHeight
+            );
+
+            if (!Number.isFinite(lineHeight)) {
+                const fontSize =
+                    parseFloat(computedStyle.fontSize) || 16;
+
+                lineHeight = fontSize * 1.2;
+            }
+
+            const actualHeight =
+                textElement.getBoundingClientRect().height;
+
+            /*
+             * Bei dir ist eine Zeile ungefähr 33,6 px hoch
+             * und zwei Zeilen ungefähr 67,2 px.
+             */
+            return actualHeight > lineHeight * 1.5;
+        }
+
+        /*
+         * Prüft alle Texte der Icon List.
+         */
+        function hasWrappedText() {
+            const textElements = Array.from(
+                listContainer.querySelectorAll(
+                    TEXT_SELECTOR
+                )
+            );
+
+            return textElements.some(
+                textIsWrapped
+            );
+        }
+
+        /*
+         * Aktualisiert die Ausrichtung.
+         */
+        function updateLayout() {
+            if (updateScheduled) {
+                return;
+            }
+
+            updateScheduled = true;
+
+            window.requestAnimationFrame(function () {
+                /*
+                 * Zum Messen immer zuerst nebeneinander anzeigen.
+                 */
+                wrapper.classList.remove(
+                    STACKED_CLASS
                 );
 
-                const imageContainer = wrapper.querySelector(
-                    '.product-benefits_image'
-                );
+                /*
+                 * Browser zur Layout-Neuberechnung zwingen.
+                 */
+                void wrapper.offsetWidth;
 
-                const textElements = Array.from(
-                    wrapper.querySelectorAll(
-                        '.elementor-icon-list-text'
-                    )
-                );
+                window.requestAnimationFrame(function () {
+                    const mustStack =
+                        hasWrappedText();
 
-                if (
-                    !listContainer ||
-                    !imageContainer ||
-                    textElements.length === 0
-                ) {
-                    console.error(
-                        'Product Benefits: Elemente fehlen.',
-                        {
-                            listContainer,
-                            imageContainer,
-                            textCount: textElements.length
-                        }
+                    wrapper.classList.toggle(
+                        STACKED_CLASS,
+                        mustStack
                     );
 
-                    return;
-                }
+                    wrapper.setAttribute(
+                        'data-benefits-layout',
+                        mustStack
+                            ? 'stacked'
+                            : 'row'
+                    );
 
-                wrapper.setAttribute(
-                    'data-benefits-initialized',
-                    'true'
-                );
+                    wrapper.setAttribute(
+                        'data-benefits-initialized',
+                        'true'
+                    );
 
-                let resizeTimer = null;
+                    updateScheduled = false;
 
-                /**
-                 * Ermittelt die Anzahl der tatsächlichen Textzeilen.
-                 */
-                function getLineCount(textElement) {
-                    const range = document.createRange();
+                    console.log(
+                        'Product Benefits:',
+                        mustStack
+                            ? 'Bild unter der Icon-Liste'
+                            : 'Bild neben der Icon-Liste'
+                    );
+                });
+            });
+        }
 
-                    range.selectNodeContents(textElement);
+        /*
+         * Auf Änderungen der Containerbreite reagieren.
+         */
+        const resizeObserver =
+            new ResizeObserver(function () {
+                window.clearTimeout(resizeTimer);
 
-                    const rects = Array.from(
-                        range.getClientRects()
-                    ).filter(function (rect) {
-                        return (
-                            rect.width > 0 &&
-                            rect.height > 0
-                        );
-                    });
+                resizeTimer =
+                    window.setTimeout(
+                        updateLayout,
+                        80
+                    );
+            });
 
-                    const lineTops = [];
+        resizeObserver.observe(wrapper);
+        resizeObserver.observe(listContainer);
 
-                    rects.forEach(function (rect) {
-                        const top = Math.round(rect.top);
+        /*
+         * Zusätzlich auf Fenstergrößenänderungen reagieren.
+         */
+        window.addEventListener(
+            'resize',
+            function () {
+                window.clearTimeout(resizeTimer);
 
-                        const lineAlreadyExists =
-                            lineTops.some(function (existingTop) {
-                                return Math.abs(
-                                    existingTop - top
-                                ) <= 2;
-                            });
-
-                        if (!lineAlreadyExists) {
-                            lineTops.push(top);
-                        }
-                    });
-
-                    /*
-                     * Fallback, falls der Browser nur ein Rechteck liefert.
-                     */
-                    if (lineTops.length <= 1) {
-                        const style =
-                            window.getComputedStyle(textElement);
-
-                        const fontSize =
-                            parseFloat(style.fontSize) || 16;
-
-                        let lineHeight =
-                            parseFloat(style.lineHeight);
-
-                        if (!Number.isFinite(lineHeight)) {
-                            lineHeight = fontSize * 1.2;
-                        }
-
-                        const height =
-                            textElement.getBoundingClientRect().height;
-
-                        return Math.max(
-                            1,
-                            Math.round(height / lineHeight)
-                        );
-                    }
-
-                    return lineTops.length;
-                }
-
-                function hasWrappedText() {
-                    return textElements.some(function (textElement) {
-                        return getLineCount(textElement) > 1;
-                    });
-                }
-
-                function updateLayout() {
-                    try {
-                        /*
-                         * Zunächst den Zustand nebeneinander herstellen.
-                         */
-                        wrapper.classList.remove(
-                            'product-benefits_stacked'
-                        );
-
-                        /*
-                         * Browser das Layout neu berechnen lassen.
-                         */
-                        void wrapper.offsetWidth;
-
-                        /*
-                         * Eine kurze Verzögerung gibt Elementor Zeit,
-                         * die endgültigen Breiten zu berechnen.
-                         */
-                        window.setTimeout(function () {
-                            try {
-                                const mustStack =
-                                    hasWrappedText();
-
-                                wrapper.classList.toggle(
-                                    'product-benefits_stacked',
-                                    mustStack
-                                );
-
-                                wrapper.setAttribute(
-                                    'data-benefits-layout',
-                                    mustStack
-                                        ? 'stacked'
-                                        : 'row'
-                                );
-
-                                wrapper.removeAttribute(
-                                    'data-benefits-error'
-                                );
-
-                                console.log(
-                                    'Product Benefits:',
-                                    mustStack
-                                        ? 'untereinander'
-                                        : 'nebeneinander'
-                                );
-                            } catch (error) {
-                                wrapper.setAttribute(
-                                    'data-benefits-error',
-                                    error.message
-                                );
-
-                                console.error(
-                                    'Product Benefits – Messfehler:',
-                                    error
-                                );
-                            }
-                        }, 30);
-                    } catch (error) {
-                        wrapper.setAttribute(
-                            'data-benefits-error',
-                            error.message
-                        );
-
-                        console.error(
-                            'Product Benefits – Layoutfehler:',
-                            error
-                        );
-                    }
-                }
-
-                window.addEventListener(
-                    'resize',
-                    function () {
-                        window.clearTimeout(resizeTimer);
-
-                        resizeTimer = window.setTimeout(
-                            updateLayout,
-                            100
-                        );
-                    },
-                    { passive: true }
-                );
-
-                if (document.fonts?.ready) {
-                    document.fonts.ready.then(updateLayout);
-                }
-
-                window.setTimeout(updateLayout, 0);
-                window.setTimeout(updateLayout, 300);
-                window.setTimeout(updateLayout, 1000);
-            } catch (error) {
-                wrapper.setAttribute(
-                    'data-benefits-error',
-                    error.message
-                );
-
-                console.error(
-                    'Product Benefits – Initialisierungsfehler:',
-                    error
-                );
+                resizeTimer =
+                    window.setTimeout(
+                        updateLayout,
+                        80
+                    );
+            },
+            {
+                passive: true
             }
-        });
+        );
+
+        /*
+         * Nach dem Laden der Schriftarten erneut prüfen.
+         */
+        if (
+            document.fonts &&
+            document.fonts.ready
+        ) {
+            document.fonts.ready.then(
+                updateLayout
+            );
+        }
+
+        /*
+         * Nach dem Laden des Bildes erneut prüfen.
+         */
+        imageContainer
+            .querySelectorAll('img')
+            .forEach(function (image) {
+                if (!image.complete) {
+                    image.addEventListener(
+                        'load',
+                        updateLayout,
+                        {
+                            once: true
+                        }
+                    );
+                }
+            });
+
+        /*
+         * Initiale Prüfungen.
+         */
+        updateLayout();
+
+        window.setTimeout(
+            updateLayout,
+            250
+        );
+
+        window.setTimeout(
+            updateLayout,
+            1000
+        );
     }
 
-    if (document.readyState === 'loading') {
+    function startProductBenefits() {
+        document
+            .querySelectorAll(
+                WRAPPER_SELECTOR
+            )
+            .forEach(
+                initializeProductBenefits
+            );
+    }
+
+    if (
+        document.readyState === 'loading'
+    ) {
         document.addEventListener(
             'DOMContentLoaded',
-            initProductBenefits
+            startProductBenefits
         );
     } else {
-        initProductBenefits();
+        startProductBenefits();
     }
 
     window.addEventListener(
         'load',
-        initProductBenefits
+        startProductBenefits
     );
 })();

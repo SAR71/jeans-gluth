@@ -53,62 +53,98 @@
    Produkt Benefits Layout
    =========================== */
 
-/* Standard: Liste und Bild nebeneinander */
+/* =========================================================
+   PRODUCT BENEFITS
+   Klassen:
+   Elterncontainer:        product-benefits
+   Icon-List-Container:    product-benefits_list
+   Bild-Container:         product-benefits_image
+   ========================================================= */
+
+
+/* Standardzustand: Icon-Liste und Bild nebeneinander */
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
+    justify-content: space-between !important;
     gap: 20px !important;
 }
+
 
 /* Icon-Liste bekommt den verbleibenden Platz */
 .product-benefits > .product-benefits_list {
     flex: 1 1 auto !important;
     min-width: 0 !important;
+    width: auto !important;
 }
 
-/* Bildcontainer darf nicht kleiner werden */
+
+/* Bild-Container behält seine Elementor-Größe */
 .product-benefits > .product-benefits_image {
     flex: 0 0 auto !important;
+    flex-grow: 0 !important;
     flex-shrink: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
 }
 
-/*
- * Keine Breitenvorgabe für das Bild.
- * Die in Elementor eingestellte Bildgröße bleibt erhalten.
- */
+
+/* Bild nicht künstlich vergrößern */
 .product-benefits > .product-benefits_image img {
+    display: block !important;
     height: auto !important;
 }
 
-/* Bild unter die Icon-Liste setzen */
+
+/* =========================================================
+   STACKED-ZUSTAND:
+   Bild unter der Icon-Liste
+   ========================================================= */
+
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
 }
 
-/* Icon-Liste im Stapelmodus über volle Breite */
+
+/* Icon-Liste nimmt im gestapelten Zustand die volle Breite ein */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     width: 100% !important;
+    flex: 0 0 auto !important;
 }
 
-/* Bildbereich unten zentrieren */
+
+/* Bild-Container unterhalb der Liste */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
     display: flex !important;
     width: 100% !important;
+    flex: 0 0 auto !important;
+    align-self: stretch !important;
     justify-content: center !important;
     align-items: center !important;
     margin-top: 20px !important;
 }
+
 
 /* Elementor-Bildwidget mittig ausrichten */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-image {
     width: auto !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+/* Bild selbst mittig ausrichten */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image img {
+    display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
 }
