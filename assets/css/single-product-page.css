@@ -64,193 +64,69 @@
    ========================================================= */
 
 
-/* =========================================================
-   STANDARDZUSTAND:
-   Icon List links, Bild rechts
-   ========================================================= */
-
+/* Standard: Icon-Liste und Bild nebeneinander */
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-
     align-items: center !important;
-    justify-content: space-between !important;
-
     gap: 20px !important;
 
-    /* Mindestens 10 px Abstand zum rechten grauen Rand */
+    box-sizing: border-box !important;
     padding-right: 10px !important;
-
-    box-sizing: border-box !important;
 }
 
-
-/* Icon-List-Container */
+/* Icon-Liste erhält den verfügbaren Platz */
 .product-benefits > .product-benefits_list {
-    flex: 1 1 auto !important;
-
+    flex: 1 1 0 !important;
     min-width: 0 !important;
-    width: auto !important;
-
-    margin: 0 !important;
 }
 
-
-/* Bildcontainer rechts */
+/* Bildcontainer darf nicht schrumpfen */
 .product-benefits > .product-benefits_image {
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+
     display: flex !important;
-
-    /*
-     * Feste Breite des Bildbereichs.
-     * Dadurch kann das Bild innerhalb dieses Bereichs
-     * wirklich mittig ausgerichtet werden.
-     */
-    flex: 0 0 180px !important;
-    width: 180px !important;
-    min-width: 180px !important;
-    max-width: 180px !important;
-
     justify-content: center !important;
     align-items: center !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    box-sizing: border-box !important;
 }
-
-
-/* Elementor-Bildwidget im Bildcontainer */
-.product-benefits > .product-benefits_image
-.elementor-widget-image {
-    display: flex !important;
-
-    justify-content: center !important;
-    align-items: center !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-
-    margin: 0 auto !important;
-    padding: 0 !important;
-}
-
-
-/* Bild selbst */
-.product-benefits > .product-benefits_image img {
-    display: block !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-    height: auto !important;
-
-    margin: 0 auto !important;
-    padding: 0 !important;
-}
-
 
 /* =========================================================
-   STACKED-ZUSTAND:
-   Bild unterhalb der Icon List
+   Gestapelt: Icon-Liste oben, Bild darunter
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
-
-    /*
-     * Beide Untercontainer nehmen die volle Breite ein.
-     */
     align-items: stretch !important;
 
-    /*
-     * Maximal 10 px zwischen Icon List und Bild.
-     */
+    /* Maximal 10 px zwischen Text und Bild */
     gap: 10px !important;
 
-    /*
-     * Rechts kein zusätzlicher Innenabstand nötig,
-     * da das Bild mittig unterhalb steht.
-     */
+    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-right: 0 !important;
+    padding-bottom: 5px !important;
 }
 
-
-/* Icon List im gestapelten Zustand */
+/* Liste über die verfügbare Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
-
     width: 100% !important;
-    min-width: 0 !important;
-
-    margin: 0 !important;
-    padding-bottom: 0 !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
 }
 
-
-/* Bildcontainer unter der Icon List */
+/* Bildcontainer direkt unter der Liste */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
-    display: flex !important;
-
     flex: 0 0 auto !important;
-
     width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
+    min-height: 0 !important;
 
     justify-content: center !important;
     align-items: flex-start !important;
-    align-self: stretch !important;
 
-    /*
-     * Kein zusätzlicher Abstand oberhalb.
-     * Der Abstand zum Text kommt nur über gap: 10px.
-     */
     margin: 0 !important;
-
-    /*
-     * Unterhalb des Bildes bleiben 5 px Abstand.
-     */
-    padding: 0 0 5px 0 !important;
-
-    min-height: 0 !important;
-    height: auto !important;
-
-    box-sizing: border-box !important;
-}
-
-
-/* Elementor-Bildwidget im gestapelten Zustand */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image
-.elementor-widget-image {
-    display: flex !important;
-
-    justify-content: center !important;
-    align-items: flex-start !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-
-    margin: 0 auto !important;
-    padding: 0 !important;
-
-    min-height: 0 !important;
-    height: auto !important;
-}
-
-
-/* Bild im gestapelten Zustand */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image img {
-    display: block !important;
-
-    width: auto !important;
-    max-width: 100% !important;
-    height: auto !important;
-
-    margin: 0 auto !important;
     padding: 0 !important;
 }
