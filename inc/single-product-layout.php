@@ -168,3 +168,58 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
     return $new_attributes + $attributes;
 
 }, 20, 2);
+
+
+/**
+ * Eigenes JavaScript für die Produktdetailseite laden.
+ */
+function jeans_gluth_enqueue_single_product_script() {
+
+    /*
+     * Nur auf WooCommerce-Produktseiten laden.
+     */
+    if (
+        ! function_exists( 'is_product' ) ||
+        ! is_product()
+    ) {
+        return;
+    }
+
+    /*
+     * Relativer Pfad innerhalb des Child-Themes.
+     */
+    $relative_path = '/assets/js/single-product-page.js';
+
+    /*
+     * Absoluter Serverpfad und öffentliche URL.
+     */
+    $file_path = get_stylesheet_directory() . $relative_path;
+    $file_url  = get_stylesheet_directory_uri() . $relative_path;
+
+    /*
+     * Prüfen, ob die Datei tatsächlich vorhanden ist.
+     */
+    if ( ! file_exists( $file_path ) ) {
+        return;
+    }
+
+    /*
+     * filemtime verhindert, dass nach Änderungen
+     * eine veraltete JS-Datei aus dem Cache geladen wird.
+     */
+    $version = (string) filemtime( $file_path );
+
+    wp_enqueue_script(
+        'jeans-gluth-single-product-page',
+        $file_url,
+        array(),
+        $version,
+        true
+    );
+}
+
+add_action(
+    'wp_enqueue_scripts',
+    'jeans_gluth_enqueue_single_product_script',
+    100
+);
