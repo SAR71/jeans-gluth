@@ -53,45 +53,56 @@
    Produkt Benefits Layout
    =========================== */
 
-.product-benefits{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:40px;
-    flex-wrap:nowrap;
+/* Standard: Icon-Liste und Bild nebeneinander */
+.product-benefits {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 20px;
 }
 
-.product-benefits__list{
-    flex:1 1 auto;
-    min-width:0;
+/* Icon-Liste nutzt den verfügbaren Platz */
+.product-benefits > .product-benefits__list {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
 }
 
-.product-benefits__image{
-    flex:0 0 auto;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+/* Bild behält seine in Elementor eingestellte Größe */
+.product-benefits > .product-benefits__image {
+    flex: 0 0 auto !important;
+    width: auto !important;
 }
 
-.product-benefits__image img{
-    display:block;
-    max-width:100%;
-    height:auto;
+/* Umschaltung: Bild unter die Liste */
+.product-benefits.product-benefits--stacked {
+    flex-direction: column !important;
+    align-items: stretch !important;
 }
 
-/* Wird per JavaScript aktiviert */
-
-.product-benefits.stack-layout{
-    flex-direction:column;
-    align-items:stretch;
+/* Bild im unteren Bereich zentrieren */
+.product-benefits.product-benefits--stacked
+> .product-benefits__image {
+    width: 100% !important;
+    align-self: stretch !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 15px;
 }
 
-.product-benefits.stack-layout .product-benefits__image{
-    width:100%;
-    margin-top:20px;
-    justify-content:center;
+.product-benefits.product-benefits--stacked
+> .product-benefits__image
+.elementor-widget-image {
+    width: auto !important;
+    max-width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
-.product-benefits.stack-layout .product-benefits__image img{
-    margin:auto;
+.product-benefits.product-benefits--stacked
+> .product-benefits__image img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }

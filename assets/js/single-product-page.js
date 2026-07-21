@@ -1,58 +1,133 @@
 /* ===========================
    Produkt Benefits Layout
    =========================== */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', function () {
+    const wrappers = document.querySelectorAll('.product-benefits');
 
-    const wrappers = document.querySelectorAll(".product-benefits");
+    console.log(
+        'Product-Benefits-Container gefunden:',
+        wrappers.length
+    );
 
-    wrappers.forEach(wrapper => {
+    wrappers.forEach(function (wrapper) {
+        const textElements = wrapper.querySelectorAll(
+            '.product-benefits__list .elementor-icon-list-text'
+        );
 
-        const texts = wrapper.querySelectorAll(".elementor-icon-list-text");
+        if (!textElements.length) {
+            console.warn(
+                'Keine Texte der Icon List gefunden:',
+                wrapper
+            );
+            return;
+        }
 
-        if (!texts.length) return;
+        let scheduled = false;
 
-        function hasWrappedText() {
+        /*
+         * Ermittelt anhand der Textzeilen, ob ein Text umgebrochen ist.
+         */
+        function textIsWrapped(element) {
+            const range = document.createRange();
 
-            for (const text of texts) {
+            range.selectNodeContents(element);
 
-                const style = window.getComputedStyle(text);
+            const rectangles = Array.from(range.getClientRects())
+                .filter(function (rectangle) {
+                    return (
+                        rectangle.width > 0 &&
+                        rectangle.height > 0
+                    );
+                });
 
-                let lineHeight = parseFloat(style.lineHeight);
-
-                // Falls line-height = normal
-                if (isNaN(lineHeight)) {
-                    lineHeight = parseFloat(style.fontSize) * 1.2;
-                }
-
-                if (text.offsetHeight > lineHeight * 1.4) {
-                    return true;
-                }
+            if (rectangles.length <= 1) {
+                return false;
             }
 
-            return false;
-        }
+            /*
+             * Mehrere Rechtecke können auch durch HTML-Unterelemente
+             * entstehen. Deshalb werden unterschiedliche vertikale
+             * Textpositionen gezählt.
+             */
+            const linePositions = [];
 
-        function updateLayout() {
+            rectangles.forEach(function (rectangle) {
+                const top = Math.round(rectangle.top);
 
-            wrapper.classList.remove("stack-layout");
+                const alreadyExists = linePositions.some(
+                    function (savedTop) {
+                        return Math.abs(savedTop - top) <= 2;
+                    }
+                );
 
-            requestAnimationFrame(() => {
-
-                if (hasWrappedText()) {
-                    wrapper.classList.add("stack-layout");
+                if (!alreadyExists) {
+                    linePositions.push(top);
                 }
-
             });
 
+            return linePositions.length > 1;
         }
 
-        updateLayout();
+        function hasWrappedText() {
+            return Array.from(textElements).some(textIsWrapped);
+        }
 
-        const observer = new ResizeObserver(updateLayout);
-        observer.observe(wrapper);
+        function checkLayout() {
+            if (scheduled) {
+                return;
+            }
 
-        window.addEventListener("load", updateLayout);
+            scheduled = true;
 
+            requestAnimationFrame(function () {
+                scheduled = false;
+
+                /*
+                 * Erst immer den Ausgangszustand nebeneinander herstellen.
+                 */
+                wrapper.classList.remove(
+                    'product-benefits--stacked'
+                );
+
+                /*
+                 * Layout-Neuberechnung erzwingen.
+                 */
+                void wrapper.offsetWidth;
+
+                const mustStack = hasWrappedText();
+
+                wrapper.classList.toggle(
+                    'product-benefits--stacked',
+                    mustStack
+                );
+
+                console.log(
+                    'Product Benefits:',
+                    mustStack
+                        ? 'Bild wird darunter gesetzt'
+                        : 'Container bleiben nebeneinander'
+                );
+            });
+        }
+
+        const resizeObserver = new ResizeObserver(checkLayout);
+
+        resizeObserver.observe(wrapper);
+
+        if (document.fonts?.ready) {
+            document.fonts.ready.then(checkLayout);
+        }
+
+        wrapper.querySelectorAll('img').forEach(function (image) {
+            if (!image.complete) {
+                image.addEventListener(
+                    'load',
+                    checkLayout,
+                    { once: true }
+                );
+            }
+        });
+
+        checkLayout();
     });
-
 });
