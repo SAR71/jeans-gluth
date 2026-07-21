@@ -191,3 +191,9 @@
         subtree: true
     });
 })();
+
+console.log('WOODMART CUSTOM JS LÄUFT');
+document.documentElement.setAttribute(
+    'data-woodmart-js-test',
+    'true'
+);
