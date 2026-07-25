@@ -40,9 +40,18 @@
         const style =
             window.getComputedStyle(element);
 
+        /*
+        * visibility:hidden wird absichtlich nicht geprüft.
+        *
+        * Der Benefits-Container wird vor der ersten Messung
+        * durch unser eigenes CSS unsichtbar gemacht, muss aber
+        * trotzdem vermessen werden können.
+        *
+        * Elementor blendet Container normalerweise über
+        * display:none aus. Das wird weiterhin berücksichtigt.
+        */
         return (
             style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
             element.getClientRects().length > 0
         );
     }
