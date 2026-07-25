@@ -3,13 +3,14 @@
 
     const WRAPPER_SELECTOR = '.product-benefits';
     const LIST_SELECTOR = '.product-benefits_list';
+    const IMAGE_SELECTOR = '.product-benefits_image';
     const TEXT_SELECTOR = '.elementor-icon-list-text';
 
     const COMPACT_CLASS = 'product-benefits_compact';
     const STACKED_CLASS = 'product-benefits_stacked';
 
     /**
-     * Prüft, ob ein Text mehr als eine sichtbare Zeile benötigt.
+     * Prüft, ob ein Text mehr als eine Zeile benötigt.
      */
     function textIsWrapped(textElement) {
         const style = window.getComputedStyle(textElement);
@@ -26,15 +27,11 @@
         const actualHeight =
             textElement.getBoundingClientRect().height;
 
-        /*
-         * Eine zweite Zeile ist ungefähr doppelt so hoch.
-         * Faktor 1,5 vermeidet Fehlmessungen durch Rundungen.
-         */
         return actualHeight > lineHeight * 1.5;
     }
 
     /**
-     * Prüft alle Texte innerhalb der Icon List.
+     * Prüft alle Texte der Icon List.
      */
     function listHasWrappedText(listContainer) {
         const textElements = Array.from(
@@ -45,12 +42,9 @@
     }
 
     /**
-     * Initialisiert einen einzelnen Benefits-Container.
+     * Initialisiert einen Product-Benefits-Container.
      */
     function initializeBenefits(wrapper) {
-        /*
-         * Mehrfache Initialisierung verhindern.
-         */
         if (
             wrapper.getAttribute(
                 'data-benefits-script-initialized'
@@ -62,10 +56,25 @@
         const listContainer =
             wrapper.querySelector(LIST_SELECTOR);
 
-        if (!listContainer) {
+        const imageContainer =
+            wrapper.querySelector(IMAGE_SELECTOR);
+
+        const image =
+            imageContainer?.querySelector('img');
+
+        if (
+            !listContainer ||
+            !imageContainer ||
+            !image
+        ) {
             console.error(
-                'Product Benefits: Icon-List-Container wurde nicht gefunden.',
-                wrapper
+                'Product Benefits: Benötigte Elemente fehlen.',
+                {
+                    wrapper,
+                    listContainer,
+                    imageContainer,
+                    image
+                }
             );
 
             return;
@@ -78,24 +87,6 @@
 
         let resizeTimer = null;
         let updateRunning = false;
-
-        /**
-         * Speichert die aktuelle Höhe der Icon-Liste
-         * in einer CSS-Variable.
-         *
-         * Diese Variable begrenzt im Row-Layout die Bildhöhe.
-         */
-        function updateListHeightVariable() {
-            const listHeight =
-                listContainer.getBoundingClientRect().height;
-
-            if (listHeight > 0) {
-                wrapper.style.setProperty(
-                    '--benefits-list-height',
-                    Math.round(listHeight) + 'px'
-                );
-            }
-        }
 
         /**
          * Aktiviert genau einen Layoutmodus.
@@ -118,7 +109,83 @@
         }
 
         /**
-         * Beendet die Messung und markiert das Element als bereit.
+         * Begrenzt das Bild direkt auf die Höhe
+         * des Icon-List-Containers.
+         */
+        function limitImageToListHeight() {
+            const listHeight =
+                listContainer.getBoundingClientRect().height;
+
+            if (listHeight <= 0) {
+                return;
+            }
+
+            const roundedHeight =
+                Math.floor(listHeight);
+
+            /*
+             * Direkt am Bild mit !important setzen,
+             * damit Elementor die Begrenzung nicht überschreibt.
+             */
+            image.style.setProperty(
+                'max-height',
+                roundedHeight + 'px',
+                'important'
+            );
+
+            image.style.setProperty(
+                'height',
+                'auto',
+                'important'
+            );
+
+            image.style.setProperty(
+                'width',
+                'auto',
+                'important'
+            );
+
+            image.style.setProperty(
+                'max-width',
+                '100%',
+                'important'
+            );
+
+            image.style.setProperty(
+                'object-fit',
+                'contain',
+                'important'
+            );
+
+            /*
+             * Auch der Bildcontainer selbst wird auf die
+             * Listenhöhe begrenzt und darin zentriert.
+             */
+            imageContainer.style.setProperty(
+                'max-height',
+                roundedHeight + 'px',
+                'important'
+            );
+
+            imageContainer.style.setProperty(
+                'height',
+                roundedHeight + 'px',
+                'important'
+            );
+        }
+
+        /**
+         * Entfernt die Höhenbegrenzung im gestapelten Zustand.
+         */
+        function removeImageHeightLimit() {
+            image.style.removeProperty('max-height');
+
+            imageContainer.style.removeProperty('max-height');
+            imageContainer.style.removeProperty('height');
+        }
+
+        /**
+         * Markiert die Messung als abgeschlossen.
          */
         function finishUpdate() {
             wrapper.setAttribute(
@@ -130,11 +197,11 @@
         }
 
         /**
-         * Prüft die Layouts in dieser Reihenfolge:
+         * Prüft:
          *
-         * 1. Normal nebeneinander
-         * 2. Kompakt nebeneinander
-         * 3. Untereinander
+         * 1. normal nebeneinander
+         * 2. kompakt nebeneinander
+         * 3. untereinander
          */
         function updateLayout() {
             if (updateRunning) {
@@ -144,67 +211,47 @@
             updateRunning = true;
 
             /*
-             * Schritt 1:
-             * Normalen Row-Zustand herstellen.
+             * Für die Messung zuerst wieder Row herstellen.
              */
+            removeImageHeightLimit();
             setLayout('row');
 
-            /*
-             * Browser zur Layout-Neuberechnung zwingen.
-             */
             void wrapper.offsetWidth;
 
             /*
-             * Höhe der Icon-Liste für die Bildbegrenzung speichern.
+             * Bild auf die tatsächliche Listenhöhe begrenzen.
              */
-            updateListHeightVariable();
+            limitImageToListHeight();
+
+            void wrapper.offsetWidth;
 
             window.requestAnimationFrame(function () {
-                /*
-                 * Passt alles normal nebeneinander?
-                 */
                 if (!listHasWrappedText(listContainer)) {
                     setLayout('row');
-
-                    /*
-                     * Nach dem finalen Layout noch einmal messen.
-                     */
-                    void wrapper.offsetWidth;
-                    updateListHeightVariable();
-
+                    limitImageToListHeight();
                     finishUpdate();
                     return;
                 }
 
                 /*
-                 * Schritt 2:
-                 * Abstand auf 10 px reduzieren.
+                 * Zweiter Versuch mit kleinerem Abstand.
                  */
                 setLayout('compact');
 
                 void wrapper.offsetWidth;
-                updateListHeightVariable();
+                limitImageToListHeight();
 
                 window.requestAnimationFrame(function () {
-                    /*
-                     * Passt es im kompakten Zustand?
-                     */
                     if (!listHasWrappedText(listContainer)) {
                         setLayout('compact');
-
-                        void wrapper.offsetWidth;
-                        updateListHeightVariable();
+                        limitImageToListHeight();
                     } else {
                         /*
-                         * Schritt 3:
-                         * Bild unter die Icon-Liste setzen.
+                         * Untereinander:
+                         * Höhenbegrenzung durch Liste entfernen.
                          */
                         setLayout('stacked');
-
-                        /*
-                         * Die Variable bleibt gespeichert,
-                         * greift im gestapelten Zustand aber nicht.
-                         */
+                        removeImageHeightLimit();
                     }
 
                     finishUpdate();
@@ -224,19 +271,12 @@
             );
         }
 
-        /*
-         * Auf echte Größenänderungen des Fensters reagieren.
-         * Kein ResizeObserver, damit keine Umschaltschleife entsteht.
-         */
         window.addEventListener(
             'resize',
             scheduleUpdate,
             { passive: true }
         );
 
-        /*
-         * Nach dem Laden der Schriftarten erneut messen.
-         */
         if (
             document.fonts &&
             document.fonts.ready
@@ -246,22 +286,24 @@
             );
         }
 
-        /*
-         * Nach vollständigem Laden der Seite erneut messen.
-         */
+        if (!image.complete) {
+            image.addEventListener(
+                'load',
+                updateLayout,
+                { once: true }
+            );
+        }
+
         window.addEventListener(
             'load',
             updateLayout
         );
 
-        /*
-         * Initiale Prüfung.
-         */
         updateLayout();
     }
 
     /**
-     * Initialisiert alle passenden Container.
+     * Alle Benefits-Container starten.
      */
     function startBenefitsLayout() {
         document

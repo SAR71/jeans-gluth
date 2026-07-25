@@ -53,25 +53,13 @@
 /* =========================================================
    PRODUCT BENEFITS
 
-   Elementor-Klassen:
    Elterncontainer:     product-benefits
    Icon-Liste:          product-benefits_list
    Bildcontainer:       product-benefits_image
    ========================================================= */
 
 .product-benefits {
-    /*
-     * Maximale Bildbreite.
-     * Die tatsächliche Bildhöhe wird im Row-Layout zusätzlich
-     * auf die Höhe der Icon-Liste begrenzt.
-     */
     --benefits-image-width: 190px;
-
-    /*
-     * Wird durch JavaScript gesetzt.
-     * Fallback verhindert ungültige Berechnung vor der Messung.
-     */
-    --benefits-list-height: 9999px;
 
     display: flex !important;
     flex-direction: row !important;
@@ -98,15 +86,13 @@
 
 
 /* =========================================================
-   BILDCONTAINER – NORMAL NEBENEINANDER
+   BILDCONTAINER – NEBENEINANDER
    ========================================================= */
 
 .product-benefits > .product-benefits_image {
     display: flex !important;
 
-    flex-grow: 0 !important;
-    flex-shrink: 0 !important;
-    flex-basis: var(--benefits-image-width) !important;
+    flex: 0 0 var(--benefits-image-width) !important;
 
     width: var(--benefits-image-width) !important;
     min-width: var(--benefits-image-width) !important;
@@ -114,6 +100,8 @@
 
     justify-content: center !important;
     align-items: center !important;
+
+    overflow: hidden !important;
 
     margin: 0 !important;
     padding: 0 !important;
@@ -155,22 +143,18 @@
 
 
 /*
- * Im Nebeneinander-Zustand:
- *
- * - maximal 190 px breit
- * - maximal so hoch wie die Icon-Liste
- * - Seitenverhältnis bleibt erhalten
+ * Grundregeln für das Bild.
+ * Die konkrete maximale Höhe setzt JavaScript direkt.
  */
-.product-benefits:not(.product-benefits_stacked)
+.product-benefits
 > .product-benefits_image
 img {
     display: block !important;
 
     width: auto !important;
-    max-width: var(--benefits-image-width) !important;
+    max-width: 100% !important;
 
     height: auto !important;
-    max-height: var(--benefits-list-height) !important;
 
     object-fit: contain !important;
 
@@ -181,17 +165,12 @@ img {
 
 /* =========================================================
    KOMPAKTER NEBENEINANDER-ZUSTAND
-
-   Wird verwendet, wenn der Text bei 20 px Abstand umbricht.
-   Der Abstand wird zuerst auf 10 px reduziert.
    ========================================================= */
 
 .product-benefits.product-benefits_compact {
     gap: 10px !important;
 }
 
-
-/* Bild bleibt rechts */
 .product-benefits.product-benefits_compact
 > .product-benefits_image {
     margin-left: auto !important;
@@ -200,32 +179,23 @@ img {
 
 /* =========================================================
    GESTAPELTER ZUSTAND
-
-   Icon-Liste oben, Bild darunter
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
 
-    /*
-     * Maximal 10 px zwischen Icon-Liste und Bild.
-     */
+    /* Maximal 10 px zwischen Liste und Bild */
     gap: 10px !important;
 
-    /*
-     * Kein zusätzlicher rechter Innenabstand.
-     */
     padding-right: 0 !important;
 
-    /*
-     * 5 px Abstand zwischen Bild und unterem grauen Rand.
-     */
+    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-bottom: 5px !important;
 }
 
 
-/* Icon-Liste oben über volle Breite */
+/* Icon-Liste über volle Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
@@ -238,7 +208,7 @@ img {
 }
 
 
-/* Bildcontainer unten über volle Breite */
+/* Bildcontainer über volle Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
     display: flex !important;
@@ -252,12 +222,14 @@ img {
     justify-content: center !important;
     align-items: flex-start !important;
 
+    overflow: visible !important;
+
     margin: 0 !important;
     padding: 0 !important;
 }
 
 
-/* Bildwidget im gestapelten Zustand mittig */
+/* Bildwidget im gestapelten Zustand */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-image {
@@ -274,28 +246,7 @@ img {
 }
 
 
-/* Innerer Elementor-Container im gestapelten Zustand */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image
-.elementor-widget-container {
-    display: flex !important;
-
-    width: 100% !important;
-    max-width: 100% !important;
-
-    justify-content: center !important;
-    align-items: flex-start !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-
-/*
- * Im gestapelten Zustand:
- * Bild bleibt maximal 190 px breit.
- * Die Höhe wird nicht mehr durch die Icon-Liste begrenzt.
- */
+/* Bild im gestapelten Zustand */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 img {
@@ -314,7 +265,7 @@ img {
 }
 
 
-/* Auf sehr schmalen Smartphones etwas kleiner */
+/* Auf kleinen Smartphones kleiner */
 @media (max-width: 480px) {
     .product-benefits {
         --benefits-image-width: 130px;
