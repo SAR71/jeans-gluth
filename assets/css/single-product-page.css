@@ -680,7 +680,7 @@ img {
 .product-benefits_image img {
     display: block !important;
 
-    margin-left: 15% !important;                /* <----------------- Info Container Abstand Bild vom Text */
+    margin-left: 20% !important;                /* <----------------- Info Container Abstand Bild vom Text */
     margin-right: 0 !important;
 
     transform: translateX(-50%) !important;
