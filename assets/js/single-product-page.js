@@ -1142,7 +1142,7 @@ function isVisible(element) {
         /*
          * Unterer Sicherheitsabstand zur Galerie.
          */
-        const safetySpace = 12;
+        const safetySpace = 2;
 
         let usedRightHeight =
             infoMainHeight;
@@ -1257,23 +1257,7 @@ function isVisible(element) {
             }
         });
 
-    const mutationObserver =
-        new MutationObserver(() => {
-            if (!measuring) {
-                scheduleUpdate();
-            }
-        });
 
-    mutationObserver.observe(layout, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: [
-            'src',
-            'srcset',
-            'hidden',
-        ],
-    });
 
     window.addEventListener(
         'resize',
