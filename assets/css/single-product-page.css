@@ -405,23 +405,3 @@ img {
     }
 }
 
-/* =========================================================
-   WOODMART PRODUKTGALERIE
-   Thumbnail-Spalte sichtbar halten
-   ========================================================= */
-
-.single-product .woocommerce-product-gallery {
-    align-items: flex-start;
-}
-
-/*
- * Thumbnail-Bereich nicht durch eine fehlerhafte
- * Prozenthöhe oder overflow:hidden abschneiden.
- */
-.single-product .wd-gallery-thumb,
-.single-product .wd-gallery-thumb .wd-carousel-container,
-.single-product .wd-gallery-thumb .wd-carousel-inner {
-    height: auto;
-    max-height: none;
-    overflow: visible;
-}
