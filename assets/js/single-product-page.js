@@ -8,6 +8,9 @@
     const COMPACT_CLASS = 'product-benefits_compact';
     const STACKED_CLASS = 'product-benefits_stacked';
 
+    /**
+     * Prüft, ob ein Text mehr als eine sichtbare Zeile benötigt.
+     */
     function textIsWrapped(textElement) {
         const style = window.getComputedStyle(textElement);
 
@@ -25,20 +28,29 @@
 
         /*
          * Eine zweite Zeile ist ungefähr doppelt so hoch.
-         * 1,5 verhindert Fehlmessungen durch Rundungsdifferenzen.
+         * Faktor 1,5 vermeidet Fehlmessungen durch Rundungen.
          */
         return actualHeight > lineHeight * 1.5;
     }
 
+    /**
+     * Prüft alle Texte innerhalb der Icon List.
+     */
     function listHasWrappedText(listContainer) {
-        const texts = Array.from(
+        const textElements = Array.from(
             listContainer.querySelectorAll(TEXT_SELECTOR)
         );
 
-        return texts.some(textIsWrapped);
+        return textElements.some(textIsWrapped);
     }
 
+    /**
+     * Initialisiert einen einzelnen Benefits-Container.
+     */
     function initializeBenefits(wrapper) {
+        /*
+         * Mehrfache Initialisierung verhindern.
+         */
         if (
             wrapper.getAttribute(
                 'data-benefits-script-initialized'
@@ -52,7 +64,7 @@
 
         if (!listContainer) {
             console.error(
-                'Product Benefits: Icon-List-Container nicht gefunden.',
+                'Product Benefits: Icon-List-Container wurde nicht gefunden.',
                 wrapper
             );
 
@@ -67,6 +79,27 @@
         let resizeTimer = null;
         let updateRunning = false;
 
+        /**
+         * Speichert die aktuelle Höhe der Icon-Liste
+         * in einer CSS-Variable.
+         *
+         * Diese Variable begrenzt im Row-Layout die Bildhöhe.
+         */
+        function updateListHeightVariable() {
+            const listHeight =
+                listContainer.getBoundingClientRect().height;
+
+            if (listHeight > 0) {
+                wrapper.style.setProperty(
+                    '--benefits-list-height',
+                    Math.round(listHeight) + 'px'
+                );
+            }
+        }
+
+        /**
+         * Aktiviert genau einen Layoutmodus.
+         */
         function setLayout(mode) {
             wrapper.classList.toggle(
                 COMPACT_CLASS,
@@ -84,6 +117,9 @@
             );
         }
 
+        /**
+         * Beendet die Messung und markiert das Element als bereit.
+         */
         function finishUpdate() {
             wrapper.setAttribute(
                 'data-benefits-ready',
@@ -93,6 +129,13 @@
             updateRunning = false;
         }
 
+        /**
+         * Prüft die Layouts in dieser Reihenfolge:
+         *
+         * 1. Normal nebeneinander
+         * 2. Kompakt nebeneinander
+         * 3. Untereinander
+         */
         function updateLayout() {
             if (updateRunning) {
                 return;
@@ -102,37 +145,66 @@
 
             /*
              * Schritt 1:
-             * Normal nebeneinander messen.
+             * Normalen Row-Zustand herstellen.
              */
             setLayout('row');
 
+            /*
+             * Browser zur Layout-Neuberechnung zwingen.
+             */
             void wrapper.offsetWidth;
 
+            /*
+             * Höhe der Icon-Liste für die Bildbegrenzung speichern.
+             */
+            updateListHeightVariable();
+
             window.requestAnimationFrame(function () {
+                /*
+                 * Passt alles normal nebeneinander?
+                 */
                 if (!listHasWrappedText(listContainer)) {
                     setLayout('row');
+
+                    /*
+                     * Nach dem finalen Layout noch einmal messen.
+                     */
+                    void wrapper.offsetWidth;
+                    updateListHeightVariable();
+
                     finishUpdate();
                     return;
                 }
 
                 /*
                  * Schritt 2:
-                 * Abstand reduzieren und erneut messen.
+                 * Abstand auf 10 px reduzieren.
                  */
                 setLayout('compact');
 
                 void wrapper.offsetWidth;
+                updateListHeightVariable();
 
                 window.requestAnimationFrame(function () {
+                    /*
+                     * Passt es im kompakten Zustand?
+                     */
                     if (!listHasWrappedText(listContainer)) {
                         setLayout('compact');
+
+                        void wrapper.offsetWidth;
+                        updateListHeightVariable();
                     } else {
                         /*
                          * Schritt 3:
-                         * Nur wenn der Text weiterhin umbricht,
-                         * Bild unter die Liste setzen.
+                         * Bild unter die Icon-Liste setzen.
                          */
                         setLayout('stacked');
+
+                        /*
+                         * Die Variable bleibt gespeichert,
+                         * greift im gestapelten Zustand aber nicht.
+                         */
                     }
 
                     finishUpdate();
@@ -140,6 +212,9 @@
             });
         }
 
+        /**
+         * Entprellte Layoutprüfung.
+         */
         function scheduleUpdate() {
             window.clearTimeout(resizeTimer);
 
@@ -149,24 +224,45 @@
             );
         }
 
+        /*
+         * Auf echte Größenänderungen des Fensters reagieren.
+         * Kein ResizeObserver, damit keine Umschaltschleife entsteht.
+         */
         window.addEventListener(
             'resize',
             scheduleUpdate,
             { passive: true }
         );
 
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(updateLayout);
+        /*
+         * Nach dem Laden der Schriftarten erneut messen.
+         */
+        if (
+            document.fonts &&
+            document.fonts.ready
+        ) {
+            document.fonts.ready.then(
+                updateLayout
+            );
         }
 
+        /*
+         * Nach vollständigem Laden der Seite erneut messen.
+         */
         window.addEventListener(
             'load',
             updateLayout
         );
 
+        /*
+         * Initiale Prüfung.
+         */
         updateLayout();
     }
 
+    /**
+     * Initialisiert alle passenden Container.
+     */
     function startBenefitsLayout() {
         document
             .querySelectorAll(WRAPPER_SELECTOR)
