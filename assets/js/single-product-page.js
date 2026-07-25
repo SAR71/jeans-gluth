@@ -6,9 +6,10 @@
    2. Dynamische Position von JG Info und Additional Info
 
    Wichtige Eigenschaften:
-   - Messungen erfolgen ausschließlich an unsichtbaren Kopien
+   - Messungen erfolgen an unsichtbaren Kopien
    - Sichtbare Container werden nicht testweise verschoben
    - Keine gegenseitigen Observer-Endlosschleifen
+   - Die tatsächliche Inhaltshöhe der Info-Spalte wird benutzt
    - Elementor-Ausblendungen per display:none bleiben erhalten
    ========================================================= */
 
@@ -48,12 +49,12 @@
     ];
 
     /*
-     * Reserve bei der Breitenmessung.
+     * Reserve bei der Breitenmessung des JG-Info-Containers.
      */
     const BENEFITS_WIDTH_RESERVE = 10;
 
     /*
-     * Toleranz bei der Textbreite.
+     * Toleranz bei der Textbreitenprüfung.
      */
     const TEXT_WIDTH_TOLERANCE = 2;
 
@@ -67,6 +68,13 @@
        ALLGEMEINE HILFSFUNKTIONEN
        ===================================================== */
 
+    /**
+     * Prüft, ob ein Element grundsätzlich angezeigt wird.
+     *
+     * visibility:hidden wird bewusst nicht geprüft.
+     * Messkopien und der Benefits-Container dürfen während
+     * der Berechnung unsichtbar sein.
+     */
     function isDisplayed(element) {
         if (!element) {
             return false;
@@ -75,11 +83,6 @@
         const style =
             window.getComputedStyle(element);
 
-        /*
-         * visibility:hidden wird nicht geprüft.
-         * Messkopien und der Benefits-Container vor der
-         * Initialisierung dürfen unsichtbar sein.
-         */
         return (
             style.display !== 'none' &&
             element.getClientRects().length > 0
@@ -87,6 +90,11 @@
     }
 
 
+    /**
+     * Entfernt IDs aus einer Messkopie.
+     *
+     * Dadurch entstehen keine doppelten HTML-IDs.
+     */
     function removeIds(element) {
         element.removeAttribute('id');
 
@@ -98,6 +106,10 @@
     }
 
 
+    /**
+     * Ermittelt die Höhe eines Elements einschließlich
+     * vertikaler Außenabstände.
+     */
     function getOuterHeight(element) {
         const rect =
             element.getBoundingClientRect();
@@ -119,17 +131,13 @@
     }
 
 
-    function nextFrame() {
-        return new Promise(function (resolve) {
-            window.requestAnimationFrame(resolve);
-        });
-    }
-
-
     /* =====================================================
        PRODUCT BENEFITS – LAYOUTLOGIK
        ===================================================== */
 
+    /**
+     * Setzt einen Layoutzustand auf den Benefits-Container.
+     */
     function setBenefitsLayout(element, mode) {
         element.classList.remove(
             ...BENEFITS_LAYOUT_CLASSES
@@ -161,7 +169,7 @@
 
 
     /**
-     * Ermittelt die Textbreite ohne Zeilenumbruch.
+     * Ermittelt die benötigte Textbreite ohne Zeilenumbruch.
      */
     function measureNaturalTextWidth(textElement) {
         const style =
@@ -215,6 +223,10 @@
     }
 
 
+    /**
+     * Prüft, ob ein Text in der verfügbaren Breite
+     * umbrechen müsste.
+     */
     function textNeedsWrapping(textElement) {
         if (!textElement) {
             return false;
@@ -245,6 +257,9 @@
     }
 
 
+    /**
+     * Prüft alle Texte der Icon-Liste auf Umbruch.
+     */
     function benefitsListNeedsWrapping(
         listContainer
     ) {
@@ -266,8 +281,8 @@
 
 
     /**
-     * Bestimmt den Benefits-Zustand direkt an einem bereits
-     * unsichtbaren und korrekt breiten Element.
+     * Ermittelt den passenden Benefits-Zustand direkt an
+     * einer bereits unsichtbaren Messkopie.
      */
     function determineBenefitsModeOnClone(
         benefitsClone
@@ -320,7 +335,7 @@
 
     /**
      * Bestimmt den Benefits-Zustand für eine bestimmte Breite
-     * mittels einer unsichtbaren Kopie.
+     * mithilfe einer unsichtbaren Kopie.
      */
     function measureBenefitsMode(
         wrapper,
@@ -405,7 +420,8 @@
 
         document.body.appendChild(clone);
 
-        let mode = 'row';
+        let mode =
+            'row';
 
         try {
             mode =
@@ -420,6 +436,9 @@
     }
 
 
+    /**
+     * Initialisiert einen sichtbaren Benefits-Container.
+     */
     function initializeBenefits(wrapper) {
         if (
             wrapper.getAttribute(
@@ -473,8 +492,13 @@
         /*
          * Überbleibsel älterer Versionen entfernen.
          */
-        image.style.removeProperty('height');
-        image.style.removeProperty('max-height');
+        image.style.removeProperty(
+            'height'
+        );
+
+        image.style.removeProperty(
+            'max-height'
+        );
 
         imageContainer.style.removeProperty(
             'height'
@@ -491,6 +515,9 @@
         let currentMode = null;
 
 
+        /**
+         * Berechnet den passenden sichtbaren Zustand.
+         */
         function updateBenefitsLayout() {
             if (running) {
                 requestedAgain = true;
@@ -528,7 +555,8 @@
                     mode
                 );
 
-                currentMode = mode;
+                currentMode =
+                    mode;
             }
 
             lastWidth =
@@ -548,6 +576,9 @@
         }
 
 
+        /**
+         * Plant eine Aktualisierung für den nächsten Frame.
+         */
         function scheduleBenefitsUpdate(force) {
             if (force) {
                 lastWidth = 0;
@@ -574,6 +605,9 @@
         }
 
 
+        /**
+         * Nur tatsächliche Breitenänderungen beobachten.
+         */
         const resizeObserver =
             new ResizeObserver(
                 function (entries) {
@@ -609,7 +643,7 @@
         resizeObserver.observe(wrapper);
 
 
-        /*
+        /**
          * Wird vom Flow-Skript nach einer endgültigen
          * Positionsänderung ausgelöst.
          */
@@ -721,6 +755,9 @@
         }
 
 
+        /**
+         * Ursprüngliche Elementor-Positionen speichern.
+         */
         const items =
             flowElements.map(
                 function (element, index) {
@@ -752,6 +789,9 @@
         let applyingResult = false;
 
 
+        /**
+         * Prüft, ob Galerie und Infospalte nebeneinander sind.
+         */
         function columnsAreSideBySide() {
             if (
                 !isDisplayed(galleryColumn) ||
@@ -779,6 +819,10 @@
         }
 
 
+        /**
+         * Ermittelt den vertikalen Abstand zwischen Elementen
+         * innerhalb der rechten Info-Spalte.
+         */
         function getInfoColumnGap() {
             const style =
                 window.getComputedStyle(
@@ -801,6 +845,167 @@
         }
 
 
+        /**
+         * Ermittelt die tatsächlich vom sichtbaren Inhalt
+         * belegte Höhe der Hauptinformationen.
+         *
+         * Elementor kann den äußeren Container über Flexbox
+         * bis zur Höhe der Galerie strecken. Deshalb wird nicht
+         * die Höhe von product-info-main selbst verwendet,
+         * sondern die Unterkante seiner echten Inhalte.
+         */
+        function getActualInfoMainHeight() {
+            const infoColumnRect =
+                infoColumn.getBoundingClientRect();
+
+            const infoMainRect =
+                infoMain.getBoundingClientRect();
+
+            const candidates =
+                Array.from(
+                    infoMain.querySelectorAll('*')
+                ).filter(function (element) {
+                    if (!isDisplayed(element)) {
+                        return false;
+                    }
+
+                    const style =
+                        window.getComputedStyle(
+                            element
+                        );
+
+                    /*
+                     * Absolut oder fest positionierte Elemente
+                     * sollen die belegte Höhe nicht vergrößern.
+                     */
+                    if (
+                        style.position === 'absolute' ||
+                        style.position === 'fixed'
+                    ) {
+                        return false;
+                    }
+
+                    const rect =
+                        element.getBoundingClientRect();
+
+                    if (
+                        rect.width <= 0 ||
+                        rect.height <= 0
+                    ) {
+                        return false;
+                    }
+
+                    /*
+                     * Nur Endelemente ohne weitere sichtbare
+                     * Unterelemente berücksichtigen.
+                     *
+                     * Dadurch werden gestreckte Elementor-
+                     * Elterncontainer nicht als tatsächliche
+                     * Inhaltsunterkante gewertet.
+                     */
+                    const hasVisibleChild =
+                        Array.from(
+                            element.children
+                        ).some(function (child) {
+                            if (!isDisplayed(child)) {
+                                return false;
+                            }
+
+                            const childStyle =
+                                window.getComputedStyle(
+                                    child
+                                );
+
+                            if (
+                                childStyle.position ===
+                                    'absolute' ||
+                                childStyle.position ===
+                                    'fixed'
+                            ) {
+                                return false;
+                            }
+
+                            const childRect =
+                                child
+                                    .getBoundingClientRect();
+
+                            return (
+                                childRect.width > 0 &&
+                                childRect.height > 0
+                            );
+                        });
+
+                    return !hasVisibleChild;
+                });
+
+
+            /*
+             * Oberkante der rechten Info-Spalte dient als
+             * Startpunkt für die Höhenberechnung.
+             */
+            let contentBottom =
+                infoMainRect.top;
+
+
+            candidates.forEach(
+                function (element) {
+                    const rect =
+                        element
+                            .getBoundingClientRect();
+
+                    contentBottom =
+                        Math.max(
+                            contentBottom,
+                            rect.bottom
+                        );
+                }
+            );
+
+
+            /*
+             * Falls keine geeigneten Inhalte gefunden wurden,
+             * normale Containerhöhe verwenden.
+             */
+            if (!candidates.length) {
+                return getOuterHeight(
+                    infoMain
+                );
+            }
+
+
+            const infoMainStyle =
+                window.getComputedStyle(
+                    infoMain
+                );
+
+            const paddingBottom =
+                parseFloat(
+                    infoMainStyle.paddingBottom
+                ) || 0;
+
+            const marginBottom =
+                parseFloat(
+                    infoMainStyle.marginBottom
+                ) || 0;
+
+
+            /*
+             * Tatsächlich belegte Höhe relativ zur Oberkante
+             * der rechten Info-Spalte.
+             */
+            return Math.max(
+                0,
+                contentBottom -
+                infoColumnRect.top +
+                paddingBottom +
+                marginBottom
+            );
+        }
+
+
+        /**
+         * Tatsächlich sichtbares Galerie-Widget ermitteln.
+         */
         function getVisibleGalleryWidget() {
             const selectors = [
                 '.elementor-widget-wd_single_product_gallery',
@@ -879,8 +1084,9 @@
 
 
         /**
-         * Misst einen kompletten Flow-Container in der Breite
-         * der rechten Info-Spalte, ohne das Original zu bewegen.
+         * Misst einen vollständigen Flow-Container in der
+         * Breite der rechten Info-Spalte, ohne das sichtbare
+         * Original zu bewegen.
          */
         function measureFlowItem(
             element,
@@ -951,17 +1157,16 @@
             );
 
             /*
-             * Innerhalb der Info-Spalte einfügen, damit
-             * übergeordnete CSS-Selektoren erhalten bleiben.
-             *
-             * position:fixed verhindert eine Änderung
-             * des sichtbaren Layouts.
+             * Messkopie in die Info-Spalte einsetzen.
+             * position:fixed verhindert eine Veränderung des
+             * sichtbaren Layouts.
              */
             infoColumn.appendChild(clone);
 
+
             /*
              * In der Kopie enthaltene Benefits-Container
-             * auf den für diese Breite passenden Zustand setzen.
+             * für die Zielbreite korrekt einstellen.
              */
             clone
                 .querySelectorAll(
@@ -986,17 +1191,25 @@
                     );
                 });
 
+
             void clone.offsetWidth;
+
 
             const height =
                 getOuterHeight(clone);
 
+
             clone.remove();
+
 
             return height;
         }
 
 
+        /**
+         * Element an seine ursprüngliche Position unterhalb
+         * der Galerie zurücksetzen.
+         */
         function moveBelow(item) {
             const originalParent =
                 item.placeholder.parentNode;
@@ -1024,6 +1237,9 @@
         }
 
 
+        /**
+         * Element in die rechte Info-Spalte verschieben.
+         */
         function moveBeside(item) {
             if (
                 item.element.parentNode !==
@@ -1040,6 +1256,10 @@
         }
 
 
+        /**
+         * Benefits-Container nach einer endgültigen
+         * Positionsänderung neu berechnen lassen.
+         */
         function notifyBenefits(element) {
             element
                 .querySelectorAll(
@@ -1055,6 +1275,9 @@
         }
 
 
+        /**
+         * Berechnet die endgültigen Positionen.
+         */
         function updateFlowLayout() {
             if (running) {
                 requestedAgain = true;
@@ -1064,6 +1287,11 @@
             running = true;
             requestedAgain = false;
 
+
+            /*
+             * Bei untereinander angeordneten Hauptspalten
+             * bleiben auch beide Zusatzbereiche unten.
+             */
             if (
                 !isDisplayed(productTop) ||
                 !isDisplayed(galleryColumn) ||
@@ -1081,13 +1309,19 @@
                 return;
             }
 
+
             const galleryWidget =
                 getVisibleGalleryWidget();
 
             if (!galleryWidget) {
+                console.warn(
+                    'Kein sichtbares Galerie-Widget gefunden.'
+                );
+
                 running = false;
                 return;
             }
+
 
             const infoWidth =
                 infoColumn
@@ -1102,20 +1336,29 @@
                 return;
             }
 
+
             const galleryHeight =
                 getOuterHeight(galleryWidget);
 
+
+            /*
+             * Hier wird nicht mehr die möglicherweise
+             * gestreckte Höhe von product-info-main verwendet.
+             */
             const infoMainHeight =
-                getOuterHeight(infoMain);
+                getActualInfoMainHeight();
+
 
             const gap =
                 getInfoColumnGap();
+
 
             let usedHeight =
                 infoMainHeight;
 
             let furtherItemsMayMove =
                 true;
+
 
             const decisions =
                 items.map(
@@ -1144,6 +1387,13 @@
                             itemHeight +
                             FLOW_HEIGHT_RESERVE;
 
+                        item.element.dataset.measuredHeight =
+                            Math.round(itemHeight);
+
+                        item.element.dataset.requiredHeight =
+                            Math.round(requiredHeight);
+
+
                         if (
                             requiredHeight <=
                             galleryHeight
@@ -1155,6 +1405,7 @@
                             return 'beside';
                         }
 
+
                         furtherItemsMayMove =
                             false;
 
@@ -1164,8 +1415,8 @@
 
 
             /*
-             * Erst jetzt die sichtbaren Originale genau einmal
-             * entsprechend dem fertigen Ergebnis verschieben.
+             * Sichtbare Originale erst nach abgeschlossener
+             * Berechnung genau einmal verschieben.
              */
             applyingResult = true;
 
@@ -1197,13 +1448,23 @@
             });
 
 
+            /*
+             * Messwerte im HTML speichern.
+             * Diese Werte können bei Bedarf in der
+             * Browserkonsole kontrolliert werden.
+             */
             layout.dataset.galleryHeight =
                 Math.round(galleryHeight);
+
+            layout.dataset.infoMainActualHeight =
+                Math.round(infoMainHeight);
 
             layout.dataset.usedRightHeight =
                 Math.round(usedHeight);
 
+
             running = false;
+
 
             if (requestedAgain) {
                 requestedAgain = false;
@@ -1212,6 +1473,9 @@
         }
 
 
+        /**
+         * Aktualisierung für den nächsten Browser-Frame planen.
+         */
         function scheduleFlowUpdate() {
             if (applyingResult) {
                 return;
@@ -1238,9 +1502,11 @@
         }
 
 
-        /*
+        /**
+         * Relevante Größenänderungen beobachten.
+         *
          * Die Flow-Elemente selbst werden nicht beobachtet.
-         * Dadurch löst deren internes Benefits-Layout keine
+         * Dadurch löst das interne Benefits-Layout keine
          * erneute Flow-Berechnung aus.
          */
         const resizeObserver =
@@ -1252,6 +1518,7 @@
                 }
             );
 
+
         [
             productTop,
             galleryColumn,
@@ -1261,6 +1528,9 @@
         });
 
 
+        /**
+         * Nachgeladene Galerie-Bilder berücksichtigen.
+         */
         galleryColumn
             .querySelectorAll('img')
             .forEach(function (image) {
