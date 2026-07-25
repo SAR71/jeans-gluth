@@ -910,9 +910,6 @@ function isVisible(element) {
         item.element.classList.add(
             'is-beside-gallery'
         );
-
-        window.dispatchEvent(new Event('resize'));
-
     }
 
     function resetAllItems() {
@@ -1272,7 +1269,6 @@ function isVisible(element) {
         childList: true,
         attributes: true,
         attributeFilter: [
-            'style',
             'src',
             'srcset',
             'hidden',
