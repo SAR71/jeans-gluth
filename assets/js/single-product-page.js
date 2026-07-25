@@ -278,3 +278,281 @@
         startBenefitsLayout();
     }
 })();
+
+/* =========================================================
+   Dynamische Anordnung der Container
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+    document
+        .querySelectorAll('.product-layout')
+        .forEach(initializeProductFlow);
+});
+
+function initializeProductFlow(layout) {
+    const productTop =
+        layout.querySelector('.product-top');
+
+    const gallery =
+        layout.querySelector('.product-gallery-column');
+
+    const infoColumn =
+        layout.querySelector('.product-info-column');
+
+    const infoMain =
+        layout.querySelector('.product-info-main');
+
+    const flowContent =
+        layout.querySelector('.product-flow-content');
+
+    if (
+        !productTop ||
+        !gallery ||
+        !infoColumn ||
+        !infoMain ||
+        !flowContent
+    ) {
+        console.warn('Produktlayout unvollständig.', {
+            productTop,
+            gallery,
+            infoColumn,
+            infoMain,
+            flowContent,
+        });
+
+        return;
+    }
+
+    const placeholder =
+        document.createComment(
+            'product-flow-original-position'
+        );
+
+    flowContent.parentNode.insertBefore(
+        placeholder,
+        flowContent
+    );
+
+    let frameId = null;
+    let isUpdating = false;
+
+    function scheduleUpdate() {
+        if (isUpdating) {
+            return;
+        }
+
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+        }
+
+        frameId = requestAnimationFrame(() => {
+            frameId = null;
+            updateLayout();
+        });
+    }
+
+    function isVisible(element) {
+        if (!element) {
+            return false;
+        }
+
+        const style =
+            window.getComputedStyle(element);
+
+        return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            element.getClientRects().length > 0
+        );
+    }
+
+    function moveBelow() {
+        const originalParent =
+            placeholder.parentNode;
+
+        if (!originalParent) {
+            return;
+        }
+
+        if (
+            flowContent.parentNode !== originalParent ||
+            flowContent.previousSibling !== placeholder
+        ) {
+            originalParent.insertBefore(
+                flowContent,
+                placeholder.nextSibling
+            );
+        }
+
+        flowContent.classList.remove(
+            'is-beside-gallery'
+        );
+
+        layout.dataset.productFlow = 'below';
+    }
+
+    function moveBeside() {
+        if (flowContent.parentNode !== infoColumn) {
+            infoColumn.appendChild(flowContent);
+        }
+
+        flowContent.classList.add(
+            'is-beside-gallery'
+        );
+
+        layout.dataset.productFlow = 'beside';
+    }
+
+    function isSideBySide() {
+        if (
+            !isVisible(gallery) ||
+            !isVisible(infoColumn)
+        ) {
+            return false;
+        }
+
+        const galleryRect =
+            gallery.getBoundingClientRect();
+
+        const infoRect =
+            infoColumn.getBoundingClientRect();
+
+        const sameRow =
+            Math.abs(
+                galleryRect.top -
+                infoRect.top
+            ) < 10;
+
+        const horizontallySeparated =
+            infoRect.left >
+            galleryRect.left + 10;
+
+        return sameRow && horizontallySeparated;
+    }
+
+    function getVerticalGap() {
+        const style =
+            window.getComputedStyle(infoColumn);
+
+        const rowGap =
+            parseFloat(style.rowGap);
+
+        const gap =
+            parseFloat(style.gap);
+
+        if (Number.isFinite(rowGap)) {
+            return rowGap;
+        }
+
+        if (Number.isFinite(gap)) {
+            return gap;
+        }
+
+        return 0;
+    }
+
+    function updateLayout() {
+        isUpdating = true;
+
+        moveBelow();
+
+        if (!isVisible(flowContent)) {
+            layout.dataset.productFlow = 'hidden';
+            isUpdating = false;
+            return;
+        }
+
+        if (
+            !isVisible(productTop) ||
+            !isVisible(gallery) ||
+            !isVisible(infoColumn) ||
+            !isVisible(infoMain)
+        ) {
+            isUpdating = false;
+            return;
+        }
+
+        if (!isSideBySide()) {
+            isUpdating = false;
+            return;
+        }
+
+        const galleryHeight =
+            gallery.getBoundingClientRect().height;
+
+        const infoHeight =
+            infoMain.getBoundingClientRect().height;
+
+        const flowHeight =
+            flowContent.getBoundingClientRect().height;
+
+        const gap =
+            getVerticalGap();
+
+        const safetySpace = 10;
+
+        const requiredHeight =
+            infoHeight +
+            gap +
+            flowHeight +
+            safetySpace;
+
+        if (requiredHeight <= galleryHeight) {
+            moveBeside();
+        }
+
+        isUpdating = false;
+    }
+
+    const resizeObserver =
+        new ResizeObserver(scheduleUpdate);
+
+    [
+        layout,
+        productTop,
+        gallery,
+        infoMain,
+        flowContent,
+    ].forEach((element) => {
+        resizeObserver.observe(element);
+    });
+
+    const mutationObserver =
+        new MutationObserver(scheduleUpdate);
+
+    mutationObserver.observe(layout, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: [
+            'class',
+            'style',
+            'src',
+            'srcset',
+        ],
+    });
+
+    gallery
+        .querySelectorAll('img')
+        .forEach((image) => {
+            if (!image.complete) {
+                image.addEventListener(
+                    'load',
+                    scheduleUpdate,
+                    { once: true }
+                );
+            }
+        });
+
+    window.addEventListener(
+        'resize',
+        scheduleUpdate,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        'orientationchange',
+        scheduleUpdate
+    );
+
+    scheduleUpdate();
+}

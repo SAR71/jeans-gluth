@@ -405,3 +405,14 @@ img {
     }
 }
 
+/* =========================================================
+   Dynamische Anordnung der Container
+   ========================================================= */
+.product-layout,
+.product-top,
+.product-gallery-column,
+.product-info-column,
+.product-info-main,
+.product-flow-content {
+    min-width: 0;
+}
