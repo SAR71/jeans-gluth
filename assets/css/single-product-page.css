@@ -28,16 +28,13 @@
 }
 
 /* =========================================================
-   SOCIAL-MEDIA-BUTTONS – DYNAMISCHER ZEILENUMBRUCH
-
-   Normal:
-   [ Überschrift | Icon | Icon | Icon | ... ]
-
-   Bei zu wenig Platz:
-   [ Überschrift                         ]
-   [ Icon | Icon | Icon | Icon | ...    ]
+   SOCIAL MEDIA – AUTOMATISCH EIN- ODER ZWEIZEILIG
    ========================================================= */
 
+/*
+ * Normalzustand:
+ * Überschrift und Icons stehen in einer gemeinsamen Zeile.
+ */
 .single-product .wd-social-icons {
     display: flex !important;
     flex-direction: row !important;
@@ -51,8 +48,8 @@
 }
 
 
-/* Überschrift darf nicht innerhalb des Textes umbrechen */
-.single-product .wd-social-icons > .wd-label {
+/* Überschrift selbst darf nicht umbrechen */
+.single-product .wd-social-icons .wd-label {
     flex: 0 0 auto !important;
 
     width: auto !important;
@@ -64,28 +61,38 @@
 }
 
 
-/* Gemeinsamer Container für alle Icons */
-.single-product .wd-social-icons
-> .jg-social-icon-row {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-
-    align-items: center !important;
-    justify-content: flex-start !important;
-
+/* Icons dürfen nicht verkleinert werden */
+.single-product .wd-social-icons > a {
     flex: 0 0 auto !important;
-
-    min-width: max-content !important;
-    white-space: nowrap !important;
 }
 
 
-/* Einzelne Icons dürfen nicht schrumpfen */
-.single-product .wd-social-icons
-> .jg-social-icon-row
-> a {
-    flex: 0 0 auto !important;
+/* =========================================================
+   ZWEIZEILIGER ZUSTAND
+
+   Wird gesetzt, sobald Überschrift und Icons nicht mehr
+   gemeinsam in eine Zeile passen.
+   ========================================================= */
+
+.single-product .wd-social-icons.jg-social-two-lines {
+    flex-wrap: wrap !important;
+}
+
+
+/*
+ * Überschrift belegt im zweizeiligen Zustand
+ * die komplette erste Zeile.
+ */
+.single-product
+.wd-social-icons.jg-social-two-lines
+.wd-label {
+    flex: 0 0 100% !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-right: 0 !important;
+    margin-bottom: 8px !important;
 }
 
 
