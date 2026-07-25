@@ -271,3 +271,18 @@ img {
         --benefits-image-width: 130px;
     }
 }
+/* =========================================================
+   Bildabstand nur bei nebeneinander angeordneten Containern
+   ========================================================= */
+   .product-benefits:not(.product-benefits_stacked)
+> .product-benefits_image {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    box-sizing: border-box !important;
+}
+
+.product-benefits.product-benefits_stacked
+> .product-benefits_image {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
