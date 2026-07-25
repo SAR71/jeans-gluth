@@ -292,7 +292,7 @@ function initializeProductFlow(layout) {
     const productTop =
         layout.querySelector('.product-top');
 
-    const gallery =
+    const galleryColumn =
         layout.querySelector('.product-gallery-column');
 
     const infoColumn =
@@ -306,14 +306,14 @@ function initializeProductFlow(layout) {
 
     if (
         !productTop ||
-        !gallery ||
+        !galleryColumn ||
         !infoColumn ||
         !infoMain ||
         !flowContent
     ) {
         console.warn('Produktlayout unvollständig.', {
             productTop,
-            gallery,
+            galleryColumn,
             infoColumn,
             infoMain,
             flowContent,
@@ -322,10 +322,13 @@ function initializeProductFlow(layout) {
         return;
     }
 
-    const placeholder =
-        document.createComment(
-            'product-flow-original-position'
-        );
+    /*
+     * Ursprüngliche Elementor-Position des Zusatzbereichs
+     * dauerhaft merken.
+     */
+    const placeholder = document.createComment(
+        'product-flow-original-position'
+    );
 
     flowContent.parentNode.insertBefore(
         placeholder,
@@ -333,35 +336,121 @@ function initializeProductFlow(layout) {
     );
 
     let frameId = null;
-    let isUpdating = false;
-
-    function scheduleUpdate() {
-        if (isUpdating) {
-            return;
-        }
-
-        if (frameId !== null) {
-            cancelAnimationFrame(frameId);
-        }
-
-        frameId = requestAnimationFrame(() => {
-            frameId = null;
-            updateLayout();
-        });
-    }
+    let updateRunning = false;
 
     function isVisible(element) {
         if (!element) {
             return false;
         }
 
-        const style =
-            window.getComputedStyle(element);
+        const style = window.getComputedStyle(element);
 
         return (
             style.display !== 'none' &&
             style.visibility !== 'hidden' &&
+            parseFloat(style.opacity || '1') !== 0 &&
             element.getClientRects().length > 0
+        );
+    }
+
+    /*
+     * Höhe einschließlich oberem und unterem Margin.
+     */
+    function getOuterHeight(element) {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+
+        const marginTop =
+            parseFloat(style.marginTop) || 0;
+
+        const marginBottom =
+            parseFloat(style.marginBottom) || 0;
+
+        return (
+            rect.height +
+            marginTop +
+            marginBottom
+        );
+    }
+
+    /*
+     * Nicht den möglicherweise gestreckten Galerie-Container
+     * messen, sondern das tatsächlich sichtbare Galerie-Widget.
+     *
+     * Da du zwei Product-Gallery-Widgets für unterschiedliche
+     * Breakpoints verwendest, wird nur das aktuell sichtbare
+     * Widget berücksichtigt.
+     */
+    function getVisibleGalleryWidget() {
+        const directChildren =
+            Array.from(galleryColumn.children);
+
+        const visibleDirectChildren =
+            directChildren.filter(isVisible);
+
+        if (visibleDirectChildren.length) {
+            return visibleDirectChildren.reduce(
+                (largest, current) => {
+                    const largestRect =
+                        largest.getBoundingClientRect();
+
+                    const currentRect =
+                        current.getBoundingClientRect();
+
+                    const largestArea =
+                        largestRect.width *
+                        largestRect.height;
+
+                    const currentArea =
+                        currentRect.width *
+                        currentRect.height;
+
+                    return currentArea > largestArea
+                        ? current
+                        : largest;
+                }
+            );
+        }
+
+        /*
+         * Fallback, falls Elementor noch einen zusätzlichen
+         * Wrapper zwischen Spalte und Galerie eingefügt hat.
+         */
+        const candidates = Array.from(
+            galleryColumn.querySelectorAll(
+                [
+                    '.elementor-widget-wd_single_product_gallery',
+                    '.woocommerce-product-gallery',
+                    '.wd-gallery-images',
+                    '.wd-carousel-container',
+                ].join(',')
+            )
+        ).filter(isVisible);
+
+        if (!candidates.length) {
+            return null;
+        }
+
+        return candidates.reduce(
+            (largest, current) => {
+                const largestRect =
+                    largest.getBoundingClientRect();
+
+                const currentRect =
+                    current.getBoundingClientRect();
+
+                const largestArea =
+                    largestRect.width *
+                    largestRect.height;
+
+                const currentArea =
+                    currentRect.width *
+                    currentRect.height;
+
+                return currentArea > largestArea
+                    ? current
+                    : largest;
+            }
         );
     }
 
@@ -373,10 +462,11 @@ function initializeProductFlow(layout) {
             return;
         }
 
-        if (
-            flowContent.parentNode !== originalParent ||
-            flowContent.previousSibling !== placeholder
-        ) {
+        const alreadyBelow =
+            flowContent.parentNode === originalParent &&
+            flowContent.previousSibling === placeholder;
+
+        if (!alreadyBelow) {
             originalParent.insertBefore(
                 flowContent,
                 placeholder.nextSibling
@@ -391,7 +481,10 @@ function initializeProductFlow(layout) {
     }
 
     function moveBeside() {
-        if (flowContent.parentNode !== infoColumn) {
+        const alreadyBeside =
+            flowContent.parentNode === infoColumn;
+
+        if (!alreadyBeside) {
             infoColumn.appendChild(flowContent);
         }
 
@@ -402,16 +495,16 @@ function initializeProductFlow(layout) {
         layout.dataset.productFlow = 'beside';
     }
 
-    function isSideBySide() {
+    function areColumnsSideBySide() {
         if (
-            !isVisible(gallery) ||
+            !isVisible(galleryColumn) ||
             !isVisible(infoColumn)
         ) {
             return false;
         }
 
         const galleryRect =
-            gallery.getBoundingClientRect();
+            galleryColumn.getBoundingClientRect();
 
         const infoRect =
             infoColumn.getBoundingClientRect();
@@ -420,87 +513,145 @@ function initializeProductFlow(layout) {
             Math.abs(
                 galleryRect.top -
                 infoRect.top
-            ) < 10;
+            ) <= 15;
 
         const horizontallySeparated =
-            infoRect.left >
-            galleryRect.left + 10;
+            infoRect.left >=
+            galleryRect.right - 15;
 
-        return sameRow && horizontallySeparated;
+        return (
+            sameRow &&
+            horizontallySeparated
+        );
     }
 
-    function getVerticalGap() {
+    function getInfoColumnGap() {
         const style =
             window.getComputedStyle(infoColumn);
 
         const rowGap =
             parseFloat(style.rowGap);
 
-        const gap =
-            parseFloat(style.gap);
-
         if (Number.isFinite(rowGap)) {
             return rowGap;
         }
 
-        if (Number.isFinite(gap)) {
-            return gap;
-        }
+        const gap =
+            parseFloat(style.gap);
 
-        return 0;
+        return Number.isFinite(gap)
+            ? gap
+            : 0;
     }
 
     function updateLayout() {
-        isUpdating = true;
+        if (updateRunning) {
+            return;
+        }
 
+        updateRunning = true;
+
+        /*
+         * Immer zuerst in die neutrale Ausgangsposition
+         * unter dem oberen Produktbereich zurücksetzen.
+         */
         moveBelow();
 
         if (!isVisible(flowContent)) {
             layout.dataset.productFlow = 'hidden';
-            isUpdating = false;
+            updateRunning = false;
             return;
         }
 
         if (
             !isVisible(productTop) ||
-            !isVisible(gallery) ||
+            !isVisible(galleryColumn) ||
             !isVisible(infoColumn) ||
             !isVisible(infoMain)
         ) {
-            isUpdating = false;
+            updateRunning = false;
             return;
         }
 
-        if (!isSideBySide()) {
-            isUpdating = false;
+        /*
+         * Hat Elementor Galerie und Info-Spalte auf diesem
+         * Breakpoint bereits untereinander angeordnet,
+         * bleibt der Zusatzbereich unten.
+         */
+        if (!areColumnsSideBySide()) {
+            updateRunning = false;
             return;
         }
 
+        const visibleGalleryWidget =
+            getVisibleGalleryWidget();
+
+        if (!visibleGalleryWidget) {
+            console.warn(
+                'Kein sichtbares Product-Gallery-Widget gefunden.'
+            );
+
+            updateRunning = false;
+            return;
+        }
+
+        /*
+         * Entscheidender Unterschied:
+         * Gemessen wird das sichtbare Galerie-Widget und nicht
+         * die möglicherweise gestreckte Galerie-Spalte.
+         */
         const galleryHeight =
-            gallery.getBoundingClientRect().height;
+            getOuterHeight(visibleGalleryWidget);
 
-        const infoHeight =
-            infoMain.getBoundingClientRect().height;
+        const infoMainHeight =
+            getOuterHeight(infoMain);
 
         const flowHeight =
-            flowContent.getBoundingClientRect().height;
+            getOuterHeight(flowContent);
 
         const gap =
-            getVerticalGap();
+            getInfoColumnGap();
 
-        const safetySpace = 10;
+        /*
+         * Reserve, damit der Zusatzbereich nicht exakt bündig
+         * bis zum unteren Galerierand reicht.
+         */
+        const safetySpace = 12;
 
-        const requiredHeight =
-            infoHeight +
+        const requiredRightHeight =
+            infoMainHeight +
             gap +
             flowHeight +
             safetySpace;
 
-        if (requiredHeight <= galleryHeight) {
+        if (
+            requiredRightHeight <=
+            galleryHeight
+        ) {
             moveBeside();
         }
 
-        isUpdating = false;
+        /*
+         * Hilfreiche Messwerte für die Entwicklertools.
+         */
+        layout.dataset.galleryHeight =
+            Math.round(galleryHeight);
+
+        layout.dataset.requiredRightHeight =
+            Math.round(requiredRightHeight);
+
+        updateRunning = false;
+    }
+
+    function scheduleUpdate() {
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+        }
+
+        frameId = requestAnimationFrame(() => {
+            frameId = null;
+            updateLayout();
+        });
     }
 
     const resizeObserver =
@@ -509,29 +660,17 @@ function initializeProductFlow(layout) {
     [
         layout,
         productTop,
-        gallery,
+        galleryColumn,
         infoMain,
         flowContent,
     ].forEach((element) => {
         resizeObserver.observe(element);
     });
 
-    const mutationObserver =
-        new MutationObserver(scheduleUpdate);
-
-    mutationObserver.observe(layout, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: [
-            'class',
-            'style',
-            'src',
-            'srcset',
-        ],
-    });
-
-    gallery
+    /*
+     * Nachgeladenen Bildern erneut messen.
+     */
+    galleryColumn
         .querySelectorAll('img')
         .forEach((image) => {
             if (!image.complete) {
@@ -543,6 +682,25 @@ function initializeProductFlow(layout) {
             }
         });
 
+    /*
+     * Nachträgliche Änderungen durch WooCommerce,
+     * Woodmart oder Varianten berücksichtigen.
+     */
+    const mutationObserver =
+        new MutationObserver(scheduleUpdate);
+
+    mutationObserver.observe(layout, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: [
+            'style',
+            'src',
+            'srcset',
+            'hidden',
+        ],
+    });
+
     window.addEventListener(
         'resize',
         scheduleUpdate,
@@ -553,6 +711,20 @@ function initializeProductFlow(layout) {
         'orientationchange',
         scheduleUpdate
     );
+
+    /*
+     * WooCommerce-Variationswechsel.
+     */
+    if (window.jQuery) {
+        window.jQuery(document).on(
+            [
+                'found_variation',
+                'reset_data',
+                'woocommerce_variation_has_changed',
+            ].join(' '),
+            scheduleUpdate
+        );
+    }
 
     scheduleUpdate();
 }
