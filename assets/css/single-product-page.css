@@ -404,3 +404,20 @@ img {
         animation: none !important;
     }
 }
+
+/* =========================================================
+Produktgalerie: Thumbnail-Spalte nicht höher als das Hauptbild 
+   ========================================================= */
+
+.single-product .woocommerce-product-gallery {
+    align-items: flex-start;
+}
+
+.single-product .woocommerce-product-gallery__wrapper {
+    position: relative;
+}
+
+.single-product .wd-gallery-thumb {
+    max-height: 100%;
+    overflow: hidden;
+}
