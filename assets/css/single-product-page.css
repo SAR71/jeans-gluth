@@ -413,6 +413,7 @@ img {
 .product-gallery-column,
 .product-info-column,
 .product-info-main,
-.product-flow-content {
+.product-flow-jg,
+.product-flow-additional {
     min-width: 0;
 }

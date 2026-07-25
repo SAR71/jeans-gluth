@@ -301,64 +301,81 @@ function initializeProductFlow(layout) {
     const infoMain =
         layout.querySelector('.product-info-main');
 
-    const flowContent =
-        layout.querySelector('.product-flow-content');
+    /*
+     * Reihenfolge ist wichtig:
+     * Zuerst JG Info, danach Additional Information.
+     */
+    const flowItems = [
+        layout.querySelector('.product-flow-jg'),
+        layout.querySelector('.product-flow-additional'),
+    ].filter(Boolean);
 
     if (
         !productTop ||
         !galleryColumn ||
         !infoColumn ||
         !infoMain ||
-        !flowContent
+        flowItems.length !== 2
     ) {
-        console.warn('Produktlayout unvollständig.', {
-            productTop,
-            galleryColumn,
-            infoColumn,
-            infoMain,
-            flowContent,
-        });
+        console.warn(
+            'Dynamisches Produktlayout ist unvollständig.',
+            {
+                productTop,
+                galleryColumn,
+                infoColumn,
+                infoMain,
+                flowItems,
+            }
+        );
 
         return;
     }
 
     /*
-     * Ursprüngliche Elementor-Position des Zusatzbereichs
-     * dauerhaft merken.
+     * Für jeden verschiebbaren Container wird seine
+     * ursprüngliche Elementor-Position gespeichert.
      */
-    const placeholder = document.createComment(
-        'product-flow-original-position'
-    );
+    const items = flowItems.map((element) => {
+        const placeholder = document.createComment(
+            `original-position-${element.className}`
+        );
 
-    flowContent.parentNode.insertBefore(
-        placeholder,
-        flowContent
-    );
+        element.parentNode.insertBefore(
+            placeholder,
+            element
+        );
+
+        return {
+            element,
+            placeholder,
+        };
+    });
 
     let frameId = null;
     let updateRunning = false;
+    let measuring = false;
 
     function isVisible(element) {
         if (!element) {
             return false;
         }
 
-        const style = window.getComputedStyle(element);
+        const style =
+            window.getComputedStyle(element);
 
         return (
             style.display !== 'none' &&
             style.visibility !== 'hidden' &&
-            parseFloat(style.opacity || '1') !== 0 &&
             element.getClientRects().length > 0
         );
     }
 
-    /*
-     * Höhe einschließlich oberem und unterem Margin.
-     */
     function getOuterHeight(element) {
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
+        const rect =
+            element.getBoundingClientRect();
+
+        const style =
+            window.getComputedStyle(element);
 
         const marginTop =
             parseFloat(style.marginTop) || 0;
@@ -373,23 +390,108 @@ function initializeProductFlow(layout) {
         );
     }
 
+    function moveToOriginalPosition(item) {
+        const originalParent =
+            item.placeholder.parentNode;
+
+        if (!originalParent) {
+            return;
+        }
+
+        const alreadyOriginal =
+            item.element.parentNode === originalParent &&
+            item.element.previousSibling === item.placeholder;
+
+        if (!alreadyOriginal) {
+            originalParent.insertBefore(
+                item.element,
+                item.placeholder.nextSibling
+            );
+        }
+
+        item.element.classList.remove(
+            'is-beside-gallery'
+        );
+    }
+
+    function moveBesideGallery(item) {
+        if (item.element.parentNode !== infoColumn) {
+            infoColumn.appendChild(item.element);
+        }
+
+        item.element.classList.add(
+            'is-beside-gallery'
+        );
+    }
+
+    function resetAllItems() {
+        items.forEach(moveToOriginalPosition);
+
+        layout.dataset.jgInfoFlow = 'below';
+        layout.dataset.additionalFlow = 'below';
+    }
+
+    function areColumnsSideBySide() {
+        if (
+            !isVisible(galleryColumn) ||
+            !isVisible(infoColumn)
+        ) {
+            return false;
+        }
+
+        const galleryRect =
+            galleryColumn.getBoundingClientRect();
+
+        const infoRect =
+            infoColumn.getBoundingClientRect();
+
+        const sameRow =
+            Math.abs(
+                galleryRect.top -
+                infoRect.top
+            ) <= 15;
+
+        const horizontallySeparated =
+            infoRect.left >
+            galleryRect.left + 20;
+
+        return (
+            sameRow &&
+            horizontallySeparated
+        );
+    }
+
+    function getInfoColumnGap() {
+        const style =
+            window.getComputedStyle(infoColumn);
+
+        const rowGap =
+            parseFloat(style.rowGap);
+
+        if (Number.isFinite(rowGap)) {
+            return rowGap;
+        }
+
+        const gap =
+            parseFloat(style.gap);
+
+        return Number.isFinite(gap)
+            ? gap
+            : 0;
+    }
+
     /*
-     * Nicht den möglicherweise gestreckten Galerie-Container
-     * messen, sondern das tatsächlich sichtbare Galerie-Widget.
-     *
-     * Da du zwei Product-Gallery-Widgets für unterschiedliche
-     * Breakpoints verwendest, wird nur das aktuell sichtbare
-     * Widget berücksichtigt.
+     * Tatsächlich sichtbares Product-Gallery-Widget ermitteln.
+     * Dadurch wird nicht die eventuell von Elementor gestreckte
+     * äußere Galerie-Spalte gemessen.
      */
     function getVisibleGalleryWidget() {
         const directChildren =
-            Array.from(galleryColumn.children);
+            Array.from(galleryColumn.children)
+                .filter(isVisible);
 
-        const visibleDirectChildren =
-            directChildren.filter(isVisible);
-
-        if (visibleDirectChildren.length) {
-            return visibleDirectChildren.reduce(
+        if (directChildren.length) {
+            return directChildren.reduce(
                 (largest, current) => {
                     const largestRect =
                         largest.getBoundingClientRect();
@@ -412,10 +514,6 @@ function initializeProductFlow(layout) {
             );
         }
 
-        /*
-         * Fallback, falls Elementor noch einen zusätzlichen
-         * Wrapper zwischen Spalte und Galerie eingefügt hat.
-         */
         const candidates = Array.from(
             galleryColumn.querySelectorAll(
                 [
@@ -454,94 +552,49 @@ function initializeProductFlow(layout) {
         );
     }
 
-    function moveBelow() {
-        const originalParent =
-            placeholder.parentNode;
-
-        if (!originalParent) {
-            return;
-        }
-
-        const alreadyBelow =
-            flowContent.parentNode === originalParent &&
-            flowContent.previousSibling === placeholder;
-
-        if (!alreadyBelow) {
-            originalParent.insertBefore(
-                flowContent,
-                placeholder.nextSibling
-            );
-        }
-
-        flowContent.classList.remove(
-            'is-beside-gallery'
-        );
-
-        layout.dataset.productFlow = 'below';
-    }
-
-    function moveBeside() {
-        const alreadyBeside =
-            flowContent.parentNode === infoColumn;
-
-        if (!alreadyBeside) {
-            infoColumn.appendChild(flowContent);
-        }
-
-        flowContent.classList.add(
-            'is-beside-gallery'
-        );
-
-        layout.dataset.productFlow = 'beside';
-    }
-
-    function areColumnsSideBySide() {
-        if (
-            !isVisible(galleryColumn) ||
-            !isVisible(infoColumn)
-        ) {
-            return false;
-        }
-
-        const galleryRect =
-            galleryColumn.getBoundingClientRect();
-
+    /*
+     * Höhe des Containers bei der tatsächlichen Breite
+     * der rechten Info-Spalte unsichtbar messen.
+     */
+    function measureAtInfoColumnWidth(element) {
         const infoRect =
             infoColumn.getBoundingClientRect();
 
-        const sameRow =
-            Math.abs(
-                galleryRect.top -
-                infoRect.top
-            ) <= 15;
-
-        const horizontallySeparated =
-            infoRect.left >=
-            galleryRect.right - 15;
-
-        return (
-            sameRow &&
-            horizontallySeparated
-        );
-    }
-
-    function getInfoColumnGap() {
-        const style =
-            window.getComputedStyle(infoColumn);
-
-        const rowGap =
-            parseFloat(style.rowGap);
-
-        if (Number.isFinite(rowGap)) {
-            return rowGap;
+        if (infoRect.width <= 0) {
+            return 0;
         }
 
-        const gap =
-            parseFloat(style.gap);
+        const oldStyle =
+            element.getAttribute('style');
 
-        return Number.isFinite(gap)
-            ? gap
-            : 0;
+        measuring = true;
+
+        element.style.position = 'fixed';
+        element.style.left = '-100000px';
+        element.style.top = '0';
+        element.style.width =
+            `${infoRect.width}px`;
+        element.style.maxWidth =
+            `${infoRect.width}px`;
+        element.style.visibility = 'hidden';
+        element.style.pointerEvents = 'none';
+        element.style.zIndex = '-1';
+
+        const measuredHeight =
+            getOuterHeight(element);
+
+        if (oldStyle === null) {
+            element.removeAttribute('style');
+        } else {
+            element.setAttribute(
+                'style',
+                oldStyle
+            );
+        }
+
+        measuring = false;
+
+        return measuredHeight;
     }
 
     function updateLayout() {
@@ -552,16 +605,10 @@ function initializeProductFlow(layout) {
         updateRunning = true;
 
         /*
-         * Immer zuerst in die neutrale Ausgangsposition
-         * unter dem oberen Produktbereich zurücksetzen.
+         * Sichere Ausgangsposition:
+         * Beide Bereiche zunächst unterhalb der Galerie.
          */
-        moveBelow();
-
-        if (!isVisible(flowContent)) {
-            layout.dataset.productFlow = 'hidden';
-            updateRunning = false;
-            return;
-        }
+        resetAllItems();
 
         if (
             !isVisible(productTop) ||
@@ -574,19 +621,19 @@ function initializeProductFlow(layout) {
         }
 
         /*
-         * Hat Elementor Galerie und Info-Spalte auf diesem
-         * Breakpoint bereits untereinander angeordnet,
-         * bleibt der Zusatzbereich unten.
+         * Hat Elementor die Hauptspalten an diesem Breakpoint
+         * bereits untereinander angeordnet, bleiben beide
+         * Zusatzbereiche ebenfalls unten.
          */
         if (!areColumnsSideBySide()) {
             updateRunning = false;
             return;
         }
 
-        const visibleGalleryWidget =
+        const galleryWidget =
             getVisibleGalleryWidget();
 
-        if (!visibleGalleryWidget) {
+        if (!galleryWidget) {
             console.warn(
                 'Kein sichtbares Product-Gallery-Widget gefunden.'
             );
@@ -595,55 +642,96 @@ function initializeProductFlow(layout) {
             return;
         }
 
-        /*
-         * Entscheidender Unterschied:
-         * Gemessen wird das sichtbare Galerie-Widget und nicht
-         * die möglicherweise gestreckte Galerie-Spalte.
-         */
         const galleryHeight =
-            getOuterHeight(visibleGalleryWidget);
+            getOuterHeight(galleryWidget);
 
         const infoMainHeight =
             getOuterHeight(infoMain);
-
-        const flowHeight =
-            getOuterHeight(flowContent);
 
         const gap =
             getInfoColumnGap();
 
         /*
-         * Reserve, damit der Zusatzbereich nicht exakt bündig
-         * bis zum unteren Galerierand reicht.
+         * Unterer Sicherheitsabstand zur Galerie.
          */
         const safetySpace = 12;
 
-        const requiredRightHeight =
-            infoMainHeight +
-            gap +
-            flowHeight +
-            safetySpace;
-
-        if (
-            requiredRightHeight <=
-            galleryHeight
-        ) {
-            moveBeside();
-        }
+        let usedRightHeight =
+            infoMainHeight;
 
         /*
-         * Hilfreiche Messwerte für die Entwicklertools.
+         * Sobald ein Element nicht mehr hineinpasst,
+         * bleiben auch alle folgenden Elemente unten.
+         *
+         * So bleibt die Reihenfolge:
+         * Hauptinformationen → JG Info → Additional Information.
          */
+        let furtherItemsMayMove = true;
+
+        items.forEach((item, index) => {
+            const element =
+                item.element;
+
+            const datasetName =
+                index === 0
+                    ? 'jgInfoFlow'
+                    : 'additionalFlow';
+
+            if (
+                !isVisible(element) ||
+                !furtherItemsMayMove
+            ) {
+                layout.dataset[datasetName] =
+                    isVisible(element)
+                        ? 'below'
+                        : 'hidden';
+
+                return;
+            }
+
+            const itemHeight =
+                measureAtInfoColumnWidth(element);
+
+            const requiredHeight =
+                usedRightHeight +
+                gap +
+                itemHeight +
+                safetySpace;
+
+            if (requiredHeight <= galleryHeight) {
+                moveBesideGallery(item);
+
+                usedRightHeight +=
+                    gap +
+                    itemHeight;
+
+                layout.dataset[datasetName] =
+                    'beside';
+            } else {
+                layout.dataset[datasetName] =
+                    'below';
+
+                furtherItemsMayMove = false;
+            }
+
+            element.dataset.measuredHeight =
+                Math.round(itemHeight);
+        });
+
         layout.dataset.galleryHeight =
             Math.round(galleryHeight);
 
-        layout.dataset.requiredRightHeight =
-            Math.round(requiredRightHeight);
+        layout.dataset.usedRightHeight =
+            Math.round(usedRightHeight);
 
         updateRunning = false;
     }
 
     function scheduleUpdate() {
+        if (measuring) {
+            return;
+        }
+
         if (frameId !== null) {
             cancelAnimationFrame(frameId);
         }
@@ -655,21 +743,20 @@ function initializeProductFlow(layout) {
     }
 
     const resizeObserver =
-        new ResizeObserver(scheduleUpdate);
+        new ResizeObserver(() => {
+            if (!measuring) {
+                scheduleUpdate();
+            }
+        });
 
     [
-        layout,
         productTop,
         galleryColumn,
         infoMain,
-        flowContent,
     ].forEach((element) => {
         resizeObserver.observe(element);
     });
 
-    /*
-     * Nachgeladenen Bildern erneut messen.
-     */
     galleryColumn
         .querySelectorAll('img')
         .forEach((image) => {
@@ -682,12 +769,12 @@ function initializeProductFlow(layout) {
             }
         });
 
-    /*
-     * Nachträgliche Änderungen durch WooCommerce,
-     * Woodmart oder Varianten berücksichtigen.
-     */
     const mutationObserver =
-        new MutationObserver(scheduleUpdate);
+        new MutationObserver(() => {
+            if (!measuring) {
+                scheduleUpdate();
+            }
+        });
 
     mutationObserver.observe(layout, {
         subtree: true,
@@ -712,9 +799,6 @@ function initializeProductFlow(layout) {
         scheduleUpdate
     );
 
-    /*
-     * WooCommerce-Variationswechsel.
-     */
     if (window.jQuery) {
         window.jQuery(document).on(
             [
