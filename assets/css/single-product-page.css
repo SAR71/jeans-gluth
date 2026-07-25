@@ -274,15 +274,25 @@ img {
 /* =========================================================
    Bildabstand nur bei nebeneinander angeordneten Containern
    ========================================================= */
-   .product-benefits:not(.product-benefits_stacked)
+
+.product-benefits:not(.product-benefits_stacked)
 > .product-benefits_image {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    box-sizing: border-box !important;
+    /*
+     * 10 px Abstand oberhalb und unterhalb des Bildcontainers.
+     * Links und rechts kein zusätzlicher Außenabstand.
+     */
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
 }
 
+
+/*
+ * Im gestapelten Zustand die vertikalen Außenabstände
+ * wieder entfernen. Der Abstand zwischen Liste und Bild
+ * wird weiterhin über gap geregelt.
+ */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
