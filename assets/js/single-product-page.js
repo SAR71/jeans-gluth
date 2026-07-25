@@ -157,21 +157,6 @@
                 'important'
             );
 
-            /*
-             * Auch der Bildcontainer selbst wird auf die
-             * Listenhöhe begrenzt und darin zentriert.
-             */
-            imageContainer.style.setProperty(
-                'max-height',
-                roundedHeight + 'px',
-                'important'
-            );
-
-            imageContainer.style.setProperty(
-                'height',
-                roundedHeight + 'px',
-                'important'
-            );
         }
 
         /**
