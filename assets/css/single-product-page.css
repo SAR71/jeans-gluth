@@ -52,77 +52,132 @@
 
 /* =========================================================
    PRODUCT BENEFITS
+
+   Elterncontainer:     product-benefits
+   Icon-Liste:          product-benefits_list
+   Bildcontainer:       product-benefits_image
    ========================================================= */
 
-/* Normalzustand: Liste links, Bild rechts */
+
+/* Bis zur ersten JS-Messung unsichtbar, verhindert Aufblitzen */
+.product-benefits:not([data-benefits-ready="true"]) {
+    visibility: hidden;
+}
+
+
+/* =========================================================
+   1. NORMALZUSTAND: NEBENEINANDER
+   ========================================================= */
+
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
+
     gap: 20px !important;
 
-    box-sizing: border-box !important;
     padding-right: 10px !important;
+    box-sizing: border-box !important;
 }
 
-/* Icon-Liste nutzt den verfügbaren Platz */
+
+/* Icon-Liste bekommt den verfügbaren Platz */
 .product-benefits > .product-benefits_list {
     flex: 1 1 auto !important;
     min-width: 0 !important;
+    width: auto !important;
 }
 
-/* Bildcontainer bleibt rechts und darf nicht schrumpfen */
+
+/* Bildcontainer behält seine Elementor-Größe */
 .product-benefits > .product-benefits_image {
+    display: flex !important;
+
     flex: 0 0 auto !important;
+    flex-grow: 0 !important;
     flex-shrink: 0 !important;
 
-    display: flex !important;
     justify-content: center !important;
     align-items: center !important;
 
     margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Keine Änderung an der Bildgröße */
-.product-benefits_image img {
-    height: auto;
+
+/* Elementor-Inhalt innerhalb des Bildcontainers zentrieren */
+.product-benefits > .product-benefits_image
+.elementor-widget-container {
+    text-align: center !important;
 }
+
+
+/* Die Bildgröße wird nicht verändert */
+.product-benefits > .product-benefits_image img {
+    height: auto !important;
+}
+
 
 /* =========================================================
-   Gestapelter Zustand
+   2. KOMPAKTER NEBENEINANDER-ZUSTAND
+
+   Das Bild wird so weit wie möglich nach rechts geschoben.
+   Der Abstand zwischen Liste und Bild wird reduziert.
+   ========================================================= */
+
+.product-benefits.product-benefits_compact {
+    gap: 10px !important;
+}
+
+
+.product-benefits.product-benefits_compact
+> .product-benefits_image {
+    margin-left: auto !important;
+}
+
+
+/* =========================================================
+   3. GESTAPELTER ZUSTAND
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
 
-    /* Maximal 10 px zwischen Textbereich und Bild */
+    /*
+     * Höchstens 10 px zwischen Icon-Liste und Bild.
+     */
     gap: 10px !important;
 
+    /*
+     * 5 px zwischen Bild und unterem grauen Rand.
+     */
     padding-right: 0 !important;
-
-    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-bottom: 5px !important;
 }
 
-/* Liste nimmt oben die gesamte Breite ein */
+
+/* Icon-Liste oben über volle Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
     width: 100% !important;
+    min-width: 0 !important;
 
     margin: 0 !important;
     padding-bottom: 0 !important;
 }
 
-/* Bildcontainer nimmt die gesamte Zeile ein */
+
+/* Bildcontainer unten über volle Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
+    display: flex !important;
+
     flex: 0 0 auto !important;
     width: 100% !important;
 
-    display: flex !important;
     justify-content: center !important;
     align-items: flex-start !important;
 
@@ -130,16 +185,28 @@
     padding: 0 !important;
 }
 
-/* Inhalt des Elementor-Bildwidgets zentrieren */
+
+/* Elementor-Bildwidget mittig ausrichten */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image
+.elementor-widget-image {
+    margin-right: auto !important;
+    margin-left: auto !important;
+}
+
+
+/* Inneren Bildinhalt mittig ausrichten */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-container {
     text-align: center !important;
 }
 
-/* Bild mittig, Größe bleibt von Elementor bestimmt */
+
+/* Bild mittig, ohne Größenänderung */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image img {
     display: inline-block !important;
-    margin: 0 auto !important;
+    margin-right: auto !important;
+    margin-left: auto !important;
 }
