@@ -6,11 +6,12 @@
     const IMAGE_SELECTOR = '.product-benefits_image';
     const TEXT_SELECTOR = '.elementor-icon-list-text';
 
-    const COMPACT_CLASS = 'product-benefits_compact';
+    const SHRINK_1_CLASS = 'product-benefits_shrink-1';
+    const SHRINK_2_CLASS = 'product-benefits_shrink-2';
     const STACKED_CLASS = 'product-benefits_stacked';
 
     /**
-     * Prüft, ob ein Text mehr als eine Zeile benötigt.
+     * Prüft, ob ein Text sichtbar auf mehrere Zeilen umbricht.
      */
     function textIsWrapped(textElement) {
         const style = window.getComputedStyle(textElement);
@@ -19,9 +20,9 @@
 
         if (!Number.isFinite(lineHeight)) {
             const fontSize =
-                parseFloat(style.fontSize) || 16;
+                parseFloat(style.fontSize) || 18;
 
-            lineHeight = fontSize * 1.2;
+            lineHeight = fontSize * 1.35;
         }
 
         const actualHeight =
@@ -42,7 +43,7 @@
     }
 
     /**
-     * Initialisiert einen Product-Benefits-Container.
+     * Initialisiert einen Product-Benefits-Bereich.
      */
     function initializeBenefits(wrapper) {
         if (
@@ -77,6 +78,15 @@
                 }
             );
 
+            /*
+             * Nicht dauerhaft unsichtbar lassen,
+             * falls ein Element fehlt.
+             */
+            wrapper.setAttribute(
+                'data-benefits-ready',
+                'true'
+            );
+
             return;
         }
 
@@ -85,16 +95,30 @@
             'true'
         );
 
-        let resizeTimer = null;
+        /*
+         * Inline-Höhen aus älteren Script-Versionen entfernen.
+         */
+        image.style.removeProperty('height');
+        image.style.removeProperty('max-height');
+
+        imageContainer.style.removeProperty('height');
+        imageContainer.style.removeProperty('max-height');
+
         let updateRunning = false;
+        let resizeTimer = null;
 
         /**
-         * Aktiviert genau einen Layoutmodus.
+         * Setzt exakt einen Layoutzustand.
          */
         function setLayout(mode) {
             wrapper.classList.toggle(
-                COMPACT_CLASS,
-                mode === 'compact'
+                SHRINK_1_CLASS,
+                mode === 'shrink-1'
+            );
+
+            wrapper.classList.toggle(
+                SHRINK_2_CLASS,
+                mode === 'shrink-2'
             );
 
             wrapper.classList.toggle(
@@ -109,68 +133,74 @@
         }
 
         /**
-         * Begrenzt das Bild direkt auf die Höhe
-         * des Icon-List-Containers.
+         * Browser zur Neuberechnung des Layouts zwingen.
          */
-        function limitImageToListHeight() {
-            const listHeight =
-                listContainer.getBoundingClientRect().height;
+        function forceLayout() {
+            void wrapper.offsetWidth;
+        }
 
-            if (listHeight <= 0) {
+        /**
+         * Einen Layoutzustand setzen und nach dem Rendern prüfen.
+         */
+        function testLayout(mode, callback) {
+            setLayout(mode);
+            forceLayout();
+
+            window.requestAnimationFrame(function () {
+                callback(
+                    listHasWrappedText(listContainer)
+                );
+            });
+        }
+
+        /**
+         * Prüfreihenfolge:
+         *
+         * 1. 190 px Bild / normale Schrift
+         * 2. 160 px Bild
+         * 3. 130 px Bild / 18 px Schrift / 10 px Listenabstand
+         * 4. Bild unter die Liste
+         */
+        function updateLayout() {
+            if (updateRunning) {
                 return;
             }
 
-            const roundedHeight =
-                Math.floor(listHeight);
+            updateRunning = true;
 
-            /*
-             * Direkt am Bild mit !important setzen,
-             * damit Elementor die Begrenzung nicht überschreibt.
-             */
-            image.style.setProperty(
-                'max-height',
-                roundedHeight + 'px',
-                'important'
-            );
+            testLayout('row', function (rowWrapped) {
+                if (!rowWrapped) {
+                    finishUpdate();
+                    return;
+                }
 
-            image.style.setProperty(
-                'height',
-                'auto',
-                'important'
-            );
+                testLayout(
+                    'shrink-1',
+                    function (shrink1Wrapped) {
+                        if (!shrink1Wrapped) {
+                            finishUpdate();
+                            return;
+                        }
 
-            image.style.setProperty(
-                'width',
-                'auto',
-                'important'
-            );
+                        testLayout(
+                            'shrink-2',
+                            function (shrink2Wrapped) {
+                                if (!shrink2Wrapped) {
+                                    finishUpdate();
+                                    return;
+                                }
 
-            image.style.setProperty(
-                'max-width',
-                '100%',
-                'important'
-            );
-
-            image.style.setProperty(
-                'object-fit',
-                'contain',
-                'important'
-            );
-
+                                setLayout('stacked');
+                                finishUpdate();
+                            }
+                        );
+                    }
+                );
+            });
         }
 
         /**
-         * Entfernt die Höhenbegrenzung im gestapelten Zustand.
-         */
-        function removeImageHeightLimit() {
-            image.style.removeProperty('max-height');
-
-            imageContainer.style.removeProperty('max-height');
-            imageContainer.style.removeProperty('height');
-        }
-
-        /**
-         * Markiert die Messung als abgeschlossen.
+         * Messung abschließen.
          */
         function finishUpdate() {
             wrapper.setAttribute(
@@ -182,70 +212,7 @@
         }
 
         /**
-         * Prüft:
-         *
-         * 1. normal nebeneinander
-         * 2. kompakt nebeneinander
-         * 3. untereinander
-         */
-        function updateLayout() {
-            if (updateRunning) {
-                return;
-            }
-
-            updateRunning = true;
-
-            /*
-             * Für die Messung zuerst wieder Row herstellen.
-             */
-            removeImageHeightLimit();
-            setLayout('row');
-
-            void wrapper.offsetWidth;
-
-            /*
-             * Bild auf die tatsächliche Listenhöhe begrenzen.
-             */
-            limitImageToListHeight();
-
-            void wrapper.offsetWidth;
-
-            window.requestAnimationFrame(function () {
-                if (!listHasWrappedText(listContainer)) {
-                    setLayout('row');
-                    limitImageToListHeight();
-                    finishUpdate();
-                    return;
-                }
-
-                /*
-                 * Zweiter Versuch mit kleinerem Abstand.
-                 */
-                setLayout('compact');
-
-                void wrapper.offsetWidth;
-                limitImageToListHeight();
-
-                window.requestAnimationFrame(function () {
-                    if (!listHasWrappedText(listContainer)) {
-                        setLayout('compact');
-                        limitImageToListHeight();
-                    } else {
-                        /*
-                         * Untereinander:
-                         * Höhenbegrenzung durch Liste entfernen.
-                         */
-                        setLayout('stacked');
-                        removeImageHeightLimit();
-                    }
-
-                    finishUpdate();
-                });
-            });
-        }
-
-        /**
-         * Entprellte Layoutprüfung.
+         * Größenänderungen entprellen.
          */
         function scheduleUpdate() {
             window.clearTimeout(resizeTimer);
@@ -262,6 +229,9 @@
             { passive: true }
         );
 
+        /*
+         * Nach dem Laden der Webfonts neu messen.
+         */
         if (
             document.fonts &&
             document.fonts.ready
@@ -271,6 +241,9 @@
             );
         }
 
+        /*
+         * Nach dem Laden des Bildes neu messen.
+         */
         if (!image.complete) {
             image.addEventListener(
                 'load',
@@ -288,7 +261,7 @@
     }
 
     /**
-     * Alle Benefits-Container starten.
+     * Alle Benefits-Bereiche starten.
      */
     function startBenefitsLayout() {
         document
