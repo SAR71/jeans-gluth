@@ -1,49 +1,104 @@
+/* =========================================================
+   Info Container Jeans Gluth
+   ========================================================= */
 (function () {
     'use strict';
 
-    const WRAPPER_SELECTOR = '.product-benefits';
-    const LIST_SELECTOR = '.product-benefits_list';
-    const IMAGE_SELECTOR = '.product-benefits_image';
-    const TEXT_SELECTOR = '.elementor-icon-list-text';
+    const WRAPPER_SELECTOR =
+        '.product-benefits';
 
-    const SHRINK_1_CLASS = 'product-benefits_shrink-1';
-    const SHRINK_2_CLASS = 'product-benefits_shrink-2';
-    const STACKED_CLASS = 'product-benefits_stacked';
+    const LIST_SELECTOR =
+        '.product-benefits_list';
+
+    const IMAGE_SELECTOR =
+        '.product-benefits_image';
+
+    const TEXT_SELECTOR =
+        '.elementor-icon-list-text';
+
+    const SHRINK_1_CLASS =
+        'product-benefits_shrink-1';
+
+    const SHRINK_2_CLASS =
+        'product-benefits_shrink-2';
+
+    const STACKED_CLASS =
+        'product-benefits_stacked';
+
 
     /**
-     * Prüft, ob ein Text sichtbar auf mehrere Zeilen umbricht.
+     * Prüft, ob ein Element aktuell sichtbar ist.
+     *
+     * Elementor-Ausblendungen per display:none werden
+     * dadurch berücksichtigt.
+     */
+    function isVisible(element) {
+        if (!element) {
+            return false;
+        }
+
+        const style =
+            window.getComputedStyle(element);
+
+        return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            element.getClientRects().length > 0
+        );
+    }
+
+
+    /**
+     * Prüft, ob ein Text sichtbar über mehrere Zeilen läuft.
      */
     function textIsWrapped(textElement) {
-        const style = window.getComputedStyle(textElement);
+        const style =
+            window.getComputedStyle(textElement);
 
-        let lineHeight = parseFloat(style.lineHeight);
+        let lineHeight =
+            parseFloat(style.lineHeight);
 
         if (!Number.isFinite(lineHeight)) {
             const fontSize =
                 parseFloat(style.fontSize) || 18;
 
-            lineHeight = fontSize * 1.35;
+            lineHeight =
+                fontSize * 1.3;
         }
 
         const actualHeight =
-            textElement.getBoundingClientRect().height;
+            textElement
+                .getBoundingClientRect()
+                .height;
 
-        return actualHeight > lineHeight * 1.5;
-    }
-
-    /**
-     * Prüft alle Texte der Icon List.
-     */
-    function listHasWrappedText(listContainer) {
-        const textElements = Array.from(
-            listContainer.querySelectorAll(TEXT_SELECTOR)
+        return (
+            actualHeight >
+            lineHeight * 1.5
         );
-
-        return textElements.some(textIsWrapped);
     }
 
+
     /**
-     * Initialisiert einen Product-Benefits-Bereich.
+     * Prüft alle Texte der Icon-Liste auf Umbruch.
+     */
+    function listHasWrappedText(
+        listContainer
+    ) {
+        const textElements =
+            Array.from(
+                listContainer.querySelectorAll(
+                    TEXT_SELECTOR
+                )
+            );
+
+        return textElements.some(
+            textIsWrapped
+        );
+    }
+
+
+    /**
+     * Initialisiert einen Benefits-Container.
      */
     function initializeBenefits(wrapper) {
         if (
@@ -55,13 +110,19 @@
         }
 
         const listContainer =
-            wrapper.querySelector(LIST_SELECTOR);
+            wrapper.querySelector(
+                LIST_SELECTOR
+            );
 
         const imageContainer =
-            wrapper.querySelector(IMAGE_SELECTOR);
+            wrapper.querySelector(
+                IMAGE_SELECTOR
+            );
 
         const image =
-            imageContainer?.querySelector('img');
+            imageContainer?.querySelector(
+                'img'
+            );
 
         if (
             !listContainer ||
@@ -78,10 +139,6 @@
                 }
             );
 
-            /*
-             * Nicht dauerhaft unsichtbar lassen,
-             * falls ein Element fehlt.
-             */
             wrapper.setAttribute(
                 'data-benefits-ready',
                 'true'
@@ -96,19 +153,31 @@
         );
 
         /*
-         * Inline-Höhen aus älteren Script-Versionen entfernen.
+         * Alte Inline-Höhen aus früheren Versionen entfernen.
          */
-        image.style.removeProperty('height');
-        image.style.removeProperty('max-height');
+        image.style.removeProperty(
+            'height'
+        );
 
-        imageContainer.style.removeProperty('height');
-        imageContainer.style.removeProperty('max-height');
+        image.style.removeProperty(
+            'max-height'
+        );
+
+        imageContainer.style.removeProperty(
+            'height'
+        );
+
+        imageContainer.style.removeProperty(
+            'max-height'
+        );
 
         let updateRunning = false;
-        let resizeTimer = null;
+        let updateRequested = false;
+        let animationFrameId = null;
+
 
         /**
-         * Setzt exakt einen Layoutzustand.
+         * Setzt genau einen Layoutzustand.
          */
         function setLayout(mode) {
             wrapper.classList.toggle(
@@ -132,75 +201,39 @@
             );
         }
 
+
         /**
-         * Browser zur Neuberechnung des Layouts zwingen.
+         * Erzwingt eine unmittelbare Layoutberechnung.
          */
         function forceLayout() {
             void wrapper.offsetWidth;
         }
 
+
         /**
-         * Einen Layoutzustand setzen und nach dem Rendern prüfen.
+         * Setzt einen Zustand und prüft ihn nach dem Rendern.
          */
-        function testLayout(mode, callback) {
+        function testLayout(
+            mode,
+            callback
+        ) {
             setLayout(mode);
             forceLayout();
 
-            window.requestAnimationFrame(function () {
-                callback(
-                    listHasWrappedText(listContainer)
-                );
-            });
-        }
-
-        /**
-         * Prüfreihenfolge:
-         *
-         * 1. 190 px Bild / normale Schrift
-         * 2. 160 px Bild
-         * 3. 130 px Bild / 18 px Schrift / 10 px Listenabstand
-         * 4. Bild unter die Liste
-         */
-        function updateLayout() {
-            if (updateRunning) {
-                return;
-            }
-
-            updateRunning = true;
-
-            testLayout('row', function (rowWrapped) {
-                if (!rowWrapped) {
-                    finishUpdate();
-                    return;
+            window.requestAnimationFrame(
+                function () {
+                    callback(
+                        listHasWrappedText(
+                            listContainer
+                        )
+                    );
                 }
-
-                testLayout(
-                    'shrink-1',
-                    function (shrink1Wrapped) {
-                        if (!shrink1Wrapped) {
-                            finishUpdate();
-                            return;
-                        }
-
-                        testLayout(
-                            'shrink-2',
-                            function (shrink2Wrapped) {
-                                if (!shrink2Wrapped) {
-                                    finishUpdate();
-                                    return;
-                                }
-
-                                setLayout('stacked');
-                                finishUpdate();
-                            }
-                        );
-                    }
-                );
-            });
+            );
         }
 
+
         /**
-         * Messung abschließen.
+         * Schließt eine Messung ab.
          */
         function finishUpdate() {
             wrapper.setAttribute(
@@ -209,79 +242,267 @@
             );
 
             updateRunning = false;
+
+            /*
+             * Falls während der laufenden Messung erneut eine
+             * Änderung kam, sofort noch einmal prüfen.
+             */
+            if (updateRequested) {
+                updateRequested = false;
+                scheduleUpdate();
+            }
         }
 
-        /**
-         * Größenänderungen entprellen.
-         */
-        function scheduleUpdate() {
-            window.clearTimeout(resizeTimer);
 
-            resizeTimer = window.setTimeout(
-                updateLayout,
-                120
+        /**
+         * Prüfreihenfolge:
+         *
+         * 1. Normalzustand
+         * 2. Shrink 1
+         * 3. Shrink 2
+         * 4. Gestapelt
+         */
+        function updateLayout() {
+            if (updateRunning) {
+                updateRequested = true;
+                return;
+            }
+
+            /*
+             * Ist der Container durch Elementor ausgeblendet,
+             * wird die Messung vertagt.
+             */
+            if (!isVisible(wrapper)) {
+                return;
+            }
+
+            const wrapperWidth =
+                wrapper
+                    .getBoundingClientRect()
+                    .width;
+
+            if (wrapperWidth <= 0) {
+                return;
+            }
+
+            updateRunning = true;
+
+            testLayout(
+                'row',
+                function (rowWrapped) {
+                    if (!rowWrapped) {
+                        finishUpdate();
+                        return;
+                    }
+
+                    testLayout(
+                        'shrink-1',
+                        function (
+                            shrink1Wrapped
+                        ) {
+                            if (
+                                !shrink1Wrapped
+                            ) {
+                                finishUpdate();
+                                return;
+                            }
+
+                            testLayout(
+                                'shrink-2',
+                                function (
+                                    shrink2Wrapped
+                                ) {
+                                    if (
+                                        !shrink2Wrapped
+                                    ) {
+                                        finishUpdate();
+                                        return;
+                                    }
+
+                                    setLayout(
+                                        'stacked'
+                                    );
+
+                                    finishUpdate();
+                                }
+                            );
+                        }
+                    );
+                }
             );
         }
 
-                /*
-        * Auch auf Breitenänderungen des Containers reagieren.
-        * Diese entstehen beispielsweise, wenn JG Info von der
-        * rechten Produktspalte unter die Galerie verschoben wird.
-        */
-        const benefitsResizeObserver =
-            new ResizeObserver(() => {
-                scheduleUpdate();
-            });
 
-        benefitsResizeObserver.observe(wrapper);
+        /**
+         * Führt höchstens eine Messung pro Browser-Frame aus.
+         *
+         * Keine 120-ms-Verzögerung mehr.
+         */
+        function scheduleUpdate() {
+            if (animationFrameId !== null) {
+                cancelAnimationFrame(
+                    animationFrameId
+                );
+            }
 
+            animationFrameId =
+                window.requestAnimationFrame(
+                    function () {
+                        animationFrameId = null;
+                        updateLayout();
+                    }
+                );
+        }
+
+
+        /*
+         * Reagiert direkt auf Größenänderungen des Benefits-
+         * Containers. Das greift auch dann, wenn JG Info aus
+         * der rechten Spalte unter die Galerie verschoben wird.
+         */
+        const resizeObserver =
+            new ResizeObserver(
+                function () {
+                    scheduleUpdate();
+                }
+            );
+
+        resizeObserver.observe(wrapper);
+        resizeObserver.observe(
+            listContainer
+        );
+        resizeObserver.observe(
+            imageContainer
+        );
+
+
+        /*
+         * Reagiert zusätzlich auf Änderungen durch Elementor,
+         * Woodmart und das dynamische Umsortieren.
+         */
+        const mutationObserver =
+            new MutationObserver(
+                function () {
+                    scheduleUpdate();
+                }
+            );
+
+        mutationObserver.observe(
+            wrapper,
+            {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: [
+                    'class',
+                    'style',
+                    'hidden',
+                    'src',
+                    'srcset'
+                ]
+            }
+        );
+
+
+        /*
+         * Auch Änderungen an den Elterncontainern beobachten.
+         * Das ist relevant, wenn JG Info an eine andere Stelle
+         * im Produktlayout verschoben wird.
+         */
+        const parentObserver =
+            new MutationObserver(
+                function () {
+                    scheduleUpdate();
+                }
+            );
+
+        const productLayout =
+            wrapper.closest(
+                '.product-layout'
+            );
+
+        if (productLayout) {
+            parentObserver.observe(
+                productLayout,
+                {
+                    subtree: true,
+                    childList: true,
+                    attributes: true,
+                    attributeFilter: [
+                        'class',
+                        'style',
+                        'hidden'
+                    ]
+                }
+            );
+        }
+
+
+        /*
+         * Fensterbreite und Geräteausrichtung.
+         */
         window.addEventListener(
             'resize',
             scheduleUpdate,
             { passive: true }
         );
 
+        window.addEventListener(
+            'orientationchange',
+            scheduleUpdate
+        );
+
+
         /*
-         * Nach dem Laden der Webfonts neu messen.
+         * Nach dem Laden der Webfonts erneut messen.
          */
         if (
             document.fonts &&
             document.fonts.ready
         ) {
             document.fonts.ready.then(
-                updateLayout
+                scheduleUpdate
             );
         }
 
+
         /*
-         * Nach dem Laden des Bildes neu messen.
+         * Nach dem Laden des Bildes erneut messen.
          */
         if (!image.complete) {
             image.addEventListener(
                 'load',
-                updateLayout,
+                scheduleUpdate,
                 { once: true }
             );
         }
 
-        window.addEventListener(
-            'load',
-            updateLayout
-        );
 
-        updateLayout();
+        /*
+         * Erste unmittelbare Messung.
+         */
+        scheduleUpdate();
     }
 
+
     /**
-     * Alle Benefits-Bereiche starten.
+     * Startet alle Benefits-Bereiche.
      */
     function startBenefitsLayout() {
         document
-            .querySelectorAll(WRAPPER_SELECTOR)
-            .forEach(initializeBenefits);
+            .querySelectorAll(
+                WRAPPER_SELECTOR
+            )
+            .forEach(
+                initializeBenefits
+            );
     }
 
-    if (document.readyState === 'loading') {
+
+    if (
+        document.readyState ===
+        'loading'
+    ) {
         document.addEventListener(
             'DOMContentLoaded',
             startBenefitsLayout
@@ -434,7 +655,7 @@ function initializeProductFlow(layout) {
         item.element.classList.add(
             'is-beside-gallery'
         );
-        
+
         window.dispatchEvent(new Event('resize'));
 
     }
