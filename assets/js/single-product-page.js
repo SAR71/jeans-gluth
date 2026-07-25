@@ -2147,13 +2147,7 @@
 })();
 
 /* =========================================================
-   SOCIAL-MEDIA-BUTTONS – AUTOMATISCHER ZEILENUMBRUCH
-
-   - Passt Überschrift + Icon-Reihe nebeneinander:
-     alles bleibt in einer Zeile.
-
-   - Passt es nicht:
-     Überschrift steht oben und alle Icons gemeinsam darunter.
+   SOCIAL MEDIA – AUTOMATISCH EIN- ODER ZWEIZEILIG
    ========================================================= */
 
 (function () {
@@ -2162,330 +2156,110 @@
     const SOCIAL_SELECTOR =
         '.single-product .wd-social-icons';
 
-    const LABEL_SELECTOR =
-        ':scope > .wd-label';
+    const TWO_LINES_CLASS =
+        'jg-social-two-lines';
 
-    const ICON_ROW_CLASS =
-        'jg-social-icon-row';
+    const WIDTH_RESERVE = 5;
 
-    const STACKED_CLASS =
-        'jg-social-stacked';
-
-
-    /**
-     * Ermittelt horizontale Außenabstände eines Elements.
-     */
-    function getHorizontalMargins(element) {
-        const style =
-            window.getComputedStyle(element);
-
-        return (
-            (parseFloat(style.marginLeft) || 0) +
-            (parseFloat(style.marginRight) || 0)
-        );
-    }
-
-
-    /**
-     * Fasst alle Social-Media-Links in einem gemeinsamen
-     * Container zusammen.
-     *
-     * Dadurch können die Icons später nur als vollständige
-     * Gruppe in die nächste Zeile wechseln.
-     */
-    function createIconRow(socialContainer) {
-        let iconRow =
-            socialContainer.querySelector(
-                `:scope > .${ICON_ROW_CLASS}`
-            );
-
-        if (iconRow) {
-            return iconRow;
+    function updateSocialLayout(container) {
+        if (
+            !container ||
+            container.getClientRects().length === 0
+        ) {
+            return;
         }
-
-        const label =
-            socialContainer.querySelector(
-                LABEL_SELECTOR
-            );
-
-        if (!label) {
-            return null;
-        }
-
-        const iconElements =
-            Array.from(
-                socialContainer.children
-            ).filter(function (element) {
-                return (
-                    element !== label &&
-                    !element.classList.contains(
-                        ICON_ROW_CLASS
-                    )
-                );
-            });
-
-        if (!iconElements.length) {
-            return null;
-        }
-
-        iconRow =
-            document.createElement('div');
-
-        iconRow.className =
-            ICON_ROW_CLASS;
-
-        label.insertAdjacentElement(
-            'afterend',
-            iconRow
-        );
-
-        iconElements.forEach(function (element) {
-            iconRow.appendChild(element);
-        });
-
-        return iconRow;
-    }
-
-
-    /**
-     * Entscheidet, ob Überschrift und Icon-Reihe gemeinsam
-     * in die verfügbare Breite passen.
-     */
-    function updateSocialLayout(
-        socialContainer,
-        label,
-        iconRow
-    ) {
-        /*
-         * Zunächst immer den einzeiligen Zustand herstellen.
-         * So wird unabhängig vom bisherigen Zustand gemessen.
-         */
-        socialContainer.classList.remove(
-            STACKED_CLASS
-        );
 
         /*
-         * Layoutberechnung nach Klassenänderung erzwingen.
+         * Zuerst den einzeiligen Zustand herstellen.
          */
-        void socialContainer.offsetWidth;
+        container.classList.remove(
+            TWO_LINES_CLASS
+        );
 
-        const containerStyle =
-            window.getComputedStyle(
-                socialContainer
-            );
+        void container.offsetWidth;
 
-        const columnGap =
-            parseFloat(
-                containerStyle.columnGap
-            );
-
-        const gap =
-            Number.isFinite(columnGap)
-                ? columnGap
-                : (
-                    parseFloat(
-                        containerStyle.gap
-                    ) || 0
-                );
-
-        const labelWidth =
-            label.getBoundingClientRect().width +
-            getHorizontalMargins(label);
-
-        const iconRowWidth =
-            iconRow.scrollWidth +
-            getHorizontalMargins(iconRow);
+        /*
+         * scrollWidth ist die tatsächlich benötigte Breite
+         * des gesamten Social-Bereichs ohne Umbruch.
+         */
+        const requiredWidth =
+            container.scrollWidth;
 
         const availableWidth =
-            socialContainer.clientWidth;
+            container.clientWidth;
 
-        /*
-         * Kleine Reserve gegen Subpixel- und
-         * Rundungsunterschiede.
-         */
-        const safetySpace = 4;
-
-        const requiredWidth =
-            labelWidth +
-            gap +
-            iconRowWidth +
-            safetySpace;
-
-        socialContainer.classList.toggle(
-            STACKED_CLASS,
-            requiredWidth > availableWidth
+        container.classList.toggle(
+            TWO_LINES_CLASS,
+            requiredWidth >
+                availableWidth + WIDTH_RESERVE
         );
 
-        socialContainer.dataset
-            .socialRequiredWidth =
-            String(
-                Math.round(requiredWidth)
-            );
+        container.dataset.jgSocialRequiredWidth =
+            String(Math.round(requiredWidth));
 
-        socialContainer.dataset
-            .socialAvailableWidth =
-            String(
-                Math.round(availableWidth)
-            );
+        container.dataset.jgSocialAvailableWidth =
+            String(Math.round(availableWidth));
     }
 
-
-    /**
-     * Einzelnen Social-Media-Bereich initialisieren.
-     */
-    function initializeSocialContainer(
-        socialContainer
-    ) {
+    function initializeSocialLayout(container) {
         if (
-            socialContainer.dataset
-                .jgSocialInitialized ===
+            container.dataset.jgSocialInitialized ===
             'true'
         ) {
             return;
         }
 
-        const label =
-            socialContainer.querySelector(
-                LABEL_SELECTOR
-            );
-
-        const iconRow =
-            createIconRow(
-                socialContainer
-            );
-
-        if (!label || !iconRow) {
-            return;
-        }
-
-        socialContainer.dataset
-            .jgSocialInitialized =
+        container.dataset.jgSocialInitialized =
             'true';
 
         let frameId = null;
-        let lastWidth = 0;
 
-
-        function scheduleUpdate(force) {
-            if (force) {
-                lastWidth = 0;
-            }
-
+        function scheduleUpdate() {
             if (frameId !== null) {
-                window.cancelAnimationFrame(
-                    frameId
-                );
+                cancelAnimationFrame(frameId);
             }
 
             frameId =
-                window.requestAnimationFrame(
-                    function () {
-                        frameId = null;
-
-                        updateSocialLayout(
-                            socialContainer,
-                            label,
-                            iconRow
-                        );
-
-                        lastWidth =
-                            Math.round(
-                                socialContainer
-                                    .getBoundingClientRect()
-                                    .width
-                            );
-                    }
-                );
+                requestAnimationFrame(function () {
+                    frameId = null;
+                    updateSocialLayout(container);
+                });
         }
 
-
-        /*
-         * Nur Breitenänderungen des Social-Bereichs
-         * beobachten.
-         */
         const resizeObserver =
-            new ResizeObserver(
-                function (entries) {
-                    const entry =
-                        entries[0];
+            new ResizeObserver(scheduleUpdate);
 
-                    if (!entry) {
-                        return;
-                    }
+        resizeObserver.observe(container);
 
-                    const width =
-                        Math.round(
-                            entry.contentRect.width
-                        );
-
-                    if (width <= 0) {
-                        return;
-                    }
-
-                    if (
-                        lastWidth > 0 &&
-                        Math.abs(
-                            width - lastWidth
-                        ) < 2
-                    ) {
-                        return;
-                    }
-
-                    scheduleUpdate(false);
-                }
-            );
-
-        resizeObserver.observe(
-            socialContainer
+        window.addEventListener(
+            'orientationchange',
+            scheduleUpdate
         );
-
 
         if (
             document.fonts &&
             document.fonts.ready
         ) {
             document.fonts.ready.then(
-                function () {
-                    scheduleUpdate(true);
-                }
+                scheduleUpdate
             );
         }
 
-
-        window.addEventListener(
-            'orientationchange',
-            function () {
-                scheduleUpdate(true);
-            }
-        );
-
-
-        scheduleUpdate(true);
+        scheduleUpdate();
     }
 
-
-    /**
-     * Alle Social-Media-Bereiche starten.
-     */
-    function initializeSocialLayouts() {
+    function startSocialLayouts() {
         document
-            .querySelectorAll(
-                SOCIAL_SELECTOR
-            )
-            .forEach(
-                initializeSocialContainer
-            );
+            .querySelectorAll(SOCIAL_SELECTOR)
+            .forEach(initializeSocialLayout);
     }
 
-
-    if (
-        document.readyState === 'loading'
-    ) {
+    if (document.readyState === 'loading') {
         document.addEventListener(
             'DOMContentLoaded',
-            initializeSocialLayouts
+            startSocialLayouts
         );
     } else {
-        initializeSocialLayouts();
+        startSocialLayouts();
     }
 })();
