@@ -573,24 +573,22 @@ img {
 }
 
 /* =========================================================
-   JG INFO – ABSTAND ZWISCHEN TEXT UND BILD
+   JG INFO – BILD IM FREIEN RECHTEN BEREICH ZENTRIEREN
 
-   Gilt unabhängig vom Breakpoint und unabhängig davon,
-   ob der graue Kasten neben oder unter der Galerie steht.
+   Gilt immer dann, wenn Text und Bild nebeneinander stehen.
+   Das Bild wird innerhalb des restlichen freien Bereichs
+   horizontal und vertikal mittig ausgerichtet.
    ========================================================= */
 
-/*
- * Solange das Bild neben der Liste steht:
- * Inhalte beginnen links und werden nicht über die gesamte
- * Breite auseinandergezogen.
- */
 .product-benefits:not(.product-benefits_stacked) {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
     justify-content: flex-start !important;
 }
 
 /*
- * Die Liste nimmt nur die tatsächlich benötigte Breite ein,
- * darf bei wenig Platz aber weiterhin kleiner werden.
+ * Die Textliste nimmt nur die tatsächlich benötigte Breite ein.
  */
 .product-benefits:not(.product-benefits_stacked)
 .product-benefits_list {
@@ -601,11 +599,26 @@ img {
 }
 
 /*
- * Das Bild folgt mit einem festen Abstand direkt auf die Liste.
+ * Der Bildcontainer nimmt den kompletten verbleibenden Platz ein.
+ * Darin wird das Bild mittig positioniert.
  */
 .product-benefits:not(.product-benefits_stacked)
 .product-benefits_image {
-    flex: 0 0 auto !important;
-    margin-left: 24px !important;
-    margin-right: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 150px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/*
+ * Bild selbst sauber begrenzen und zentrieren.
+ */
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_image img {
+    display: block !important;
+    margin: 0 auto !important;
 }
