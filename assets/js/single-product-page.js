@@ -5,6 +5,7 @@
    - Messung erfolgt an einer unsichtbaren Kopie
    - Der sichtbare Container erhält nur das Endergebnis
    - Reagiert automatisch auf Breitenänderungen
+   - Erkennt Zeilenumbrüche auch in Elementor-Textknoten
    ========================================================= */
 
 (function () {
@@ -38,19 +39,18 @@
     ];
 
     /*
-     * Kleine Reserve gegen Rundungsunterschiede.
-     * Der Testcontainer wird etwas schmaler gemessen als
-     * der sichtbare Container.
+     * Reserve für knappe Breitenverhältnisse.
+     * Die Messkopie wird etwas schmaler als das Original.
      */
-    const WIDTH_SAFETY_SPACE = 6;
+    const WIDTH_SAFETY_SPACE = 12;
 
 
     /**
      * Prüft, ob ein Element grundsätzlich messbar ist.
      *
-     * visibility:hidden wird absichtlich nicht geprüft,
-     * weil unser CSS den Container vor der ersten Messung
-     * unsichtbar macht.
+     * visibility:hidden wird bewusst nicht geprüft,
+     * weil der Container vor der ersten Messung durch CSS
+     * unsichtbar gemacht wird.
      */
     function isMeasurable(element) {
         if (!element) {
@@ -68,9 +68,7 @@
 
 
     /**
-     * Entfernt IDs aus der Messkopie.
-     *
-     * Dadurch entstehen keine doppelten HTML-IDs.
+     * Entfernt IDs aus einer Messkopie.
      */
     function removeIds(element) {
         element.removeAttribute('id');
@@ -117,61 +115,116 @@
 
 
     /**
- * Prüft zuverlässig, ob der Text auf mehrere sichtbare
- * Zeilen umbricht.
- */
-function textIsWrapped(textElement) {
-    if (!textElement) {
-        return false;
-    }
-
-    /*
-     * Ein Range liefert für jede sichtbare Textzeile
-     * einen eigenen Rechteckbereich.
+     * Prüft zuverlässig, ob der sichtbare Text auf mehrere
+     * Zeilen umbricht.
+     *
+     * Es werden gezielt die einzelnen Textknoten untersucht.
+     * Das funktioniert auch dann, wenn Elementor den
+     * umgebenden Span als Flex- oder Blockelement darstellt.
      */
-    const range =
-        document.createRange();
+    function textIsWrapped(textElement) {
+        if (!textElement) {
+            return false;
+        }
 
-    range.selectNodeContents(
-        textElement
-    );
-
-    const rectangles =
-        Array.from(
-            range.getClientRects()
-        ).filter(function (rect) {
-            return (
-                rect.width > 0 &&
-                rect.height > 0
+        const walker =
+            document.createTreeWalker(
+                textElement,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode(node) {
+                        return node.textContent.trim()
+                            ? NodeFilter.FILTER_ACCEPT
+                            : NodeFilter.FILTER_REJECT;
+                    }
+                }
             );
-        });
 
-    /*
-     * Unterschiedliche vertikale Positionen entsprechen
-     * unterschiedlichen Textzeilen.
-     */
-    const lineTops = [];
+        const lineTops = [];
+        let textNode =
+            walker.nextNode();
 
-    rectangles.forEach(function (rect) {
-        const top =
-            Math.round(rect.top);
+        while (textNode) {
+            const range =
+                document.createRange();
 
-        const alreadyKnown =
-            lineTops.some(function (knownTop) {
-                return (
-                    Math.abs(
-                        knownTop - top
-                    ) <= 2
-                );
+            range.selectNodeContents(
+                textNode
+            );
+
+            const rectangles =
+                Array.from(
+                    range.getClientRects()
+                ).filter(function (rect) {
+                    return (
+                        rect.width > 0 &&
+                        rect.height > 0
+                    );
+                });
+
+            rectangles.forEach(function (rect) {
+                const top =
+                    Math.round(rect.top);
+
+                const lineAlreadyKnown =
+                    lineTops.some(function (
+                        knownTop
+                    ) {
+                        return (
+                            Math.abs(
+                                knownTop - top
+                            ) <= 2
+                        );
+                    });
+
+                if (!lineAlreadyKnown) {
+                    lineTops.push(top);
+                }
             });
 
-        if (!alreadyKnown) {
-            lineTops.push(top);
+            textNode =
+                walker.nextNode();
         }
-    });
 
-    return lineTops.length > 1;
-}
+        /*
+         * Fallback:
+         * Falls der Browser keine getrennten Textrechtecke
+         * liefert, wird die Elementhöhe mit der Zeilenhöhe
+         * verglichen.
+         */
+        if (lineTops.length <= 1) {
+            const style =
+                window.getComputedStyle(
+                    textElement
+                );
+
+            const fontSize =
+                parseFloat(style.fontSize) || 18;
+
+            let lineHeight =
+                parseFloat(style.lineHeight);
+
+            if (!Number.isFinite(lineHeight)) {
+                lineHeight =
+                    fontSize * 1.3;
+            }
+
+            const elementHeight =
+                textElement
+                    .getBoundingClientRect()
+                    .height;
+
+            if (
+                elementHeight >
+                lineHeight * 1.35
+            ) {
+                return true;
+            }
+        }
+
+        return lineTops.length > 1;
+    }
+
 
     /**
      * Prüft die Texte einer Icon-Liste.
@@ -198,8 +251,6 @@ function textIsWrapped(textElement) {
 
     /**
      * Erstellt eine unsichtbare Messkopie.
-     *
-     * Die Kopie beeinflusst das sichtbare Layout nicht.
      */
     function createMeasurementClone(
         wrapper,
@@ -281,14 +332,16 @@ function textIsWrapped(textElement) {
             'important'
         );
 
-        document.body.appendChild(clone);
+        document.body.appendChild(
+            clone
+        );
 
         return clone;
     }
 
 
     /**
-     * Prüft einen Zustand ausschließlich an der Messkopie.
+     * Prüft einen Zustand nur an der Messkopie.
      */
     function cloneLayoutFits(
         clone,
@@ -300,7 +353,7 @@ function textIsWrapped(textElement) {
         );
 
         /*
-         * Layout unmittelbar berechnen lassen.
+         * Browser zur sofortigen Layoutberechnung zwingen.
          */
         void clone.offsetWidth;
 
@@ -320,8 +373,7 @@ function textIsWrapped(textElement) {
 
 
     /**
-     * Ermittelt den besten Zustand, ohne den sichtbaren
-     * Container während der Prüfung zu verändern.
+     * Ermittelt den besten Layoutzustand.
      */
     function determineLayout(
         wrapper,
@@ -333,7 +385,8 @@ function textIsWrapped(textElement) {
                 width
             );
 
-        let result = 'stacked';
+        let result =
+            'stacked';
 
         try {
             if (
@@ -469,7 +522,8 @@ function textIsWrapped(textElement) {
                 mode
             );
 
-            currentMode = mode;
+            currentMode =
+                mode;
 
             wrapper.setAttribute(
                 'data-benefits-ready',
@@ -559,9 +613,6 @@ function textIsWrapped(textElement) {
 
         /**
          * Nur echte Breitenänderungen beobachten.
-         *
-         * Höhenänderungen durch row/stacked führen nicht
-         * zu einer neuen Messung.
          */
         const resizeObserver =
             new ResizeObserver(
@@ -599,7 +650,9 @@ function textIsWrapped(textElement) {
                 }
             );
 
-        resizeObserver.observe(wrapper);
+        resizeObserver.observe(
+            wrapper
+        );
 
 
         /**
