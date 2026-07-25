@@ -223,6 +223,18 @@
             );
         }
 
+                /*
+        * Auch auf Breitenänderungen des Containers reagieren.
+        * Diese entstehen beispielsweise, wenn JG Info von der
+        * rechten Produktspalte unter die Galerie verschoben wird.
+        */
+        const benefitsResizeObserver =
+            new ResizeObserver(() => {
+                scheduleUpdate();
+            });
+
+        benefitsResizeObserver.observe(wrapper);
+
         window.addEventListener(
             'resize',
             scheduleUpdate,
@@ -422,6 +434,9 @@ function initializeProductFlow(layout) {
         item.element.classList.add(
             'is-beside-gallery'
         );
+        
+        window.dispatchEvent(new Event('resize'));
+
     }
 
     function resetAllItems() {
