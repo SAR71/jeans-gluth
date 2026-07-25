@@ -588,20 +588,29 @@ function initializeProductFlow(layout) {
     let updateRunning = false;
     let measuring = false;
 
-    function isVisible(element) {
-        if (!element) {
-            return false;
-        }
-
-        const style =
-            window.getComputedStyle(element);
-
-        return (
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            element.getClientRects().length > 0
-        );
+function isVisible(element) {
+    if (!element) {
+        return false;
     }
+
+    const style =
+        window.getComputedStyle(element);
+
+    /*
+     * visibility:hidden wird hier absichtlich nicht geprüft.
+     *
+     * Der Benefits-Container ist während der ersten Messung
+     * durch unser eigenes CSS unsichtbar. Er muss trotzdem
+     * vermessen werden können.
+     *
+     * Elementor-Ausblendungen verwenden in der Regel
+     * display:none und werden weiterhin berücksichtigt.
+     */
+    return (
+        style.display !== 'none' &&
+        element.getClientRects().length > 0
+    );
+}
 
     function getOuterHeight(element) {
         const rect =
