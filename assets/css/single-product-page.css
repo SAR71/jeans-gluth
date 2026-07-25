@@ -698,14 +698,3 @@ img {
     display: flex !important;
     flex-direction: column !important;
 }
-
-/* Galerie erst nach der endgültigen Berechnung anzeigen */
-.product-gallery-column:not(.jg-gallery-ready) {
-    visibility: hidden;
-}
-
-/* Im Elementor-Editor nicht ausblenden */
-.elementor-editor-active
-.product-gallery-column {
-    visibility: visible !important;
-}

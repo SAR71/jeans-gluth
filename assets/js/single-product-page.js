@@ -1620,17 +1620,18 @@
 })();
 
 /* =========================================================
-   WOODMART PRODUKTGALERIE NACHINITIALISIEREN
+   WOODMART PRODUKTGALERIE STABIL NACHINITIALISIEREN
 
    Problem:
-   Die Thumbnail-Galerie wird teilweise berechnet, bevor
-   das dynamische Produktlayout seine endgültige Breite hat.
+   Woodmart berechnet die Thumbnail-Galerie teilweise,
+   bevor die endgültige Breite des Produktlayouts feststeht.
 
-   Lösung:
-   - Auf das Laden aller Galeriebilder warten
-   - Zwei Browser-Frames warten
-   - Vorhandene Slider gezielt aktualisieren
-   - Nur falls kein Slider erkannt wird, einmal Resize auslösen
+   Diese Version:
+   - wartet nicht blockierend auf Lazy-Load-Bilder
+   - aktualisiert bekannte Slider-Systeme
+   - löst mehrere zeitlich versetzte Aktualisierungen aus
+   - reagiert auf Bildladung und Breitenänderungen
+   - blendet die Galerie niemals aus
    ========================================================= */
 
 (function () {
@@ -1639,210 +1640,337 @@
     const GALLERY_COLUMN_SELECTOR =
         '.product-gallery-column';
 
-    let refreshFrameId = null;
+    /*
+     * Zeitpunkte für weitere Aktualisierungen.
+     *
+     * Woodmart, Elementor und Lazy Loading können zu
+     * unterschiedlichen Zeitpunkten fertig werden.
+     */
+    const REFRESH_DELAYS = [
+        0,
+        100,
+        300,
+        700,
+        1200,
+        2000
+    ];
+
+    let resizeTimer = null;
     let refreshRunning = false;
-    let lastRefreshWidth = 0;
+    let lastObservedWidth = 0;
 
 
     /**
-     * Wartet, bis alle Bilder innerhalb der Galerie geladen
-     * oder endgültig fehlgeschlagen sind.
+     * Prüft, ob ein Element sichtbar beziehungsweise
+     * grundsätzlich messbar ist.
      */
-    function waitForGalleryImages(galleryColumn) {
-        const images =
-            Array.from(
-                galleryColumn.querySelectorAll('img')
-            );
-
-        if (!images.length) {
-            return Promise.resolve();
+    function isMeasurable(element) {
+        if (!element) {
+            return false;
         }
 
-        return Promise.all(
-            images.map(function (image) {
-                if (
-                    image.complete &&
-                    image.naturalWidth > 0
-                ) {
-                    return Promise.resolve();
-                }
+        const style =
+            window.getComputedStyle(element);
 
-                return new Promise(function (resolve) {
-                    image.addEventListener(
-                        'load',
-                        resolve,
-                        { once: true }
-                    );
-
-                    image.addEventListener(
-                        'error',
-                        resolve,
-                        { once: true }
-                    );
-                });
-            })
+        return (
+            style.display !== 'none' &&
+            element.getClientRects().length > 0
         );
     }
 
 
     /**
-     * Aktualisiert bekannte Slider innerhalb der Galerie.
+     * Sucht eine Swiper-Instanz auch auf übergeordneten
+     * oder inneren Elementen.
      */
-    function updateGallerySliders(
-        galleryColumn
-    ) {
-        let sliderWasUpdated = false;
+    function refreshSwiper(galleryColumn) {
+        let refreshed = false;
 
+        const candidates =
+            Array.from(
+                galleryColumn.querySelectorAll(
+                    [
+                        '.swiper',
+                        '.swiper-container',
+                        '.wd-carousel',
+                        '.wd-carousel-container',
+                        '.wd-gallery-images'
+                    ].join(',')
+                )
+            );
 
         /*
-         * Swiper aktualisieren.
+         * Auch die Galerie-Spalte selbst prüfen.
          */
-        galleryColumn
-            .querySelectorAll(
-                [
-                    '.swiper',
-                    '.swiper-container',
-                    '.wd-carousel'
-                ].join(',')
-            )
-            .forEach(function (sliderElement) {
-                const swiper =
-                    sliderElement.swiper;
+        candidates.unshift(
+            galleryColumn
+        );
+
+        candidates.forEach(function (element) {
+            const swiper =
+                element.swiper;
+
+            if (!swiper) {
+                return;
+            }
+
+            try {
+                if (
+                    typeof swiper.updateSize ===
+                    'function'
+                ) {
+                    swiper.updateSize();
+                }
 
                 if (
-                    swiper &&
+                    typeof swiper.updateSlides ===
+                    'function'
+                ) {
+                    swiper.updateSlides();
+                }
+
+                if (
+                    typeof swiper.updateSlidesOffset ===
+                    'function'
+                ) {
+                    swiper.updateSlidesOffset();
+                }
+
+                if (
+                    typeof swiper.updateSlidesClasses ===
+                    'function'
+                ) {
+                    swiper.updateSlidesClasses();
+                }
+
+                if (
+                    typeof swiper.updateProgress ===
+                    'function'
+                ) {
+                    swiper.updateProgress();
+                }
+
+                if (
                     typeof swiper.update ===
-                        'function'
+                    'function'
                 ) {
                     swiper.update();
-
-                    if (
-                        typeof swiper.updateSize ===
-                        'function'
-                    ) {
-                        swiper.updateSize();
-                    }
-
-                    if (
-                        typeof swiper.updateSlides ===
-                        'function'
-                    ) {
-                        swiper.updateSlides();
-                    }
-
-                    if (
-                        typeof swiper.updateSlidesClasses ===
-                        'function'
-                    ) {
-                        swiper.updateSlidesClasses();
-                    }
-
-                    sliderWasUpdated = true;
                 }
-            });
 
+                refreshed = true;
+            } catch (error) {
+                console.warn(
+                    'Swiper konnte nicht aktualisiert werden.',
+                    error
+                );
+            }
+        });
 
-        /*
-         * Owl Carousel aktualisieren.
-         */
-        if (window.jQuery) {
-            window.jQuery(
-                galleryColumn
-            )
-                .find('.owl-carousel')
-                .each(function () {
-                    const instance =
-                        window.jQuery(this)
-                            .data('owl.carousel');
-
-                    if (instance) {
-                        window.jQuery(this).trigger(
-                            'refresh.owl.carousel'
-                        );
-
-                        sliderWasUpdated = true;
-                    }
-                });
-        }
-
-
-        /*
-         * Flickity aktualisieren, falls vorhanden.
-         */
-        if (
-            window.Flickity &&
-            typeof window.Flickity.data ===
-                'function'
-        ) {
-            galleryColumn
-                .querySelectorAll(
-                    '.flickity-enabled'
-                )
-                .forEach(function (element) {
-                    const instance =
-                        window.Flickity.data(
-                            element
-                        );
-
-                    if (instance) {
-                        if (
-                            typeof instance.resize ===
-                            'function'
-                        ) {
-                            instance.resize();
-                        }
-
-                        if (
-                            typeof instance.reposition ===
-                            'function'
-                        ) {
-                            instance.reposition();
-                        }
-
-                        sliderWasUpdated = true;
-                    }
-                });
-        }
-
-
-        return sliderWasUpdated;
+        return refreshed;
     }
 
 
     /**
-     * Führt die tatsächliche Aktualisierung durch.
+     * Aktualisiert eine eventuell vorhandene Flickity-Galerie.
      */
-    function refreshGallery(force) {
+    function refreshFlickity(galleryColumn) {
+        if (
+            !window.Flickity ||
+            typeof window.Flickity.data !==
+                'function'
+        ) {
+            return false;
+        }
+
+        let refreshed = false;
+
+        galleryColumn
+            .querySelectorAll(
+                '.flickity-enabled'
+            )
+            .forEach(function (element) {
+                const instance =
+                    window.Flickity.data(
+                        element
+                    );
+
+                if (!instance) {
+                    return;
+                }
+
+                try {
+                    if (
+                        typeof instance.resize ===
+                        'function'
+                    ) {
+                        instance.resize();
+                    }
+
+                    if (
+                        typeof instance.reloadCells ===
+                        'function'
+                    ) {
+                        instance.reloadCells();
+                    }
+
+                    if (
+                        typeof instance.reposition ===
+                        'function'
+                    ) {
+                        instance.reposition();
+                    }
+
+                    refreshed = true;
+                } catch (error) {
+                    console.warn(
+                        'Flickity konnte nicht aktualisiert werden.',
+                        error
+                    );
+                }
+            });
+
+        return refreshed;
+    }
+
+
+    /**
+     * Aktualisiert Owl Carousel, falls Woodmart an dieser
+     * Stelle Owl verwendet.
+     */
+    function refreshOwlCarousel(
+        galleryColumn
+    ) {
+        if (!window.jQuery) {
+            return false;
+        }
+
+        let refreshed = false;
+
+        window.jQuery(galleryColumn)
+            .find('.owl-carousel')
+            .each(function () {
+                const carousel =
+                    window.jQuery(this);
+
+                const instance =
+                    carousel.data(
+                        'owl.carousel'
+                    );
+
+                if (!instance) {
+                    return;
+                }
+
+                try {
+                    carousel.trigger(
+                        'refresh.owl.carousel'
+                    );
+
+                    refreshed = true;
+                } catch (error) {
+                    console.warn(
+                        'Owl Carousel konnte nicht aktualisiert werden.',
+                        error
+                    );
+                }
+            });
+
+        return refreshed;
+    }
+
+
+    /**
+     * Aktualisiert Slick, falls eine installierte Woodmart-
+     * Variante oder Erweiterung Slick verwendet.
+     */
+    function refreshSlick(galleryColumn) {
+        if (!window.jQuery) {
+            return false;
+        }
+
+        let refreshed = false;
+
+        window.jQuery(galleryColumn)
+            .find('.slick-initialized')
+            .each(function () {
+                const slider =
+                    window.jQuery(this);
+
+                try {
+                    slider.slick(
+                        'setPosition'
+                    );
+
+                    refreshed = true;
+                } catch (error) {
+                    /*
+                     * Keine Ausgabe erforderlich, wenn Slick
+                     * zwar als Klasse vorkommt, aber nicht als
+                     * Plugin verfügbar ist.
+                     */
+                }
+            });
+
+        return refreshed;
+    }
+
+
+    /**
+     * Entfernt veraltete Inline-Höhen von Thumbnail-Bildern,
+     * ohne die von Woodmart gesetzten Breiten zu verändern.
+     */
+    function normalizeThumbnailImages(
+        galleryColumn
+    ) {
+        const thumbnailSelectors = [
+            '.wd-gallery-thumb img',
+            '.wd-gallery-thumb .wd-carousel-item img',
+            '.woocommerce-product-gallery .flex-control-thumbs img',
+            '.woocommerce-product-gallery__image img'
+        ];
+
+        galleryColumn
+            .querySelectorAll(
+                thumbnailSelectors.join(',')
+            )
+            .forEach(function (image) {
+                /*
+                 * Nur offensichtlich fehlerhafte feste Höhen
+                 * entfernen. Breite, srcset und andere
+                 * Woodmart-Werte bleiben erhalten.
+                 */
+                const inlineHeight =
+                    image.style.height;
+
+                if (
+                    inlineHeight &&
+                    inlineHeight !== 'auto'
+                ) {
+                    image.style.removeProperty(
+                        'height'
+                    );
+                }
+
+                image.style.setProperty(
+                    'max-width',
+                    '100%'
+                );
+            });
+    }
+
+
+    /**
+     * Führt eine einzelne Galerie-Aktualisierung aus.
+     */
+    function refreshGallery() {
         const galleryColumn =
             document.querySelector(
                 GALLERY_COLUMN_SELECTOR
             );
 
-        if (!galleryColumn) {
-            return;
-        }
-
-        const width =
-            Math.round(
-                galleryColumn
-                    .getBoundingClientRect()
-                    .width
-            );
-
-        if (width <= 0) {
-            return;
-        }
-
-        /*
-         * Gleiche Breite nicht unnötig erneut aktualisieren.
-         */
         if (
-            !force &&
-            lastRefreshWidth > 0 &&
-            Math.abs(
-                width -
-                lastRefreshWidth
-            ) < 2
+            !galleryColumn ||
+            !isMeasurable(galleryColumn)
         ) {
             return;
         }
@@ -1851,83 +1979,165 @@
             return;
         }
 
+        const width =
+            galleryColumn
+                .getBoundingClientRect()
+                .width;
+
+        if (
+            !Number.isFinite(width) ||
+            width <= 0
+        ) {
+            return;
+        }
+
         refreshRunning = true;
 
-        waitForGalleryImages(
+        /*
+         * Erst vorhandene falsche feste Bildhöhen entfernen.
+         */
+        normalizeThumbnailImages(
             galleryColumn
-        ).then(function () {
-            /*
-             * Zwei Frames warten:
-             * 1. dynamisches Flow-Layout
-             * 2. Benefits-Layout und Browserberechnung
-             */
-            window.requestAnimationFrame(
-                function () {
-                    window.requestAnimationFrame(
-                        function () {
-                            const sliderWasUpdated =
-                                updateGallerySliders(
-                                    galleryColumn
-                                );
+        );
 
-                            /*
-                             * Fallback, falls kein direkt
-                             * erreichbarer Slider erkannt wurde.
-                             */
-                            if (!sliderWasUpdated) {
-                                window.dispatchEvent(
-                                    new Event('resize')
-                                );
-                            }
+        /*
+         * Bekannte Slider-Systeme aktualisieren.
+         */
+        refreshSwiper(
+            galleryColumn
+        );
 
-                            galleryColumn.classList.add(
-                                'jg-gallery-ready'
-                            );
+        refreshFlickity(
+            galleryColumn
+        );
 
-                            lastRefreshWidth =
-                                Math.round(
-                                    galleryColumn
-                                        .getBoundingClientRect()
-                                        .width
-                                );
+        refreshOwlCarousel(
+            galleryColumn
+        );
 
-                            window.setTimeout(
-                                function () {
-                                    refreshRunning =
-                                        false;
-                                },
-                                150
-                            );
-                        }
-                    );
-                }
-            );
-        });
-    }
+        refreshSlick(
+            galleryColumn
+        );
 
+        /*
+         * Woodmart und andere responsive Komponenten reagieren
+         * häufig auf das normale Resize-Ereignis.
+         */
+        window.dispatchEvent(
+            new Event('resize')
+        );
 
-    /**
-     * Aktualisierung für den nächsten Frame planen.
-     */
-    function scheduleGalleryRefresh(force) {
-        if (refreshFrameId !== null) {
-            window.cancelAnimationFrame(
-                refreshFrameId
+        if (window.jQuery) {
+            window.jQuery(window).trigger(
+                'resize'
             );
         }
 
-        refreshFrameId =
-            window.requestAnimationFrame(
-                function () {
-                    refreshFrameId = null;
-                    refreshGallery(force);
-                }
-            );
+        /*
+         * Browser die neuen Größen berechnen lassen und
+         * danach die Slider ein zweites Mal aktualisieren.
+         */
+        window.requestAnimationFrame(
+            function () {
+                window.requestAnimationFrame(
+                    function () {
+                        refreshSwiper(
+                            galleryColumn
+                        );
+
+                        refreshFlickity(
+                            galleryColumn
+                        );
+
+                        refreshOwlCarousel(
+                            galleryColumn
+                        );
+
+                        refreshSlick(
+                            galleryColumn
+                        );
+
+                        galleryColumn.classList.add(
+                            'jg-gallery-refreshed'
+                        );
+
+                        lastObservedWidth =
+                            Math.round(
+                                galleryColumn
+                                    .getBoundingClientRect()
+                                    .width
+                            );
+
+                        refreshRunning = false;
+                    }
+                );
+            }
+        );
     }
 
 
     /**
-     * Initialisierung.
+     * Mehrere Aktualisierungen zeitversetzt einplanen.
+     *
+     * Es wird ausdrücklich nicht auf alle Bilder gewartet.
+     * Lazy-Load-Bilder könnten sonst die Initialisierung
+     * dauerhaft blockieren.
+     */
+    function scheduleRefreshSequence() {
+        REFRESH_DELAYS.forEach(
+            function (delay) {
+                window.setTimeout(
+                    refreshGallery,
+                    delay
+                );
+            }
+        );
+    }
+
+
+    /**
+     * Bildereignisse nachträglich registrieren.
+     */
+    function observeGalleryImages(
+        galleryColumn
+    ) {
+        galleryColumn
+            .querySelectorAll('img')
+            .forEach(function (image) {
+                if (
+                    image.dataset
+                        .jgGalleryObserved ===
+                    'true'
+                ) {
+                    return;
+                }
+
+                image.dataset.jgGalleryObserved =
+                    'true';
+
+                image.addEventListener(
+                    'load',
+                    function () {
+                        window.requestAnimationFrame(
+                            refreshGallery
+                        );
+                    }
+                );
+
+                image.addEventListener(
+                    'error',
+                    function () {
+                        window.requestAnimationFrame(
+                            refreshGallery
+                        );
+                    }
+                );
+            });
+    }
+
+
+    /**
+     * Galerie initialisieren.
      */
     function initializeGalleryRefresh() {
         const galleryColumn =
@@ -1939,8 +2149,12 @@
             return;
         }
 
+        observeGalleryImages(
+            galleryColumn
+        );
+
         /*
-         * Tatsächliche Breitenänderungen der Galerie erkennen.
+         * Auf echte Breitenänderungen reagieren.
          */
         const resizeObserver =
             new ResizeObserver(
@@ -1962,16 +2176,29 @@
                     }
 
                     if (
-                        lastRefreshWidth > 0 &&
+                        lastObservedWidth > 0 &&
                         Math.abs(
                             width -
-                            lastRefreshWidth
+                            lastObservedWidth
                         ) < 2
                     ) {
                         return;
                     }
 
-                    scheduleGalleryRefresh(false);
+                    if (resizeTimer !== null) {
+                        window.clearTimeout(
+                            resizeTimer
+                        );
+                    }
+
+                    resizeTimer =
+                        window.setTimeout(
+                            function () {
+                                resizeTimer = null;
+                                refreshGallery();
+                            },
+                            80
+                        );
                 }
             );
 
@@ -1979,34 +2206,71 @@
             galleryColumn
         );
 
-
         /*
-         * Erste Aktualisierung.
+         * Neu eingefügte Lazy-Load-Bilder erfassen.
+         *
+         * Der Observer aktualisiert nicht direkt wegen jeder
+         * Klassenänderung, sondern nur bei neuen Elementen.
          */
-        scheduleGalleryRefresh(true);
+        const mutationObserver =
+            new MutationObserver(
+                function (mutations) {
+                    const hasNewNodes =
+                        mutations.some(
+                            function (mutation) {
+                                return (
+                                    mutation.type ===
+                                        'childList' &&
+                                    mutation.addedNodes.length > 0
+                                );
+                            }
+                        );
+
+                    if (!hasNewNodes) {
+                        return;
+                    }
+
+                    observeGalleryImages(
+                        galleryColumn
+                    );
+
+                    window.requestAnimationFrame(
+                        refreshGallery
+                    );
+                }
+            );
+
+        mutationObserver.observe(
+            galleryColumn,
+            {
+                subtree: true,
+                childList: true
+            }
+        );
+
+        /*
+         * Initiale Aktualisierungsserie starten.
+         */
+        scheduleRefreshSequence();
 
 
         /*
-         * Browser-Zurück-Navigation und Seiten-Cache.
+         * Browser-Cache beziehungsweise Zurück-Navigation.
          */
         window.addEventListener(
             'pageshow',
-            function () {
-                scheduleGalleryRefresh(true);
-            }
+            scheduleRefreshSequence
         );
 
 
         window.addEventListener(
             'orientationchange',
-            function () {
-                scheduleGalleryRefresh(true);
-            }
+            scheduleRefreshSequence
         );
 
 
         /*
-         * WooCommerce-Variationswechsel.
+         * Variationswechsel können Galerieelemente ersetzen.
          */
         if (window.jQuery) {
             window.jQuery(document).on(
@@ -2018,9 +2282,11 @@
                 function () {
                     window.setTimeout(
                         function () {
-                            scheduleGalleryRefresh(
-                                true
+                            observeGalleryImages(
+                                galleryColumn
                             );
+
+                            scheduleRefreshSequence();
                         },
                         50
                     );
@@ -2031,8 +2297,7 @@
 
 
     if (
-        document.readyState ===
-        'loading'
+        document.readyState === 'loading'
     ) {
         document.addEventListener(
             'DOMContentLoaded',
