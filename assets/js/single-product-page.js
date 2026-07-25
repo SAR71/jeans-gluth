@@ -365,55 +365,6 @@
 
 
         /*
-         * Reagiert direkt auf Größenänderungen des Benefits-
-         * Containers. Das greift auch dann, wenn JG Info aus
-         * der rechten Spalte unter die Galerie verschoben wird.
-         */
-        const resizeObserver =
-            new ResizeObserver(
-                function () {
-                    scheduleUpdate();
-                }
-            );
-
-        resizeObserver.observe(wrapper);
-        resizeObserver.observe(
-            listContainer
-        );
-        resizeObserver.observe(
-            imageContainer
-        );
-
-
-        /*
-         * Reagiert zusätzlich auf Änderungen durch Elementor,
-         * Woodmart und das dynamische Umsortieren.
-         */
-        const mutationObserver =
-            new MutationObserver(
-                function () {
-                    scheduleUpdate();
-                }
-            );
-
-        mutationObserver.observe(
-            wrapper,
-            {
-                subtree: true,
-                childList: true,
-                attributes: true,
-                attributeFilter: [
-                    'class',
-                    'style',
-                    'hidden',
-                    'src',
-                    'srcset'
-                ]
-            }
-        );
-
-
-        /*
          * Auch Änderungen an den Elterncontainern beobachten.
          * Das ist relevant, wenn JG Info an eine andere Stelle
          * im Produktlayout verschoben wird.
