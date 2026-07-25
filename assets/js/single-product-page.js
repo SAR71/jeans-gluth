@@ -117,37 +117,61 @@
 
 
     /**
-     * Prüft, ob ein Text auf mehr als einer Zeile steht.
-     */
-    function textIsWrapped(textElement) {
-        const style =
-            window.getComputedStyle(textElement);
-
-        let lineHeight =
-            parseFloat(style.lineHeight);
-
-        if (!Number.isFinite(lineHeight)) {
-            const fontSize =
-                parseFloat(style.fontSize) || 18;
-
-            lineHeight =
-                fontSize * 1.3;
-        }
-
-        const actualHeight =
-            textElement
-                .getBoundingClientRect()
-                .height;
-
-        /*
-         * Toleranz gegen Subpixel-Rundungen.
-         */
-        return (
-            actualHeight >
-            lineHeight * 1.45
-        );
+ * Prüft zuverlässig, ob der Text auf mehrere sichtbare
+ * Zeilen umbricht.
+ */
+function textIsWrapped(textElement) {
+    if (!textElement) {
+        return false;
     }
 
+    /*
+     * Ein Range liefert für jede sichtbare Textzeile
+     * einen eigenen Rechteckbereich.
+     */
+    const range =
+        document.createRange();
+
+    range.selectNodeContents(
+        textElement
+    );
+
+    const rectangles =
+        Array.from(
+            range.getClientRects()
+        ).filter(function (rect) {
+            return (
+                rect.width > 0 &&
+                rect.height > 0
+            );
+        });
+
+    /*
+     * Unterschiedliche vertikale Positionen entsprechen
+     * unterschiedlichen Textzeilen.
+     */
+    const lineTops = [];
+
+    rectangles.forEach(function (rect) {
+        const top =
+            Math.round(rect.top);
+
+        const alreadyKnown =
+            lineTops.some(function (knownTop) {
+                return (
+                    Math.abs(
+                        knownTop - top
+                    ) <= 2
+                );
+            });
+
+        if (!alreadyKnown) {
+            lineTops.push(top);
+        }
+    });
+
+    return lineTops.length > 1;
+}
 
     /**
      * Prüft die Texte einer Icon-Liste.
