@@ -571,3 +571,41 @@ img {
 .product-flow-additional {
     min-width: 0;
 }
+
+/* =========================================================
+   JG INFO – ABSTAND ZWISCHEN TEXT UND BILD
+
+   Gilt unabhängig vom Breakpoint und unabhängig davon,
+   ob der graue Kasten neben oder unter der Galerie steht.
+   ========================================================= */
+
+/*
+ * Solange das Bild neben der Liste steht:
+ * Inhalte beginnen links und werden nicht über die gesamte
+ * Breite auseinandergezogen.
+ */
+.product-benefits:not(.product-benefits_stacked) {
+    justify-content: flex-start !important;
+}
+
+/*
+ * Die Liste nimmt nur die tatsächlich benötigte Breite ein,
+ * darf bei wenig Platz aber weiterhin kleiner werden.
+ */
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_list {
+    flex: 0 1 auto !important;
+    width: fit-content !important;
+    max-width: calc(100% - 170px) !important;
+    min-width: 0 !important;
+}
+
+/*
+ * Das Bild folgt mit einem festen Abstand direkt auf die Liste.
+ */
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_image {
+    flex: 0 0 auto !important;
+    margin-left: 24px !important;
+    margin-right: 0 !important;
+}
