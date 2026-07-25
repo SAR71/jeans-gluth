@@ -52,19 +52,9 @@
 
 /* =========================================================
    PRODUCT BENEFITS
-
-   Elterncontainer:
-   product-benefits
-
-   Container mit Icon List:
-   product-benefits_list
-
-   Container mit Bild:
-   product-benefits_image
    ========================================================= */
 
-
-/* Standard: Icon-Liste und Bild nebeneinander */
+/* Normalzustand: Liste links, Bild rechts */
 .product-benefits {
     display: flex !important;
     flex-direction: row !important;
@@ -76,57 +66,80 @@
     padding-right: 10px !important;
 }
 
-/* Icon-Liste erhält den verfügbaren Platz */
+/* Icon-Liste nutzt den verfügbaren Platz */
 .product-benefits > .product-benefits_list {
-    flex: 1 1 0 !important;
+    flex: 1 1 auto !important;
     min-width: 0 !important;
 }
 
-/* Bildcontainer darf nicht schrumpfen */
+/* Bildcontainer bleibt rechts und darf nicht schrumpfen */
 .product-benefits > .product-benefits_image {
-    flex-grow: 0 !important;
+    flex: 0 0 auto !important;
     flex-shrink: 0 !important;
 
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
+
+    margin: 0 !important;
+}
+
+/* Keine Änderung an der Bildgröße */
+.product-benefits_image img {
+    height: auto;
 }
 
 /* =========================================================
-   Gestapelt: Icon-Liste oben, Bild darunter
+   Gestapelter Zustand
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
     flex-direction: column !important;
     align-items: stretch !important;
 
-    /* Maximal 10 px zwischen Text und Bild */
+    /* Maximal 10 px zwischen Textbereich und Bild */
     gap: 10px !important;
 
-    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-right: 0 !important;
+
+    /* 5 px zwischen Bild und unterem grauen Rand */
     padding-bottom: 5px !important;
 }
 
-/* Liste über die verfügbare Breite */
+/* Liste nimmt oben die gesamte Breite ein */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
     width: 100% !important;
-    min-height: 0 !important;
-    margin-bottom: 0 !important;
+
+    margin: 0 !important;
+    padding-bottom: 0 !important;
 }
 
-/* Bildcontainer direkt unter der Liste */
+/* Bildcontainer nimmt die gesamte Zeile ein */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
     flex: 0 0 auto !important;
     width: 100% !important;
-    min-height: 0 !important;
 
+    display: flex !important;
     justify-content: center !important;
     align-items: flex-start !important;
 
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* Inhalt des Elementor-Bildwidgets zentrieren */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image
+.elementor-widget-container {
+    text-align: center !important;
+}
+
+/* Bild mittig, Größe bleibt von Elementor bestimmt */
+.product-benefits.product-benefits_stacked
+> .product-benefits_image img {
+    display: inline-block !important;
+    margin: 0 auto !important;
 }
