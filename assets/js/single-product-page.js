@@ -2,10 +2,10 @@
    INFO-CONTAINER JEANS GLUTH
 
    Flackerfreie Version:
-   - Messung erfolgt an einer unsichtbaren Kopie
-   - Der sichtbare Container erhält nur das Endergebnis
+   - Messung an einer unsichtbaren Kopie
+   - Prüfung über benötigte Textbreite
+   - Bild wird bei echtem Textumbruch gestapelt
    - Reagiert automatisch auf Breitenänderungen
-   - Erkennt Zeilenumbrüche auch in Elementor-Textknoten
    ========================================================= */
 
 (function () {
@@ -39,17 +39,23 @@
     ];
 
     /*
-     * Reserve für knappe Breitenverhältnisse.
-     * Die Messkopie wird etwas schmaler als das Original.
+     * Die Messkopie wird etwas schmaler als der echte
+     * Container gemessen. Das schafft eine kleine Reserve
+     * gegen Rundungs- und Subpixelunterschiede.
      */
-    const WIDTH_SAFETY_SPACE = 12;
+    const WIDTH_SAFETY_SPACE = 10;
+
+    /*
+     * Zusätzliche Toleranz bei der Textbreitenprüfung.
+     */
+    const TEXT_WIDTH_TOLERANCE = 2;
 
 
     /**
-     * Prüft, ob ein Element grundsätzlich messbar ist.
+     * Prüft, ob das Element grundsätzlich vermessen werden kann.
      *
-     * visibility:hidden wird bewusst nicht geprüft,
-     * weil der Container vor der ersten Messung durch CSS
+     * visibility:hidden wird bewusst nicht berücksichtigt,
+     * weil der Container vor der ersten Messung durch das CSS
      * unsichtbar gemacht wird.
      */
     function isMeasurable(element) {
@@ -82,7 +88,7 @@
 
 
     /**
-     * Setzt einen Layoutzustand auf ein Element.
+     * Setzt einen Layoutzustand.
      */
     function setLayoutState(element, mode) {
         element.classList.remove(
@@ -115,121 +121,134 @@
 
 
     /**
-     * Prüft zuverlässig, ob der sichtbare Text auf mehrere
-     * Zeilen umbricht.
-     *
-     * Es werden gezielt die einzelnen Textknoten untersucht.
-     * Das funktioniert auch dann, wenn Elementor den
-     * umgebenden Span als Flex- oder Blockelement darstellt.
+     * Erstellt einen unsichtbaren einzeiligen Text zum Messen
+     * der tatsächlich benötigten Textbreite.
      */
-    function textIsWrapped(textElement) {
-        if (!textElement) {
-            return false;
-        }
+    function measureNaturalTextWidth(textElement) {
+        const style =
+            window.getComputedStyle(textElement);
 
-        const walker =
-            document.createTreeWalker(
-                textElement,
-                NodeFilter.SHOW_TEXT,
-                {
-                    acceptNode(node) {
-                        return node.textContent.trim()
-                            ? NodeFilter.FILTER_ACCEPT
-                            : NodeFilter.FILTER_REJECT;
-                    }
-                }
-            );
+        const probe =
+            document.createElement('span');
 
-        const lineTops = [];
-        let textNode =
-            walker.nextNode();
+        probe.textContent =
+            textElement.textContent
+                .replace(/\s+/g, ' ')
+                .trim();
 
-        while (textNode) {
-            const range =
-                document.createRange();
+        probe.setAttribute(
+            'aria-hidden',
+            'true'
+        );
 
-            range.selectNodeContents(
-                textNode
-            );
+        probe.style.position =
+            'fixed';
 
-            const rectangles =
-                Array.from(
-                    range.getClientRects()
-                ).filter(function (rect) {
-                    return (
-                        rect.width > 0 &&
-                        rect.height > 0
-                    );
-                });
+        probe.style.left =
+            '-100000px';
 
-            rectangles.forEach(function (rect) {
-                const top =
-                    Math.round(rect.top);
+        probe.style.top =
+            '0';
 
-                const lineAlreadyKnown =
-                    lineTops.some(function (
-                        knownTop
-                    ) {
-                        return (
-                            Math.abs(
-                                knownTop - top
-                            ) <= 2
-                        );
-                    });
+        probe.style.display =
+            'inline-block';
 
-                if (!lineAlreadyKnown) {
-                    lineTops.push(top);
-                }
-            });
+        probe.style.visibility =
+            'hidden';
 
-            textNode =
-                walker.nextNode();
-        }
+        probe.style.pointerEvents =
+            'none';
+
+        probe.style.whiteSpace =
+            'nowrap';
+
+        probe.style.width =
+            'auto';
+
+        probe.style.maxWidth =
+            'none';
 
         /*
-         * Fallback:
-         * Falls der Browser keine getrennten Textrechtecke
-         * liefert, wird die Elementhöhe mit der Zeilenhöhe
-         * verglichen.
+         * Relevante Typografie des Originaltexts übernehmen.
          */
-        if (lineTops.length <= 1) {
-            const style =
-                window.getComputedStyle(
-                    textElement
-                );
+        probe.style.fontFamily =
+            style.fontFamily;
 
-            const fontSize =
-                parseFloat(style.fontSize) || 18;
+        probe.style.fontSize =
+            style.fontSize;
 
-            let lineHeight =
-                parseFloat(style.lineHeight);
+        probe.style.fontStyle =
+            style.fontStyle;
 
-            if (!Number.isFinite(lineHeight)) {
-                lineHeight =
-                    fontSize * 1.3;
-            }
+        probe.style.fontWeight =
+            style.fontWeight;
 
-            const elementHeight =
-                textElement
-                    .getBoundingClientRect()
-                    .height;
+        probe.style.fontStretch =
+            style.fontStretch;
 
-            if (
-                elementHeight >
-                lineHeight * 1.35
-            ) {
-                return true;
-            }
-        }
+        probe.style.letterSpacing =
+            style.letterSpacing;
 
-        return lineTops.length > 1;
+        probe.style.wordSpacing =
+            style.wordSpacing;
+
+        probe.style.textTransform =
+            style.textTransform;
+
+        probe.style.lineHeight =
+            style.lineHeight;
+
+        document.body.appendChild(
+            probe
+        );
+
+        const width =
+            probe.getBoundingClientRect().width;
+
+        probe.remove();
+
+        return width;
     }
 
 
     /**
-     * Prüft die Texte einer Icon-Liste.
+     * Prüft, ob ein Text in der vorhandenen Breite umbrechen
+     * müsste.
      */
-    function listHasWrappedText(
+    function textNeedsWrapping(textElement) {
+        if (!textElement) {
+            return false;
+        }
+
+        const availableWidth =
+            textElement
+                .getBoundingClientRect()
+                .width;
+
+        if (
+            !Number.isFinite(availableWidth) ||
+            availableWidth <= 0
+        ) {
+            return true;
+        }
+
+        const requiredWidth =
+            measureNaturalTextWidth(
+                textElement
+            );
+
+        return (
+            requiredWidth >
+            availableWidth +
+            TEXT_WIDTH_TOLERANCE
+        );
+    }
+
+
+    /**
+     * Prüft alle Texte der Icon-Liste.
+     */
+    function listNeedsWrapping(
         listContainer
     ) {
         const textElements =
@@ -244,13 +263,15 @@
         }
 
         return textElements.some(
-            textIsWrapped
+            textNeedsWrapping
         );
     }
 
 
     /**
-     * Erstellt eine unsichtbare Messkopie.
+     * Erstellt eine unsichtbare Messkopie innerhalb derselben
+     * Produktseite. Dadurch gelten dieselben übergeordneten
+     * Elementor- und Woodmart-Stile.
      */
     function createMeasurementClone(
         wrapper,
@@ -303,6 +324,12 @@
         );
 
         clone.style.setProperty(
+            'min-width',
+            '0',
+            'important'
+        );
+
+        clone.style.setProperty(
             'max-width',
             'none',
             'important'
@@ -326,22 +353,28 @@
             'important'
         );
 
-        clone.style.setProperty(
-            'contain',
-            'layout style paint',
-            'important'
-        );
+        /*
+         * Möglichst im gleichen Elementor-Kontext einfügen.
+         */
+        const measurementParent =
+            wrapper.parentElement ||
+            document.body;
 
-        document.body.appendChild(
+        measurementParent.appendChild(
             clone
         );
+
+        /*
+         * Sofortige Layoutberechnung erzwingen.
+         */
+        void clone.offsetWidth;
 
         return clone;
     }
 
 
     /**
-     * Prüft einen Zustand nur an der Messkopie.
+     * Prüft einen einzelnen Zustand an der Messkopie.
      */
     function cloneLayoutFits(
         clone,
@@ -353,7 +386,8 @@
         );
 
         /*
-         * Browser zur sofortigen Layoutberechnung zwingen.
+         * Browser nach dem Klassenwechsel zur Neuberechnung
+         * zwingen.
          */
         void clone.offsetWidth;
 
@@ -366,7 +400,7 @@
             return false;
         }
 
-        return !listHasWrappedText(
+        return !listNeedsWrapping(
             cloneList
         );
     }
@@ -461,9 +495,6 @@
                 }
             );
 
-            /*
-             * Container nicht dauerhaft unsichtbar lassen.
-             */
             wrapper.setAttribute(
                 'data-benefits-ready',
                 'true'
@@ -478,7 +509,7 @@
         );
 
         /*
-         * Alte Inline-Höhen aus früheren Versionen entfernen.
+         * Alte Inline-Höhen entfernen.
          */
         image.style.removeProperty(
             'height'
@@ -495,6 +526,7 @@
         imageContainer.style.removeProperty(
             'max-height'
         );
+
 
         let animationFrameId = null;
         let updateRunning = false;
@@ -504,26 +536,18 @@
 
 
         /**
-         * Wendet nur das endgültige Ergebnis am sichtbaren
-         * Container an.
+         * Endgültiges Layout anwenden.
          */
         function applyFinalLayout(mode) {
-            if (mode === currentMode) {
-                wrapper.setAttribute(
-                    'data-benefits-ready',
-                    'true'
+            if (mode !== currentMode) {
+                setLayoutState(
+                    wrapper,
+                    mode
                 );
 
-                return;
+                currentMode =
+                    mode;
             }
-
-            setLayoutState(
-                wrapper,
-                mode
-            );
-
-            currentMode =
-                mode;
 
             wrapper.setAttribute(
                 'data-benefits-ready',
@@ -533,7 +557,7 @@
 
 
         /**
-         * Führt eine vollständige Messung durch.
+         * Layout vollständig neu berechnen.
          */
         function updateLayout() {
             if (updateRunning) {
@@ -583,7 +607,7 @@
 
 
         /**
-         * Plant die Messung für den nächsten Browser-Frame.
+         * Aktualisierung für den nächsten Browser-Frame planen.
          */
         function scheduleUpdate(force) {
             if (force) {
@@ -612,7 +636,7 @@
 
 
         /**
-         * Nur echte Breitenänderungen beobachten.
+         * Nur tatsächliche Breitenänderungen beobachten.
          */
         const resizeObserver =
             new ResizeObserver(
@@ -633,9 +657,6 @@
                         return;
                     }
 
-                    /*
-                     * Änderungen kleiner als 2 px ignorieren.
-                     */
                     if (
                         lastMeasuredWidth > 0 &&
                         Math.abs(
@@ -711,7 +732,7 @@
 
 
     /**
-     * Alle Benefits-Bereiche starten.
+     * Alle Benefits-Bereiche initialisieren.
      */
     function startBenefitsLayout() {
         document
