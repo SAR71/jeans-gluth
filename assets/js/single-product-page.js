@@ -1,6 +1,17 @@
 /* =========================================================
-   Info Container Jeans Gluth
+   INFO-CONTAINER JEANS GLUTH
+
+   Elterncontainer:  .product-benefits
+   Icon-Liste:       .product-benefits_list
+   Bildcontainer:    .product-benefits_image
+
+   Layoutstufen:
+   1. row
+   2. shrink-1
+   3. shrink-2
+   4. stacked
    ========================================================= */
+
 (function () {
     'use strict';
 
@@ -27,12 +38,17 @@
 
 
     /**
-     * Prüft, ob ein Element aktuell sichtbar ist.
+     * Prüft, ob das Element grundsätzlich darstellbar ist.
      *
-     * Elementor-Ausblendungen per display:none werden
-     * dadurch berücksichtigt.
+     * visibility:hidden wird bewusst nicht geprüft:
+     * Das CSS blendet den Benefits-Container vor der ersten
+     * Messung mit visibility:hidden aus. Trotzdem muss das
+     * JavaScript ihn vermessen können.
+     *
+     * Elementor-Ausblendungen über display:none werden
+     * weiterhin berücksichtigt.
      */
-    function isVisible(element) {
+    function isMeasurable(element) {
         if (!element) {
             return false;
         }
@@ -40,16 +56,6 @@
         const style =
             window.getComputedStyle(element);
 
-        /*
-        * visibility:hidden wird absichtlich nicht geprüft.
-        *
-        * Der Benefits-Container wird vor der ersten Messung
-        * durch unser eigenes CSS unsichtbar gemacht, muss aber
-        * trotzdem vermessen werden können.
-        *
-        * Elementor blendet Container normalerweise über
-        * display:none aus. Das wird weiterhin berücksichtigt.
-        */
         return (
             style.display !== 'none' &&
             element.getClientRects().length > 0
@@ -58,7 +64,7 @@
 
 
     /**
-     * Prüft, ob ein Text sichtbar über mehrere Zeilen läuft.
+     * Prüft, ob ein Text sichtbar auf mehrere Zeilen umbricht.
      */
     function textIsWrapped(textElement) {
         const style =
@@ -80,6 +86,10 @@
                 .getBoundingClientRect()
                 .height;
 
+        /*
+         * Kleine Toleranz, damit Rundungsfehler nicht als
+         * echter Zeilenumbruch erkannt werden.
+         */
         return (
             actualHeight >
             lineHeight * 1.5
@@ -88,7 +98,7 @@
 
 
     /**
-     * Prüft alle Texte der Icon-Liste auf Umbruch.
+     * Prüft alle Texte der Icon-Liste.
      */
     function listHasWrappedText(
         listContainer
@@ -100,6 +110,10 @@
                 )
             );
 
+        if (!textElements.length) {
+            return false;
+        }
+
         return textElements.some(
             textIsWrapped
         );
@@ -107,7 +121,7 @@
 
 
     /**
-     * Initialisiert einen Benefits-Container.
+     * Initialisiert einen Product-Benefits-Bereich.
      */
     function initializeBenefits(wrapper) {
         if (
@@ -148,6 +162,9 @@
                 }
             );
 
+            /*
+             * Container nicht dauerhaft unsichtbar lassen.
+             */
             wrapper.setAttribute(
                 'data-benefits-ready',
                 'true'
@@ -161,8 +178,9 @@
             'true'
         );
 
+
         /*
-         * Alte Inline-Höhen aus früheren Versionen entfernen.
+         * Inline-Höhen aus älteren Script-Versionen entfernen.
          */
         image.style.removeProperty(
             'height'
@@ -180,13 +198,20 @@
             'max-height'
         );
 
+
         let updateRunning = false;
         let updateRequested = false;
         let animationFrameId = null;
 
+        /*
+         * Zuletzt vom ResizeObserver erkannte Breite.
+         * Höhenänderungen werden absichtlich nicht beobachtet.
+         */
+        let lastObservedWidth = 0;
+
 
         /**
-         * Setzt genau einen Layoutzustand.
+         * Setzt exakt einen Layoutzustand.
          */
         function setLayout(mode) {
             wrapper.classList.toggle(
@@ -212,7 +237,7 @@
 
 
         /**
-         * Erzwingt eine unmittelbare Layoutberechnung.
+         * Browser zur unmittelbaren Neuberechnung zwingen.
          */
         function forceLayout() {
             void wrapper.offsetWidth;
@@ -220,7 +245,7 @@
 
 
         /**
-         * Setzt einen Zustand und prüft ihn nach dem Rendern.
+         * Layoutzustand setzen und anschließend prüfen.
          */
         function testLayout(
             mode,
@@ -242,7 +267,7 @@
 
 
         /**
-         * Schließt eine Messung ab.
+         * Messung abschließen.
          */
         function finishUpdate() {
             wrapper.setAttribute(
@@ -253,8 +278,8 @@
             updateRunning = false;
 
             /*
-             * Falls während der laufenden Messung erneut eine
-             * Änderung kam, sofort noch einmal prüfen.
+             * Kam während der laufenden Messung eine echte
+             * weitere Änderung, noch einmal neu messen.
              */
             if (updateRequested) {
                 updateRequested = false;
@@ -266,10 +291,10 @@
         /**
          * Prüfreihenfolge:
          *
-         * 1. Normalzustand
-         * 2. Shrink 1
-         * 3. Shrink 2
-         * 4. Gestapelt
+         * 1. Normales Layout
+         * 2. Kleineres Bild
+         * 3. Noch kompakter
+         * 4. Bild unter der Icon-Liste
          */
         function updateLayout() {
             if (updateRunning) {
@@ -277,11 +302,7 @@
                 return;
             }
 
-            /*
-             * Ist der Container durch Elementor ausgeblendet,
-             * wird die Messung vertagt.
-             */
-            if (!isVisible(wrapper)) {
+            if (!isMeasurable(wrapper)) {
                 return;
             }
 
@@ -290,10 +311,18 @@
                     .getBoundingClientRect()
                     .width;
 
-            if (wrapperWidth <= 0) {
+            if (
+                !Number.isFinite(wrapperWidth) ||
+                wrapperWidth <= 0
+            ) {
                 return;
             }
 
+            /*
+             * Eine vorherige Anforderung gilt ab jetzt
+             * als verarbeitet.
+             */
+            updateRequested = false;
             updateRunning = true;
 
             testLayout(
@@ -343,13 +372,16 @@
 
 
         /**
-         * Führt höchstens eine Messung pro Browser-Frame aus.
-         *
-         * Keine 120-ms-Verzögerung mehr.
+         * Höchstens eine neue Messung pro Browser-Frame.
          */
         function scheduleUpdate() {
+            if (updateRunning) {
+                updateRequested = true;
+                return;
+            }
+
             if (animationFrameId !== null) {
-                cancelAnimationFrame(
+                window.cancelAnimationFrame(
                     animationFrameId
                 );
             }
@@ -364,42 +396,113 @@
         }
 
 
-        /*
-         * Auch Änderungen an den Elterncontainern beobachten.
-         * Das ist relevant, wenn JG Info an eine andere Stelle
-         * im Produktlayout verschoben wird.
+        /**
+         * Nur die Breite des gesamten Benefits-Containers
+         * beobachten.
+         *
+         * Die Höhe sowie Liste und Bildcontainer werden nicht
+         * beobachtet. Dadurch reagiert das Skript nicht mehr
+         * auf seine eigenen row-/stacked-Änderungen.
          */
-        const parentObserver =
-            new MutationObserver(
-                function () {
+        const resizeObserver =
+            new ResizeObserver(
+                function (entries) {
+                    const entry =
+                        entries[0];
+
+                    if (!entry) {
+                        return;
+                    }
+
+                    const currentWidth =
+                        Math.round(
+                            entry.contentRect.width
+                        );
+
+                    if (currentWidth <= 0) {
+                        return;
+                    }
+
+                    /*
+                     * Änderungen unter 2 px ignorieren.
+                     * Das verhindert Schleifen durch
+                     * Subpixel-Rundungen.
+                     */
+                    if (
+                        lastObservedWidth > 0 &&
+                        Math.abs(
+                            currentWidth -
+                            lastObservedWidth
+                        ) < 2
+                    ) {
+                        return;
+                    }
+
+                    lastObservedWidth =
+                        currentWidth;
+
                     scheduleUpdate();
                 }
             );
 
+        resizeObserver.observe(wrapper);
+
+
+        /**
+         * Erkennt, wenn das andere Layoutskript den kompletten
+         * JG-Info-Bereich rechts einsetzt oder unter die
+         * Produktgalerie zurückverschiebt.
+         *
+         * Es werden ausschließlich DOM-Verschiebungen
+         * beobachtet – keine Klassen oder Styles.
+         * Die eigenen Layoutklassen lösen deshalb keine neue
+         * Messung aus.
+         */
         const productLayout =
             wrapper.closest(
                 '.product-layout'
             );
 
         if (productLayout) {
-            parentObserver.observe(
+            const layoutObserver =
+                new MutationObserver(
+                    function (mutations) {
+                        const hasChildMovement =
+                            mutations.some(
+                                function (mutation) {
+                                    return (
+                                        mutation.type ===
+                                        'childList'
+                                    );
+                                }
+                            );
+
+                        if (!hasChildMovement) {
+                            return;
+                        }
+
+                        /*
+                         * Breite beim nächsten Observer-Lauf
+                         * sicher erneut bewerten.
+                         */
+                        lastObservedWidth = 0;
+
+                        scheduleUpdate();
+                    }
+                );
+
+            layoutObserver.observe(
                 productLayout,
                 {
                     subtree: true,
-                    childList: true,
-                    attributes: true,
-                    attributeFilter: [
-                        'class',
-                        'style',
-                        'hidden'
-                    ]
+                    childList: true
                 }
             );
         }
 
 
-        /*
-         * Fensterbreite und Geräteausrichtung.
+        /**
+         * Fensterbreite und Orientierung.
          */
         window.addEventListener(
             'resize',
@@ -409,11 +512,14 @@
 
         window.addEventListener(
             'orientationchange',
-            scheduleUpdate
+            function () {
+                lastObservedWidth = 0;
+                scheduleUpdate();
+            }
         );
 
 
-        /*
+        /**
          * Nach dem Laden der Webfonts erneut messen.
          */
         if (
@@ -421,24 +527,30 @@
             document.fonts.ready
         ) {
             document.fonts.ready.then(
-                scheduleUpdate
+                function () {
+                    lastObservedWidth = 0;
+                    scheduleUpdate();
+                }
             );
         }
 
 
-        /*
+        /**
          * Nach dem Laden des Bildes erneut messen.
          */
         if (!image.complete) {
             image.addEventListener(
                 'load',
-                scheduleUpdate,
+                function () {
+                    lastObservedWidth = 0;
+                    scheduleUpdate();
+                },
                 { once: true }
             );
         }
 
 
-        /*
+        /**
          * Erste unmittelbare Messung.
          */
         scheduleUpdate();
@@ -446,7 +558,7 @@
 
 
     /**
-     * Startet alle Benefits-Bereiche.
+     * Alle Benefits-Bereiche starten.
      */
     function startBenefitsLayout() {
         document
