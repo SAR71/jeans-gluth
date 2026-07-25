@@ -575,50 +575,109 @@ img {
 /* =========================================================
    JG INFO – BILD IM FREIEN RECHTEN BEREICH ZENTRIEREN
 
-   Gilt immer dann, wenn Text und Bild nebeneinander stehen.
-   Das Bild wird innerhalb des restlichen freien Bereichs
-   horizontal und vertikal mittig ausgerichtet.
+   Text links, Bild mittig im gesamten verbleibenden Bereich.
+   Gilt, solange Text und Bild nebeneinander stehen.
    ========================================================= */
 
 .product-benefits:not(.product-benefits_stacked) {
-    display: flex !important;
-    flex-direction: row !important;
+    display: grid !important;
+
+    /*
+     * Erste Spalte: so breit wie die Textliste.
+     * Zweite Spalte: kompletter verbleibender Platz.
+     */
+    grid-template-columns:
+        auto
+        minmax(150px, 1fr) !important;
+
+    column-gap: 20px !important;
     align-items: stretch !important;
-    justify-content: flex-start !important;
 }
 
-/*
- * Die Textliste nimmt nur die tatsächlich benötigte Breite ein.
- */
+
+/* ---------------------------------------------------------
+   Textbereich
+   --------------------------------------------------------- */
+
 .product-benefits:not(.product-benefits_stacked)
 .product-benefits_list {
-    flex: 0 1 auto !important;
-    width: fit-content !important;
-    max-width: calc(100% - 170px) !important;
+    width: auto !important;
     min-width: 0 !important;
+    max-width: none !important;
+
+    justify-self: start !important;
+    align-self: center !important;
+
+    flex: none !important;
 }
 
-/*
- * Der Bildcontainer nimmt den kompletten verbleibenden Platz ein.
- * Darin wird das Bild mittig positioniert.
- */
+
+/* ---------------------------------------------------------
+   Bildbereich
+
+   Nimmt die komplette zweite Grid-Spalte ein.
+   --------------------------------------------------------- */
+
 .product-benefits:not(.product-benefits_stacked)
 .product-benefits_image {
-    flex: 1 1 auto !important;
+    width: 100% !important;
     min-width: 150px !important;
+    max-width: none !important;
+
     margin: 0 !important;
     padding: 0 10px !important;
+
+    justify-self: stretch !important;
+    align-self: stretch !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: none !important;
+}
+
+
+/* ---------------------------------------------------------
+   Elementor-Innencontainer ebenfalls auf volle Breite setzen
+   --------------------------------------------------------- */
+
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_image > .e-con-inner,
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_image > .elementor-element,
+.product-benefits:not(.product-benefits_stacked)
+.product-benefits_image .elementor-widget-container {
+    width: 100% !important;
+    max-width: none !important;
 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 }
 
-/*
- * Bild selbst sauber begrenzen und zentrieren.
- */
+
+/* ---------------------------------------------------------
+   Bild selbst
+   --------------------------------------------------------- */
+
 .product-benefits:not(.product-benefits_stacked)
 .product-benefits_image img {
     display: block !important;
-    margin: 0 auto !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+/* =========================================================
+   GESTAPELTER ZUSTAND
+
+   Wenn das JavaScript das Bild unter den Text setzt,
+   bleibt das bisherige Spaltenverhalten erhalten.
+   ========================================================= */
+
+.product-benefits.product-benefits_stacked {
+    display: flex !important;
+    flex-direction: column !important;
 }
