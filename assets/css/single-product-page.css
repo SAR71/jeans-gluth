@@ -27,23 +27,107 @@
     }
 }
 
-/********* Social-Share auf Mobilgeräten: Überschrift und Icons trennen */
-@media (max-width: 767px) {
+/* =========================================================
+   SOCIAL-MEDIA-BUTTONS – DYNAMISCHER ZEILENUMBRUCH
 
-    .single-product .wd-social-icons {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-    }
+   Normal:
+   [ Überschrift | Icon | Icon | Icon | ... ]
 
-    /* Überschrift über die gesamte Breite */
-    .single-product .wd-social-icons .wd-label {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 8px;
-    }
+   Bei zu wenig Platz:
+   [ Überschrift                         ]
+   [ Icon | Icon | Icon | Icon | ...    ]
+   ========================================================= */
 
+.single-product .wd-social-icons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
 }
+
+
+/* Überschrift darf nicht innerhalb des Textes umbrechen */
+.single-product .wd-social-icons > .wd-label {
+    flex: 0 0 auto !important;
+
+    width: auto !important;
+    max-width: none !important;
+
+    margin-bottom: 0 !important;
+
+    white-space: nowrap !important;
+}
+
+
+/* Gemeinsamer Container für alle Icons */
+.single-product .wd-social-icons
+> .jg-social-icon-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    flex: 0 0 auto !important;
+
+    min-width: max-content !important;
+    white-space: nowrap !important;
+}
+
+
+/* Einzelne Icons dürfen nicht schrumpfen */
+.single-product .wd-social-icons
+> .jg-social-icon-row
+> a {
+    flex: 0 0 auto !important;
+}
+
+
+/* =========================================================
+   GESTAPELTER ZUSTAND
+
+   Wird vom JavaScript gesetzt, sobald Überschrift und Icons
+   nicht mehr gemeinsam in eine Zeile passen.
+   ========================================================= */
+
+.single-product
+.wd-social-icons.jg-social-stacked {
+    flex-wrap: wrap !important;
+}
+
+
+/* Überschrift nimmt dann die komplette erste Zeile ein */
+.single-product
+.wd-social-icons.jg-social-stacked
+> .wd-label {
+    flex: 0 0 100% !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin-right: 0 !important;
+    margin-bottom: 8px !important;
+}
+
+
+/* Alle Icons bleiben gemeinsam in der zweiten Zeile */
+.single-product
+.wd-social-icons.jg-social-stacked
+> .jg-social-icon-row {
+    flex: 0 0 auto !important;
+
+    width: auto !important;
+    max-width: 100% !important;
+
+    overflow-x: visible !important;
+}
+
 /*********** Zurücksetzen-Link bei Varianten optisch ausblenden */
 .single-product .reset_variations {
     display: none !important;

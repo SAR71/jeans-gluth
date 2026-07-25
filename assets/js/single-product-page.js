@@ -2145,3 +2145,347 @@
         initializeThumbnailCorrection();
     }
 })();
+
+/* =========================================================
+   SOCIAL-MEDIA-BUTTONS – AUTOMATISCHER ZEILENUMBRUCH
+
+   - Passt Überschrift + Icon-Reihe nebeneinander:
+     alles bleibt in einer Zeile.
+
+   - Passt es nicht:
+     Überschrift steht oben und alle Icons gemeinsam darunter.
+   ========================================================= */
+
+(function () {
+    'use strict';
+
+    const SOCIAL_SELECTOR =
+        '.single-product .wd-social-icons';
+
+    const LABEL_SELECTOR =
+        ':scope > .wd-label';
+
+    const ICON_ROW_CLASS =
+        'jg-social-icon-row';
+
+    const STACKED_CLASS =
+        'jg-social-stacked';
+
+
+    /**
+     * Ermittelt horizontale Außenabstände eines Elements.
+     */
+    function getHorizontalMargins(element) {
+        const style =
+            window.getComputedStyle(element);
+
+        return (
+            (parseFloat(style.marginLeft) || 0) +
+            (parseFloat(style.marginRight) || 0)
+        );
+    }
+
+
+    /**
+     * Fasst alle Social-Media-Links in einem gemeinsamen
+     * Container zusammen.
+     *
+     * Dadurch können die Icons später nur als vollständige
+     * Gruppe in die nächste Zeile wechseln.
+     */
+    function createIconRow(socialContainer) {
+        let iconRow =
+            socialContainer.querySelector(
+                `:scope > .${ICON_ROW_CLASS}`
+            );
+
+        if (iconRow) {
+            return iconRow;
+        }
+
+        const label =
+            socialContainer.querySelector(
+                LABEL_SELECTOR
+            );
+
+        if (!label) {
+            return null;
+        }
+
+        const iconElements =
+            Array.from(
+                socialContainer.children
+            ).filter(function (element) {
+                return (
+                    element !== label &&
+                    !element.classList.contains(
+                        ICON_ROW_CLASS
+                    )
+                );
+            });
+
+        if (!iconElements.length) {
+            return null;
+        }
+
+        iconRow =
+            document.createElement('div');
+
+        iconRow.className =
+            ICON_ROW_CLASS;
+
+        label.insertAdjacentElement(
+            'afterend',
+            iconRow
+        );
+
+        iconElements.forEach(function (element) {
+            iconRow.appendChild(element);
+        });
+
+        return iconRow;
+    }
+
+
+    /**
+     * Entscheidet, ob Überschrift und Icon-Reihe gemeinsam
+     * in die verfügbare Breite passen.
+     */
+    function updateSocialLayout(
+        socialContainer,
+        label,
+        iconRow
+    ) {
+        /*
+         * Zunächst immer den einzeiligen Zustand herstellen.
+         * So wird unabhängig vom bisherigen Zustand gemessen.
+         */
+        socialContainer.classList.remove(
+            STACKED_CLASS
+        );
+
+        /*
+         * Layoutberechnung nach Klassenänderung erzwingen.
+         */
+        void socialContainer.offsetWidth;
+
+        const containerStyle =
+            window.getComputedStyle(
+                socialContainer
+            );
+
+        const columnGap =
+            parseFloat(
+                containerStyle.columnGap
+            );
+
+        const gap =
+            Number.isFinite(columnGap)
+                ? columnGap
+                : (
+                    parseFloat(
+                        containerStyle.gap
+                    ) || 0
+                );
+
+        const labelWidth =
+            label.getBoundingClientRect().width +
+            getHorizontalMargins(label);
+
+        const iconRowWidth =
+            iconRow.scrollWidth +
+            getHorizontalMargins(iconRow);
+
+        const availableWidth =
+            socialContainer.clientWidth;
+
+        /*
+         * Kleine Reserve gegen Subpixel- und
+         * Rundungsunterschiede.
+         */
+        const safetySpace = 4;
+
+        const requiredWidth =
+            labelWidth +
+            gap +
+            iconRowWidth +
+            safetySpace;
+
+        socialContainer.classList.toggle(
+            STACKED_CLASS,
+            requiredWidth > availableWidth
+        );
+
+        socialContainer.dataset
+            .socialRequiredWidth =
+            String(
+                Math.round(requiredWidth)
+            );
+
+        socialContainer.dataset
+            .socialAvailableWidth =
+            String(
+                Math.round(availableWidth)
+            );
+    }
+
+
+    /**
+     * Einzelnen Social-Media-Bereich initialisieren.
+     */
+    function initializeSocialContainer(
+        socialContainer
+    ) {
+        if (
+            socialContainer.dataset
+                .jgSocialInitialized ===
+            'true'
+        ) {
+            return;
+        }
+
+        const label =
+            socialContainer.querySelector(
+                LABEL_SELECTOR
+            );
+
+        const iconRow =
+            createIconRow(
+                socialContainer
+            );
+
+        if (!label || !iconRow) {
+            return;
+        }
+
+        socialContainer.dataset
+            .jgSocialInitialized =
+            'true';
+
+        let frameId = null;
+        let lastWidth = 0;
+
+
+        function scheduleUpdate(force) {
+            if (force) {
+                lastWidth = 0;
+            }
+
+            if (frameId !== null) {
+                window.cancelAnimationFrame(
+                    frameId
+                );
+            }
+
+            frameId =
+                window.requestAnimationFrame(
+                    function () {
+                        frameId = null;
+
+                        updateSocialLayout(
+                            socialContainer,
+                            label,
+                            iconRow
+                        );
+
+                        lastWidth =
+                            Math.round(
+                                socialContainer
+                                    .getBoundingClientRect()
+                                    .width
+                            );
+                    }
+                );
+        }
+
+
+        /*
+         * Nur Breitenänderungen des Social-Bereichs
+         * beobachten.
+         */
+        const resizeObserver =
+            new ResizeObserver(
+                function (entries) {
+                    const entry =
+                        entries[0];
+
+                    if (!entry) {
+                        return;
+                    }
+
+                    const width =
+                        Math.round(
+                            entry.contentRect.width
+                        );
+
+                    if (width <= 0) {
+                        return;
+                    }
+
+                    if (
+                        lastWidth > 0 &&
+                        Math.abs(
+                            width - lastWidth
+                        ) < 2
+                    ) {
+                        return;
+                    }
+
+                    scheduleUpdate(false);
+                }
+            );
+
+        resizeObserver.observe(
+            socialContainer
+        );
+
+
+        if (
+            document.fonts &&
+            document.fonts.ready
+        ) {
+            document.fonts.ready.then(
+                function () {
+                    scheduleUpdate(true);
+                }
+            );
+        }
+
+
+        window.addEventListener(
+            'orientationchange',
+            function () {
+                scheduleUpdate(true);
+            }
+        );
+
+
+        scheduleUpdate(true);
+    }
+
+
+    /**
+     * Alle Social-Media-Bereiche starten.
+     */
+    function initializeSocialLayouts() {
+        document
+            .querySelectorAll(
+                SOCIAL_SELECTOR
+            )
+            .forEach(
+                initializeSocialContainer
+            );
+    }
+
+
+    if (
+        document.readyState === 'loading'
+    ) {
+        document.addEventListener(
+            'DOMContentLoaded',
+            initializeSocialLayouts
+        );
+    } else {
+        initializeSocialLayouts();
+    }
+})();
