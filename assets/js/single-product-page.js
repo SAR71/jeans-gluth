@@ -1,15 +1,10 @@
 /* =========================================================
    INFO-CONTAINER JEANS GLUTH
 
-   Elterncontainer:  .product-benefits
-   Icon-Liste:       .product-benefits_list
-   Bildcontainer:    .product-benefits_image
-
-   Layoutstufen:
-   1. row
-   2. shrink-1
-   3. shrink-2
-   4. stacked
+   Flackerfreie Version:
+   - Messung erfolgt an einer unsichtbaren Kopie
+   - Der sichtbare Container erhält nur das Endergebnis
+   - Reagiert automatisch auf Breitenänderungen
    ========================================================= */
 
 (function () {
@@ -36,17 +31,26 @@
     const STACKED_CLASS =
         'product-benefits_stacked';
 
+    const LAYOUT_CLASSES = [
+        SHRINK_1_CLASS,
+        SHRINK_2_CLASS,
+        STACKED_CLASS
+    ];
+
+    /*
+     * Kleine Reserve gegen Rundungsunterschiede.
+     * Der Testcontainer wird etwas schmaler gemessen als
+     * der sichtbare Container.
+     */
+    const WIDTH_SAFETY_SPACE = 6;
+
 
     /**
-     * Prüft, ob das Element grundsätzlich darstellbar ist.
+     * Prüft, ob ein Element grundsätzlich messbar ist.
      *
-     * visibility:hidden wird bewusst nicht geprüft:
-     * Das CSS blendet den Benefits-Container vor der ersten
-     * Messung mit visibility:hidden aus. Trotzdem muss das
-     * JavaScript ihn vermessen können.
-     *
-     * Elementor-Ausblendungen über display:none werden
-     * weiterhin berücksichtigt.
+     * visibility:hidden wird absichtlich nicht geprüft,
+     * weil unser CSS den Container vor der ersten Messung
+     * unsichtbar macht.
      */
     function isMeasurable(element) {
         if (!element) {
@@ -64,7 +68,56 @@
 
 
     /**
-     * Prüft, ob ein Text sichtbar auf mehrere Zeilen umbricht.
+     * Entfernt IDs aus der Messkopie.
+     *
+     * Dadurch entstehen keine doppelten HTML-IDs.
+     */
+    function removeIds(element) {
+        element.removeAttribute('id');
+
+        element
+            .querySelectorAll('[id]')
+            .forEach(function (child) {
+                child.removeAttribute('id');
+            });
+    }
+
+
+    /**
+     * Setzt einen Layoutzustand auf ein Element.
+     */
+    function setLayoutState(element, mode) {
+        element.classList.remove(
+            ...LAYOUT_CLASSES
+        );
+
+        if (mode === 'shrink-1') {
+            element.classList.add(
+                SHRINK_1_CLASS
+            );
+        }
+
+        if (mode === 'shrink-2') {
+            element.classList.add(
+                SHRINK_2_CLASS
+            );
+        }
+
+        if (mode === 'stacked') {
+            element.classList.add(
+                STACKED_CLASS
+            );
+        }
+
+        element.setAttribute(
+            'data-benefits-layout',
+            mode
+        );
+    }
+
+
+    /**
+     * Prüft, ob ein Text auf mehr als einer Zeile steht.
      */
     function textIsWrapped(textElement) {
         const style =
@@ -87,18 +140,17 @@
                 .height;
 
         /*
-         * Kleine Toleranz, damit Rundungsfehler nicht als
-         * echter Zeilenumbruch erkannt werden.
+         * Toleranz gegen Subpixel-Rundungen.
          */
         return (
             actualHeight >
-            lineHeight * 1.5
+            lineHeight * 1.45
         );
     }
 
 
     /**
-     * Prüft alle Texte der Icon-Liste.
+     * Prüft die Texte einer Icon-Liste.
      */
     function listHasWrappedText(
         listContainer
@@ -121,7 +173,177 @@
 
 
     /**
-     * Initialisiert einen Product-Benefits-Bereich.
+     * Erstellt eine unsichtbare Messkopie.
+     *
+     * Die Kopie beeinflusst das sichtbare Layout nicht.
+     */
+    function createMeasurementClone(
+        wrapper,
+        width
+    ) {
+        const clone =
+            wrapper.cloneNode(true);
+
+        removeIds(clone);
+
+        clone.removeAttribute(
+            'data-benefits-script-initialized'
+        );
+
+        clone.setAttribute(
+            'data-benefits-ready',
+            'true'
+        );
+
+        clone.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        clone.style.setProperty(
+            'position',
+            'fixed',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'left',
+            '-100000px',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'top',
+            '0',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'width',
+            `${Math.max(
+                1,
+                width - WIDTH_SAFETY_SPACE
+            )}px`,
+            'important'
+        );
+
+        clone.style.setProperty(
+            'max-width',
+            'none',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'visibility',
+            'hidden',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'pointer-events',
+            'none',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'z-index',
+            '-1',
+            'important'
+        );
+
+        clone.style.setProperty(
+            'contain',
+            'layout style paint',
+            'important'
+        );
+
+        document.body.appendChild(clone);
+
+        return clone;
+    }
+
+
+    /**
+     * Prüft einen Zustand ausschließlich an der Messkopie.
+     */
+    function cloneLayoutFits(
+        clone,
+        mode
+    ) {
+        setLayoutState(
+            clone,
+            mode
+        );
+
+        /*
+         * Layout unmittelbar berechnen lassen.
+         */
+        void clone.offsetWidth;
+
+        const cloneList =
+            clone.querySelector(
+                LIST_SELECTOR
+            );
+
+        if (!cloneList) {
+            return false;
+        }
+
+        return !listHasWrappedText(
+            cloneList
+        );
+    }
+
+
+    /**
+     * Ermittelt den besten Zustand, ohne den sichtbaren
+     * Container während der Prüfung zu verändern.
+     */
+    function determineLayout(
+        wrapper,
+        width
+    ) {
+        const clone =
+            createMeasurementClone(
+                wrapper,
+                width
+            );
+
+        let result = 'stacked';
+
+        try {
+            if (
+                cloneLayoutFits(
+                    clone,
+                    'row'
+                )
+            ) {
+                result = 'row';
+            } else if (
+                cloneLayoutFits(
+                    clone,
+                    'shrink-1'
+                )
+            ) {
+                result = 'shrink-1';
+            } else if (
+                cloneLayoutFits(
+                    clone,
+                    'shrink-2'
+                )
+            ) {
+                result = 'shrink-2';
+            }
+        } finally {
+            clone.remove();
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Initialisiert einen Benefits-Container.
      */
     function initializeBenefits(wrapper) {
         if (
@@ -178,9 +400,8 @@
             'true'
         );
 
-
         /*
-         * Inline-Höhen aus älteren Script-Versionen entfernen.
+         * Alte Inline-Höhen aus früheren Versionen entfernen.
          */
         image.style.removeProperty(
             'height'
@@ -198,107 +419,47 @@
             'max-height'
         );
 
-
-        let updateRunning = false;
-        let updateRequested = false;
         let animationFrameId = null;
-
-        /*
-         * Zuletzt vom ResizeObserver erkannte Breite.
-         * Höhenänderungen werden absichtlich nicht beobachtet.
-         */
-        let lastObservedWidth = 0;
+        let updateRunning = false;
+        let updateAgain = false;
+        let lastMeasuredWidth = 0;
+        let currentMode = null;
 
 
         /**
-         * Setzt exakt einen Layoutzustand.
+         * Wendet nur das endgültige Ergebnis am sichtbaren
+         * Container an.
          */
-        function setLayout(mode) {
-            wrapper.classList.toggle(
-                SHRINK_1_CLASS,
-                mode === 'shrink-1'
-            );
+        function applyFinalLayout(mode) {
+            if (mode === currentMode) {
+                wrapper.setAttribute(
+                    'data-benefits-ready',
+                    'true'
+                );
 
-            wrapper.classList.toggle(
-                SHRINK_2_CLASS,
-                mode === 'shrink-2'
-            );
+                return;
+            }
 
-            wrapper.classList.toggle(
-                STACKED_CLASS,
-                mode === 'stacked'
-            );
-
-            wrapper.setAttribute(
-                'data-benefits-layout',
+            setLayoutState(
+                wrapper,
                 mode
             );
-        }
 
+            currentMode = mode;
 
-        /**
-         * Browser zur unmittelbaren Neuberechnung zwingen.
-         */
-        function forceLayout() {
-            void wrapper.offsetWidth;
-        }
-
-
-        /**
-         * Layoutzustand setzen und anschließend prüfen.
-         */
-        function testLayout(
-            mode,
-            callback
-        ) {
-            setLayout(mode);
-            forceLayout();
-
-            window.requestAnimationFrame(
-                function () {
-                    callback(
-                        listHasWrappedText(
-                            listContainer
-                        )
-                    );
-                }
-            );
-        }
-
-
-        /**
-         * Messung abschließen.
-         */
-        function finishUpdate() {
             wrapper.setAttribute(
                 'data-benefits-ready',
                 'true'
             );
-
-            updateRunning = false;
-
-            /*
-             * Kam während der laufenden Messung eine echte
-             * weitere Änderung, noch einmal neu messen.
-             */
-            if (updateRequested) {
-                updateRequested = false;
-                scheduleUpdate();
-            }
         }
 
 
         /**
-         * Prüfreihenfolge:
-         *
-         * 1. Normales Layout
-         * 2. Kleineres Bild
-         * 3. Noch kompakter
-         * 4. Bild unter der Icon-Liste
+         * Führt eine vollständige Messung durch.
          */
         function updateLayout() {
             if (updateRunning) {
-                updateRequested = true;
+                updateAgain = true;
                 return;
             }
 
@@ -306,77 +467,53 @@
                 return;
             }
 
-            const wrapperWidth =
+            const width =
                 wrapper
                     .getBoundingClientRect()
                     .width;
 
             if (
-                !Number.isFinite(wrapperWidth) ||
-                wrapperWidth <= 0
+                !Number.isFinite(width) ||
+                width <= 0
             ) {
                 return;
             }
 
-            /*
-             * Eine vorherige Anforderung gilt ab jetzt
-             * als verarbeitet.
-             */
-            updateRequested = false;
             updateRunning = true;
+            updateAgain = false;
 
-            testLayout(
-                'row',
-                function (rowWrapped) {
-                    if (!rowWrapped) {
-                        finishUpdate();
-                        return;
-                    }
+            const bestMode =
+                determineLayout(
+                    wrapper,
+                    width
+                );
 
-                    testLayout(
-                        'shrink-1',
-                        function (
-                            shrink1Wrapped
-                        ) {
-                            if (
-                                !shrink1Wrapped
-                            ) {
-                                finishUpdate();
-                                return;
-                            }
-
-                            testLayout(
-                                'shrink-2',
-                                function (
-                                    shrink2Wrapped
-                                ) {
-                                    if (
-                                        !shrink2Wrapped
-                                    ) {
-                                        finishUpdate();
-                                        return;
-                                    }
-
-                                    setLayout(
-                                        'stacked'
-                                    );
-
-                                    finishUpdate();
-                                }
-                            );
-                        }
-                    );
-                }
+            applyFinalLayout(
+                bestMode
             );
+
+            lastMeasuredWidth =
+                Math.round(width);
+
+            updateRunning = false;
+
+            if (updateAgain) {
+                updateAgain = false;
+                scheduleUpdate(true);
+            }
         }
 
 
         /**
-         * Höchstens eine neue Messung pro Browser-Frame.
+         * Plant die Messung für den nächsten Browser-Frame.
          */
-        function scheduleUpdate() {
+        function scheduleUpdate(force) {
+            if (force) {
+                lastMeasuredWidth = 0;
+            }
+
             if (updateRunning) {
-                updateRequested = true;
+                updateAgain = true;
                 return;
             }
 
@@ -397,12 +534,10 @@
 
 
         /**
-         * Nur die Breite des gesamten Benefits-Containers
-         * beobachten.
+         * Nur echte Breitenänderungen beobachten.
          *
-         * Die Höhe sowie Liste und Bildcontainer werden nicht
-         * beobachtet. Dadurch reagiert das Skript nicht mehr
-         * auf seine eigenen row-/stacked-Änderungen.
+         * Höhenänderungen durch row/stacked führen nicht
+         * zu einer neuen Messung.
          */
         const resizeObserver =
             new ResizeObserver(
@@ -414,34 +549,29 @@
                         return;
                     }
 
-                    const currentWidth =
+                    const newWidth =
                         Math.round(
                             entry.contentRect.width
                         );
 
-                    if (currentWidth <= 0) {
+                    if (newWidth <= 0) {
                         return;
                     }
 
                     /*
-                     * Änderungen unter 2 px ignorieren.
-                     * Das verhindert Schleifen durch
-                     * Subpixel-Rundungen.
+                     * Änderungen kleiner als 2 px ignorieren.
                      */
                     if (
-                        lastObservedWidth > 0 &&
+                        lastMeasuredWidth > 0 &&
                         Math.abs(
-                            currentWidth -
-                            lastObservedWidth
+                            newWidth -
+                            lastMeasuredWidth
                         ) < 2
                     ) {
                         return;
                     }
 
-                    lastObservedWidth =
-                        currentWidth;
-
-                    scheduleUpdate();
+                    scheduleUpdate(false);
                 }
             );
 
@@ -449,78 +579,26 @@
 
 
         /**
-         * Erkennt, wenn das andere Layoutskript den kompletten
-         * JG-Info-Bereich rechts einsetzt oder unter die
-         * Produktgalerie zurückverschiebt.
-         *
-         * Es werden ausschließlich DOM-Verschiebungen
-         * beobachtet – keine Klassen oder Styles.
-         * Die eigenen Layoutklassen lösen deshalb keine neue
-         * Messung aus.
-         */
-        const productLayout =
-            wrapper.closest(
-                '.product-layout'
-            );
-
-        if (productLayout) {
-            const layoutObserver =
-                new MutationObserver(
-                    function (mutations) {
-                        const hasChildMovement =
-                            mutations.some(
-                                function (mutation) {
-                                    return (
-                                        mutation.type ===
-                                        'childList'
-                                    );
-                                }
-                            );
-
-                        if (!hasChildMovement) {
-                            return;
-                        }
-
-                        /*
-                         * Breite beim nächsten Observer-Lauf
-                         * sicher erneut bewerten.
-                         */
-                        lastObservedWidth = 0;
-
-                        scheduleUpdate();
-                    }
-                );
-
-            layoutObserver.observe(
-                productLayout,
-                {
-                    subtree: true,
-                    childList: true
-                }
-            );
-        }
-
-
-        /**
-         * Fensterbreite und Orientierung.
+         * Fensteränderungen.
          */
         window.addEventListener(
             'resize',
-            scheduleUpdate,
+            function () {
+                scheduleUpdate(false);
+            },
             { passive: true }
         );
 
         window.addEventListener(
             'orientationchange',
             function () {
-                lastObservedWidth = 0;
-                scheduleUpdate();
+                scheduleUpdate(true);
             }
         );
 
 
         /**
-         * Nach dem Laden der Webfonts erneut messen.
+         * Nach dem Laden der Schrift erneut messen.
          */
         if (
             document.fonts &&
@@ -528,8 +606,7 @@
         ) {
             document.fonts.ready.then(
                 function () {
-                    lastObservedWidth = 0;
-                    scheduleUpdate();
+                    scheduleUpdate(true);
                 }
             );
         }
@@ -542,8 +619,7 @@
             image.addEventListener(
                 'load',
                 function () {
-                    lastObservedWidth = 0;
-                    scheduleUpdate();
+                    scheduleUpdate(true);
                 },
                 { once: true }
             );
@@ -551,9 +627,9 @@
 
 
         /**
-         * Erste unmittelbare Messung.
+         * Erste Messung.
          */
-        scheduleUpdate();
+        scheduleUpdate(true);
     }
 
 
