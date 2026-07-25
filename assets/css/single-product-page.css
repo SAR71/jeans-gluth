@@ -49,18 +49,48 @@
     display: none !important;
 }
 
-
 /* =========================================================
-   PRODUCT BENEFITS
+   PRODUCT BENEFITS – KOMPLETTER CSS-CODE
 
    Elterncontainer:     product-benefits
    Icon-Liste:          product-benefits_list
    Bildcontainer:       product-benefits_image
+
+   Elementor steuert weiterhin:
+   - Einblenden / Ausblenden je Breakpoint
    ========================================================= */
 
 
-/* Bis zur ersten Messung nicht anzeigen.
-   Verhindert sichtbares Umspringen beim Laden. */
+/* =========================================================
+   ZENTRALE EINSTELLUNGEN
+   ========================================================= */
+
+.product-benefits {
+    /* Normalzustand */
+    --benefits-image-width: 150px;
+    --benefits-image-height: 150px;
+    --benefits-gap: 20px;
+
+    /* Innenabstand des grauen Kastens */
+    --benefits-padding-top: 14px;
+    --benefits-padding-right: 18px;
+    --benefits-padding-bottom: 14px;
+    --benefits-padding-left: 18px;
+
+    /* Typografie */
+    --benefits-font-size: 20px;
+    --benefits-line-height: 1.3;
+    --benefits-list-gap: 10px;
+    --benefits-icon-gap: 14px;
+}
+
+
+/* =========================================================
+   BIS ZUR ERSTEN JAVASCRIPT-MESSUNG AUSBLENDEN
+
+   Verhindert sichtbares Umspringen beim Laden.
+   ========================================================= */
+
 .product-benefits:not([data-benefits-ready="true"]) {
     visibility: hidden;
 }
@@ -71,18 +101,37 @@
    ========================================================= */
 
 .product-benefits {
-    --benefits-image-width: 190px;
+    /*
+     * Kein !important bei display.
+     * Dadurch können Elementors Responsive-Ausblendungen
+     * weiterhin display:none setzen.
+     */
+    display: flex;
 
-    display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    align-items: center !important;
 
-    gap: 20px !important;
+    /*
+     * Liste und Bild beginnen am oberen Rand.
+     */
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    align-content: flex-start !important;
 
-    padding-top: 10px !important;
-    padding-right: 10px !important;
-    padding-bottom: 10px !important;
+    gap: var(--benefits-gap) !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    padding-top: var(--benefits-padding-top) !important;
+    padding-right: var(--benefits-padding-right) !important;
+    padding-bottom: var(--benefits-padding-bottom) !important;
+    padding-left: var(--benefits-padding-left) !important;
+
+    margin: 0 !important;
 
     box-sizing: border-box !important;
 }
@@ -90,33 +139,146 @@
 
 /* =========================================================
    ICON-LIST-CONTAINER
-
-   Padding und Margin aus Elementor werden hier bewusst
-   nicht überschrieben.
    ========================================================= */
 
 .product-benefits > .product-benefits_list {
+    display: flex !important;
+    flex-direction: column !important;
+
     flex: 1 1 0 !important;
 
     width: auto !important;
     min-width: 0 !important;
+    max-width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    align-self: flex-start !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    box-sizing: border-box !important;
 }
 
 
-/* Icon-List-Widget */
+/* Eventueller innerer Elementor-Container */
+.product-benefits
+> .product-benefits_list
+> .e-con-inner {
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* =========================================================
+   ICON-LIST-WIDGET
+   ========================================================= */
+
 .product-benefits
 .product-benefits_list
 .elementor-widget-icon-list {
     width: 100% !important;
+    max-width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    align-self: flex-start !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
-/* Texte im normalen Zustand:
-   Elementor-Schriftgröße bleibt erhalten. */
+.product-benefits
+.product-benefits_list
+.elementor-widget-icon-list
+> .elementor-widget-container {
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Liste */
+.product-benefits
+.product-benefits_list
+.elementor-icon-list-items {
+    display: flex !important;
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+
+    gap: var(--benefits-list-gap) !important;
+
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Einzelner Listeneintrag */
+.product-benefits
+.product-benefits_list
+.elementor-icon-list-item {
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    width: 100% !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Icon */
+.product-benefits
+.product-benefits_list
+.elementor-icon-list-icon {
+    flex: 0 0 auto !important;
+
+    margin: 0 !important;
+    margin-right: var(--benefits-icon-gap) !important;
+    padding: 0 !important;
+}
+
+
+/* Text */
 .product-benefits
 .product-benefits_list
 .elementor-icon-list-text {
-    line-height: 1.35 !important;
+    font-size: var(--benefits-font-size) !important;
+    line-height: var(--benefits-line-height) !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
@@ -127,19 +289,30 @@
 .product-benefits > .product-benefits_image {
     display: flex !important;
 
-    flex: 0 0 var(--benefits-image-width) !important;
+    flex:
+        0
+        0
+        var(--benefits-image-width) !important;
 
     width: var(--benefits-image-width) !important;
     min-width: var(--benefits-image-width) !important;
     max-width: var(--benefits-image-width) !important;
 
+    height: var(--benefits-image-height) !important;
+    min-height: 0 !important;
+    max-height: var(--benefits-image-height) !important;
+
+    align-self: flex-start !important;
+
     justify-content: center !important;
-    align-items: center !important;
+    align-items: flex-start !important;
 
     margin: 0 !important;
     padding: 0 !important;
 
     overflow: visible !important;
+
+    box-sizing: border-box !important;
 }
 
 
@@ -152,15 +325,19 @@
     width: 100% !important;
     max-width: 100% !important;
 
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+
     justify-content: center !important;
-    align-items: center !important;
+    align-items: flex-start !important;
 
     margin: 0 !important;
     padding: 0 !important;
 }
 
 
-/* Innerer Elementor-Container */
+/* Elementor-Widget-Container */
 .product-benefits
 > .product-benefits_image
 .elementor-widget-container {
@@ -169,8 +346,12 @@
     width: 100% !important;
     max-width: 100% !important;
 
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+
     justify-content: center !important;
-    align-items: center !important;
+    align-items: flex-start !important;
 
     margin: 0 !important;
     padding: 0 !important;
@@ -183,12 +364,14 @@
 img {
     display: block !important;
 
-    width: 100% !important;
-    max-width: var(--benefits-image-width) !important;
-    height: auto !important;
-    max-height: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+
+    height: 100% !important;
+    max-height: var(--benefits-image-height) !important;
 
     object-fit: contain !important;
+    object-position: top center !important;
 
     margin: 0 auto !important;
     padding: 0 !important;
@@ -196,179 +379,137 @@ img {
 
 
 /* =========================================================
-   STUFE 1:
-   Bild wird von 190 px auf 160 px verkleinert
+   STUFE 1
    ========================================================= */
 
 .product-benefits.product-benefits_shrink-1 {
-    --benefits-image-width: 160px;
-
-    gap: 15px !important;
+    --benefits-image-width: 135px;
+    --benefits-image-height: 135px;
+    --benefits-gap: 15px;
 }
 
 
 /* =========================================================
-   STUFE 2:
-   Bild 130 px
-   Schrift maximal 18 px
-   Abstand zwischen Listeneinträgen 10 px
+   STUFE 2
    ========================================================= */
 
 .product-benefits.product-benefits_shrink-2 {
-    --benefits-image-width: 130px;
+    --benefits-image-width: 120px;
+    --benefits-image-height: 120px;
+    --benefits-gap: 10px;
 
-    gap: 10px !important;
-}
+    --benefits-font-size: 18px;
+    --benefits-line-height: 1.3;
+    --benefits-list-gap: 10px;
+    --benefits-icon-gap: 12px;
 
-
-/* Schriftgröße im zweiten Kompaktzustand */
-.product-benefits.product-benefits_shrink-2
-.product-benefits_list
-.elementor-icon-list-text {
-    font-size: 18px !important;
-    line-height: 1.35 !important;
-}
-
-
-/*
- * Abstand zwischen den einzelnen Icon-List-Einträgen.
- * Die 10 px gelten zwischen den Zeilen/Einträgen,
- * nicht als unlesbare line-height.
- */
-.product-benefits.product-benefits_shrink-2
-.product-benefits_list
-.elementor-icon-list-items {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-}
-
-
-.product-benefits.product-benefits_shrink-2
-.product-benefits_list
-.elementor-icon-list-item {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    --benefits-padding-top: 12px;
+    --benefits-padding-bottom: 12px;
 }
 
 
 /* =========================================================
-   GESTAPELTER ZUSTAND:
-   Erst wenn auch Stufe 2 nicht ausreicht
+   GESTAPELTER ZUSTAND
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
-    --benefits-image-width: 130px;
+    --benefits-image-width: 115px;
+    --benefits-image-height: 115px;
+    --benefits-gap: 8px;
+
+    --benefits-font-size: 18px;
+    --benefits-line-height: 1.3;
+    --benefits-list-gap: 10px;
+    --benefits-icon-gap: 12px;
+
+    --benefits-padding-top: 12px;
+    --benefits-padding-right: 14px;
+    --benefits-padding-bottom: 8px;
+    --benefits-padding-left: 14px;
 
     flex-direction: column !important;
-    align-items: stretch !important;
+    flex-wrap: nowrap !important;
 
-    /*
-     * Maximal 10 px zwischen Icon-Liste und Bild.
-     */
-    gap: 10px !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    align-content: flex-start !important;
 
-    /*
-     * Seitliche Elementor-Paddings des Listencontainers
-     * werden nicht überschrieben.
-     */
-    padding-top: 0 !important;
-    padding-right: 0 !important;
-
-    /*
-     * 5 px unterhalb des Bildes.
-     */
-    padding-bottom: 5px !important;
+    height: auto !important;
+    min-height: 0 !important;
 }
 
 
-/* Liste über volle Breite */
+/* Liste gestapelt */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
 
     width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
 
-    /*
-     * Keine Padding-Regel:
-     * Elementor-Einstellungen bleiben erhalten.
-     */
+    height: auto !important;
+    min-height: 0 !important;
+
+    align-self: stretch !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
-/* Auch gestapelt mindestens 18 px Schrift */
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-icon-list-text {
-    font-size: 18px !important;
-    line-height: 1.35 !important;
-}
-
-
-/* Abstand zwischen Listeneinträgen gestapelt */
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-icon-list-items {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-}
-
-
-.product-benefits.product-benefits_stacked
-.product-benefits_list
-.elementor-icon-list-item {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-}
-
-
-/* Bildcontainer unter der Liste */
+/* Bildcontainer gestapelt */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image {
-    display: flex !important;
-
     flex: 0 0 auto !important;
 
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
+    width: var(--benefits-image-width) !important;
+    min-width: var(--benefits-image-width) !important;
+    max-width: var(--benefits-image-width) !important;
+
+    height: var(--benefits-image-height) !important;
+    min-height: 0 !important;
+    max-height: var(--benefits-image-height) !important;
+
+    align-self: center !important;
 
     justify-content: center !important;
     align-items: flex-start !important;
 
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
-
-    overflow: visible !important;
 }
 
 
-/* Bildwidget mittig */
+/* Bildwidget gestapelt */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-image {
-    width: var(--benefits-image-width) !important;
-    max-width: var(--benefits-image-width) !important;
+    width: 100% !important;
+    max-width: 100% !important;
 
-    margin-right: auto !important;
-    margin-left: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
-/* Bild mittig */
+/* Bild gestapelt */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 img {
-    display: block !important;
+    width: auto !important;
+    max-width: 100% !important;
 
-    width: 100% !important;
-    max-width: var(--benefits-image-width) !important;
-    height: auto !important;
+    height: 100% !important;
+    max-height: var(--benefits-image-height) !important;
 
-    margin-right: auto !important;
-    margin-left: auto !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+
+    margin: 0 auto !important;
 }
 
 
@@ -378,16 +519,29 @@ img {
 
 @media (max-width: 480px) {
     .product-benefits {
-        --benefits-image-width: 120px;
+        --benefits-image-width: 110px;
+        --benefits-image-height: 110px;
+
+        --benefits-font-size: 18px;
+        --benefits-gap: 10px;
+
+        --benefits-padding-top: 10px;
+        --benefits-padding-right: 10px;
+        --benefits-padding-bottom: 8px;
+        --benefits-padding-left: 10px;
     }
 
     .product-benefits.product-benefits_shrink-1 {
-        --benefits-image-width: 110px;
+        --benefits-image-width: 100px;
+        --benefits-image-height: 100px;
     }
 
     .product-benefits.product-benefits_shrink-2,
     .product-benefits.product-benefits_stacked {
-        --benefits-image-width: 100px;
+        --benefits-image-width: 95px;
+        --benefits-image-height: 95px;
+
+        --benefits-font-size: 18px;
     }
 }
 
