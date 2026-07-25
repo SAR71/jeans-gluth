@@ -1619,34 +1619,529 @@
 
 })();
 
-Array.from(
-    document.querySelectorAll(
-        '.product-gallery-column img'
-    )
-)
-    .slice(0, 8)
-    .map(function (img, index) {
-        return {
-            index,
-            src: img.currentSrc || img.src,
-            imgClass: img.className,
-            parentTag: img.parentElement?.tagName,
-            parentClass: img.parentElement?.className,
-            grandParentTag:
-                img.parentElement
-                    ?.parentElement
-                    ?.tagName,
-            grandParentClass:
-                img.parentElement
-                    ?.parentElement
-                    ?.className,
-            width:
-                Math.round(
-                    img.getBoundingClientRect().width
+    /* =========================================================
+   WOODMART – VERTIKALE THUMBNAIL-HÖHE KORRIGIEREN
+
+   Problem:
+   Beim ersten Laden setzt Woodmart --wd-thumbs-height auf
+   die Höhe des gesamten Galeriecontainers.
+
+   Korrekt ist jedoch die Höhe der Hauptbild-Galerie
+   .wd-gallery-images.
+
+   Dieser Code:
+   - verwendet die tatsächliche Hauptgaleriehöhe
+   - korrigiert die Thumbnail-Gesamthöhe
+   - korrigiert die einzelnen Thumbnail-Höhen
+   - verändert den von Woodmart/Elementor gesetzten Gap nicht
+   - löst keine künstlichen resize-Ereignisse aus
+   ========================================================= */
+
+(function () {
+    'use strict';
+
+    const GALLERY_COLUMN_SELECTOR =
+        '.product-gallery-column';
+
+    const PRODUCT_GALLERY_SELECTOR =
+        '.woocommerce-product-gallery';
+
+    const MAIN_GALLERY_SELECTOR =
+        '.wd-carousel-container.wd-gallery-images';
+
+    const THUMB_CONTAINER_SELECTOR =
+        '.wd-carousel-container.wd-gallery-thumb';
+
+    const THUMB_CAROUSEL_SELECTOR =
+        '.wd-carousel.wd-vertical';
+
+    const THUMB_ITEM_SELECTOR =
+        '.wd-carousel-item';
+
+    const REFRESH_DELAYS = [
+        0,
+        100,
+        300,
+        700,
+        1200
+    ];
+
+
+    /**
+     * Prüft, ob ein Element sichtbar und messbar ist.
+     */
+    function isMeasurable(element) {
+        if (!element) {
+            return false;
+        }
+
+        const style =
+            window.getComputedStyle(element);
+
+        const rect =
+            element.getBoundingClientRect();
+
+        return (
+            style.display !== 'none' &&
+            rect.width > 0 &&
+            rect.height > 0
+        );
+    }
+
+
+    /**
+     * Liest eine Ganzzahl aus einer CSS-Variable.
+     */
+    function readCssInteger(
+        element,
+        propertyName
+    ) {
+        const style =
+            window.getComputedStyle(element);
+
+        const value =
+            parseInt(
+                style.getPropertyValue(
+                    propertyName
                 ),
-            height:
-                Math.round(
-                    img.getBoundingClientRect().height
+                10
+            );
+
+        return Number.isFinite(value)
+            ? value
+            : 0;
+    }
+
+
+    /**
+     * Ermittelt, wie viele Thumbnails gleichzeitig
+     * sichtbar sein sollen.
+     */
+    function getVisibleThumbnailCount(
+        thumbCarousel,
+        thumbItems
+    ) {
+        /*
+         * Zunächst die von Woodmart als sichtbar markierten
+         * Slides verwenden.
+         */
+        const visibleItems =
+            thumbItems.filter(function (item) {
+                return (
+                    item.classList.contains(
+                        'wd-slide-visible'
+                    ) ||
+                    item.classList.contains(
+                        'wd-full-visible'
+                    )
+                );
+            });
+
+        if (visibleItems.length > 0) {
+            return visibleItems.length;
+        }
+
+        /*
+         * Fallback auf Woodmarts CSS-Variablen.
+         */
+        const largeCount =
+            readCssInteger(
+                thumbCarousel,
+                '--wd-col-lg'
+            );
+
+        if (largeCount > 0) {
+            return largeCount;
+        }
+
+        const mediumCount =
+            readCssInteger(
+                thumbCarousel,
+                '--wd-col-md'
+            );
+
+        if (mediumCount > 0) {
+            return mediumCount;
+        }
+
+        const smallCount =
+            readCssInteger(
+                thumbCarousel,
+                '--wd-col-sm'
+            );
+
+        if (smallCount > 0) {
+            return smallCount;
+        }
+
+        return 2;
+    }
+
+
+    /**
+     * Korrigiert eine sichtbare Produktgalerie.
+     */
+    function synchronizeGallery(
+        galleryColumn
+    ) {
+        const productGalleries =
+            Array.from(
+                galleryColumn.querySelectorAll(
+                    PRODUCT_GALLERY_SELECTOR
                 )
-        };
-    });
+            );
+
+        /*
+         * Auf der Seite können unsichtbare Galerievarianten
+         * für andere Breakpoints vorhanden sein.
+         */
+        const productGallery =
+            productGalleries.find(
+                isMeasurable
+            );
+
+        if (!productGallery) {
+            return;
+        }
+
+        const mainGallery =
+            productGallery.querySelector(
+                MAIN_GALLERY_SELECTOR
+            );
+
+        const thumbContainer =
+            productGallery.querySelector(
+                THUMB_CONTAINER_SELECTOR
+            );
+
+        const thumbCarousel =
+            thumbContainer?.querySelector(
+                THUMB_CAROUSEL_SELECTOR
+            );
+
+        if (
+            !isMeasurable(mainGallery) ||
+            !thumbContainer ||
+            !thumbCarousel
+        ) {
+            return;
+        }
+
+        const mainGalleryRect =
+            mainGallery.getBoundingClientRect();
+
+        const thumbContainerRect =
+            thumbContainer.getBoundingClientRect();
+
+        const thumbCarouselRect =
+            thumbCarousel.getBoundingClientRect();
+
+        const mainGalleryHeight =
+            Math.round(
+                mainGalleryRect.height
+            );
+
+        if (mainGalleryHeight <= 0) {
+            return;
+        }
+
+        /*
+         * Differenz zwischen äußerem Thumbnailbereich und
+         * eigentlichem Slider. Das sind bei deiner Galerie
+         * ungefähr 30px für die Navigationsbuttons.
+         */
+        let controlsHeight =
+            Math.round(
+                thumbContainerRect.height -
+                thumbCarouselRect.height
+            );
+
+        if (
+            !Number.isFinite(controlsHeight) ||
+            controlsHeight < 0 ||
+            controlsHeight > 100
+        ) {
+            controlsHeight = 30;
+        }
+
+        const targetCarouselHeight =
+            Math.max(
+                1,
+                mainGalleryHeight -
+                controlsHeight
+            );
+
+        /*
+         * Woodmarts entscheidende Höhenvariable korrigieren.
+         */
+        productGallery.style.setProperty(
+            '--wd-thumbs-height',
+            `${mainGalleryHeight}px`
+        );
+
+        /*
+         * Äußerer Thumbnailbereich.
+         */
+        thumbContainer.style.setProperty(
+            'height',
+            `${mainGalleryHeight}px`
+        );
+
+        /*
+         * Nur die Höhe setzen.
+         * Gap, Breite und Grid-Einstellungen bleiben erhalten.
+         */
+        thumbCarousel.style.setProperty(
+            'height',
+            `${targetCarouselHeight}px`
+        );
+
+        const thumbItems =
+            Array.from(
+                thumbCarousel.querySelectorAll(
+                    THUMB_ITEM_SELECTOR
+                )
+            );
+
+        if (!thumbItems.length) {
+            return;
+        }
+
+        const visibleCount =
+            Math.max(
+                1,
+                getVisibleThumbnailCount(
+                    thumbCarousel,
+                    thumbItems
+                )
+            );
+
+        /*
+         * Woodmart berechnet die Slidehöhe ebenfalls als
+         * Sliderhöhe geteilt durch sichtbare Slides.
+         *
+         * Beispiel nach deinem korrekten Neuladen:
+         * 882px / 2 = 441px.
+         */
+        const targetItemHeight =
+            targetCarouselHeight /
+            visibleCount;
+
+        thumbItems.forEach(function (item) {
+            item.style.setProperty(
+                'height',
+                `${targetItemHeight}px`
+            );
+        });
+
+        productGallery.dataset
+            .jgMainGalleryHeight =
+            String(mainGalleryHeight);
+
+        productGallery.dataset
+            .jgThumbCarouselHeight =
+            String(targetCarouselHeight);
+
+        productGallery.dataset
+            .jgThumbItemHeight =
+            String(
+                Math.round(
+                    targetItemHeight * 10
+                ) / 10
+            );
+    }
+
+
+    /**
+     * Alle sichtbaren Produktgalerien korrigieren.
+     */
+    function synchronizeAllGalleries() {
+        document
+            .querySelectorAll(
+                GALLERY_COLUMN_SELECTOR
+            )
+            .forEach(
+                synchronizeGallery
+            );
+    }
+
+
+    /**
+     * Mehrere Korrekturen einplanen, weil Woodmart und
+     * Lazy Loading ihre Maße zeitversetzt setzen können.
+     */
+    function scheduleSynchronization() {
+        REFRESH_DELAYS.forEach(
+            function (delay) {
+                window.setTimeout(
+                    function () {
+                        window.requestAnimationFrame(
+                            synchronizeAllGalleries
+                        );
+                    },
+                    delay
+                );
+            }
+        );
+    }
+
+
+    /**
+     * Änderungen an Galerie-Bildern berücksichtigen.
+     */
+    function observeGalleryImages(
+        galleryColumn
+    ) {
+        galleryColumn
+            .querySelectorAll('img')
+            .forEach(function (image) {
+                if (
+                    image.dataset
+                        .jgThumbHeightObserved ===
+                    'true'
+                ) {
+                    return;
+                }
+
+                image.dataset
+                    .jgThumbHeightObserved =
+                    'true';
+
+                image.addEventListener(
+                    'load',
+                    scheduleSynchronization
+                );
+
+                image.addEventListener(
+                    'error',
+                    scheduleSynchronization
+                );
+            });
+    }
+
+
+    /**
+     * Initialisierung.
+     */
+    function initializeThumbnailCorrection() {
+        const galleryColumns =
+            document.querySelectorAll(
+                GALLERY_COLUMN_SELECTOR
+            );
+
+        if (!galleryColumns.length) {
+            return;
+        }
+
+        galleryColumns.forEach(
+            function (galleryColumn) {
+                observeGalleryImages(
+                    galleryColumn
+                );
+
+                const mainGalleries =
+                    galleryColumn
+                        .querySelectorAll(
+                            MAIN_GALLERY_SELECTOR
+                        );
+
+                /*
+                 * Nur Änderungen der Hauptgaleriehöhe
+                 * beobachten.
+                 */
+                const resizeObserver =
+                    new ResizeObserver(
+                        scheduleSynchronization
+                    );
+
+                mainGalleries.forEach(
+                    function (mainGallery) {
+                        resizeObserver.observe(
+                            mainGallery
+                        );
+                    }
+                );
+
+                /*
+                 * Lazy Loading oder Variationswechsel kann
+                 * neue Bilder einsetzen.
+                 */
+                const mutationObserver =
+                    new MutationObserver(
+                        function (mutations) {
+                            const hasAddedNodes =
+                                mutations.some(
+                                    function (
+                                        mutation
+                                    ) {
+                                        return (
+                                            mutation.type ===
+                                                'childList' &&
+                                            mutation
+                                                .addedNodes
+                                                .length > 0
+                                        );
+                                    }
+                                );
+
+                            if (!hasAddedNodes) {
+                                return;
+                            }
+
+                            observeGalleryImages(
+                                galleryColumn
+                            );
+
+                            scheduleSynchronization();
+                        }
+                    );
+
+                mutationObserver.observe(
+                    galleryColumn,
+                    {
+                        subtree: true,
+                        childList: true
+                    }
+                );
+            }
+        );
+
+        scheduleSynchronization();
+
+        window.addEventListener(
+            'pageshow',
+            scheduleSynchronization
+        );
+
+        window.addEventListener(
+            'orientationchange',
+            scheduleSynchronization
+        );
+
+        if (window.jQuery) {
+            window.jQuery(document).on(
+                [
+                    'found_variation',
+                    'reset_data',
+                    'woocommerce_variation_has_changed',
+                    'woodmart-ajax-content-reloaded',
+                    'pjax:complete',
+                    'pjax:end'
+                ].join(' '),
+                scheduleSynchronization
+            );
+        }
+    }
+
+
+    if (
+        document.readyState === 'loading'
+    ) {
+        document.addEventListener(
+            'DOMContentLoaded',
+            initializeThumbnailCorrection
+        );
+    } else {
+        initializeThumbnailCorrection();
+    }
+})();
