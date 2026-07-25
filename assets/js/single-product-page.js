@@ -1,26 +1,35 @@
 /* =========================================================
-   INFO-CONTAINER JEANS GLUTH
+   JEANS GLUTH – SINGLE PRODUCT PAGE
 
-   Flackerfreie Version:
-   - Messung an einer unsichtbaren Kopie
-   - Prüfung über benötigte Textbreite
-   - Bild wird bei echtem Textumbruch gestapelt
-   - Reagiert automatisch auf Breitenänderungen
+   Enthält:
+   1. Responsive Anordnung innerhalb von JG Info
+   2. Dynamische Position von JG Info und Additional Info
+
+   Wichtige Eigenschaften:
+   - Messungen erfolgen ausschließlich an unsichtbaren Kopien
+   - Sichtbare Container werden nicht testweise verschoben
+   - Keine gegenseitigen Observer-Endlosschleifen
+   - Elementor-Ausblendungen per display:none bleiben erhalten
    ========================================================= */
 
 (function () {
     'use strict';
 
-    const WRAPPER_SELECTOR =
+
+    /* =====================================================
+       GEMEINSAME EINSTELLUNGEN
+       ===================================================== */
+
+    const BENEFITS_SELECTOR =
         '.product-benefits';
 
-    const LIST_SELECTOR =
+    const BENEFITS_LIST_SELECTOR =
         '.product-benefits_list';
 
-    const IMAGE_SELECTOR =
+    const BENEFITS_IMAGE_SELECTOR =
         '.product-benefits_image';
 
-    const TEXT_SELECTOR =
+    const BENEFITS_TEXT_SELECTOR =
         '.elementor-icon-list-text';
 
     const SHRINK_1_CLASS =
@@ -32,33 +41,33 @@
     const STACKED_CLASS =
         'product-benefits_stacked';
 
-    const LAYOUT_CLASSES = [
+    const BENEFITS_LAYOUT_CLASSES = [
         SHRINK_1_CLASS,
         SHRINK_2_CLASS,
         STACKED_CLASS
     ];
 
     /*
-     * Die Messkopie wird etwas schmaler als der echte
-     * Container gemessen. Das schafft eine kleine Reserve
-     * gegen Rundungs- und Subpixelunterschiede.
+     * Reserve bei der Breitenmessung.
      */
-    const WIDTH_SAFETY_SPACE = 10;
+    const BENEFITS_WIDTH_RESERVE = 10;
 
     /*
-     * Zusätzliche Toleranz bei der Textbreitenprüfung.
+     * Toleranz bei der Textbreite.
      */
     const TEXT_WIDTH_TOLERANCE = 2;
 
-
-    /**
-     * Prüft, ob das Element grundsätzlich vermessen werden kann.
-     *
-     * visibility:hidden wird bewusst nicht berücksichtigt,
-     * weil der Container vor der ersten Messung durch das CSS
-     * unsichtbar gemacht wird.
+    /*
+     * Reserve zum unteren Galerierand.
      */
-    function isMeasurable(element) {
+    const FLOW_HEIGHT_RESERVE = 2;
+
+
+    /* =====================================================
+       ALLGEMEINE HILFSFUNKTIONEN
+       ===================================================== */
+
+    function isDisplayed(element) {
         if (!element) {
             return false;
         }
@@ -66,6 +75,11 @@
         const style =
             window.getComputedStyle(element);
 
+        /*
+         * visibility:hidden wird nicht geprüft.
+         * Messkopien und der Benefits-Container vor der
+         * Initialisierung dürfen unsichtbar sein.
+         */
         return (
             style.display !== 'none' &&
             element.getClientRects().length > 0
@@ -73,9 +87,6 @@
     }
 
 
-    /**
-     * Entfernt IDs aus einer Messkopie.
-     */
     function removeIds(element) {
         element.removeAttribute('id');
 
@@ -87,12 +98,41 @@
     }
 
 
-    /**
-     * Setzt einen Layoutzustand.
-     */
-    function setLayoutState(element, mode) {
+    function getOuterHeight(element) {
+        const rect =
+            element.getBoundingClientRect();
+
+        const style =
+            window.getComputedStyle(element);
+
+        const marginTop =
+            parseFloat(style.marginTop) || 0;
+
+        const marginBottom =
+            parseFloat(style.marginBottom) || 0;
+
+        return (
+            rect.height +
+            marginTop +
+            marginBottom
+        );
+    }
+
+
+    function nextFrame() {
+        return new Promise(function (resolve) {
+            window.requestAnimationFrame(resolve);
+        });
+    }
+
+
+    /* =====================================================
+       PRODUCT BENEFITS – LAYOUTLOGIK
+       ===================================================== */
+
+    function setBenefitsLayout(element, mode) {
         element.classList.remove(
-            ...LAYOUT_CLASSES
+            ...BENEFITS_LAYOUT_CLASSES
         );
 
         if (mode === 'shrink-1') {
@@ -121,8 +161,7 @@
 
 
     /**
-     * Erstellt einen unsichtbaren einzeiligen Text zum Messen
-     * der tatsächlich benötigten Textbreite.
+     * Ermittelt die Textbreite ohne Zeilenumbruch.
      */
     function measureNaturalTextWidth(textElement) {
         const style =
@@ -141,66 +180,31 @@
             'true'
         );
 
-        probe.style.position =
-            'fixed';
-
-        probe.style.left =
-            '-100000px';
-
-        probe.style.top =
-            '0';
-
-        probe.style.display =
-            'inline-block';
-
-        probe.style.visibility =
-            'hidden';
-
-        probe.style.pointerEvents =
-            'none';
-
-        probe.style.whiteSpace =
-            'nowrap';
-
-        probe.style.width =
-            'auto';
-
-        probe.style.maxWidth =
-            'none';
-
-        /*
-         * Relevante Typografie des Originaltexts übernehmen.
-         */
-        probe.style.fontFamily =
-            style.fontFamily;
-
-        probe.style.fontSize =
-            style.fontSize;
-
-        probe.style.fontStyle =
-            style.fontStyle;
-
-        probe.style.fontWeight =
-            style.fontWeight;
-
-        probe.style.fontStretch =
-            style.fontStretch;
-
-        probe.style.letterSpacing =
-            style.letterSpacing;
-
-        probe.style.wordSpacing =
-            style.wordSpacing;
-
-        probe.style.textTransform =
-            style.textTransform;
-
-        probe.style.lineHeight =
-            style.lineHeight;
-
-        document.body.appendChild(
-            probe
+        Object.assign(
+            probe.style,
+            {
+                position: 'fixed',
+                left: '-100000px',
+                top: '0',
+                display: 'inline-block',
+                visibility: 'hidden',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                width: 'auto',
+                maxWidth: 'none',
+                fontFamily: style.fontFamily,
+                fontSize: style.fontSize,
+                fontStyle: style.fontStyle,
+                fontWeight: style.fontWeight,
+                fontStretch: style.fontStretch,
+                letterSpacing: style.letterSpacing,
+                wordSpacing: style.wordSpacing,
+                textTransform: style.textTransform,
+                lineHeight: style.lineHeight
+            }
         );
+
+        document.body.appendChild(probe);
 
         const width =
             probe.getBoundingClientRect().width;
@@ -211,10 +215,6 @@
     }
 
 
-    /**
-     * Prüft, ob ein Text in der vorhandenen Breite umbrechen
-     * müsste.
-     */
     function textNeedsWrapping(textElement) {
         if (!textElement) {
             return false;
@@ -245,16 +245,13 @@
     }
 
 
-    /**
-     * Prüft alle Texte der Icon-Liste.
-     */
-    function listNeedsWrapping(
+    function benefitsListNeedsWrapping(
         listContainer
     ) {
         const textElements =
             Array.from(
                 listContainer.querySelectorAll(
-                    TEXT_SELECTOR
+                    BENEFITS_TEXT_SELECTOR
                 )
             );
 
@@ -269,13 +266,65 @@
 
 
     /**
-     * Erstellt eine unsichtbare Messkopie innerhalb derselben
-     * Produktseite. Dadurch gelten dieselben übergeordneten
-     * Elementor- und Woodmart-Stile.
+     * Bestimmt den Benefits-Zustand direkt an einem bereits
+     * unsichtbaren und korrekt breiten Element.
      */
-    function createMeasurementClone(
+    function determineBenefitsModeOnClone(
+        benefitsClone
+    ) {
+        const list =
+            benefitsClone.querySelector(
+                BENEFITS_LIST_SELECTOR
+            );
+
+        if (!list) {
+            return 'row';
+        }
+
+        setBenefitsLayout(
+            benefitsClone,
+            'row'
+        );
+
+        void benefitsClone.offsetWidth;
+
+        if (!benefitsListNeedsWrapping(list)) {
+            return 'row';
+        }
+
+        setBenefitsLayout(
+            benefitsClone,
+            'shrink-1'
+        );
+
+        void benefitsClone.offsetWidth;
+
+        if (!benefitsListNeedsWrapping(list)) {
+            return 'shrink-1';
+        }
+
+        setBenefitsLayout(
+            benefitsClone,
+            'shrink-2'
+        );
+
+        void benefitsClone.offsetWidth;
+
+        if (!benefitsListNeedsWrapping(list)) {
+            return 'shrink-2';
+        }
+
+        return 'stacked';
+    }
+
+
+    /**
+     * Bestimmt den Benefits-Zustand für eine bestimmte Breite
+     * mittels einer unsichtbaren Kopie.
+     */
+    function measureBenefitsMode(
         wrapper,
-        width
+        targetWidth
     ) {
         const clone =
             wrapper.cloneNode(true);
@@ -318,7 +367,8 @@
             'width',
             `${Math.max(
                 1,
-                width - WIDTH_SAFETY_SPACE
+                targetWidth -
+                BENEFITS_WIDTH_RESERVE
             )}px`,
             'important'
         );
@@ -353,109 +403,23 @@
             'important'
         );
 
-        /*
-         * Möglichst im gleichen Elementor-Kontext einfügen.
-         */
-        const measurementParent =
-            wrapper.parentElement ||
-            document.body;
+        document.body.appendChild(clone);
 
-        measurementParent.appendChild(
-            clone
-        );
-
-        /*
-         * Sofortige Layoutberechnung erzwingen.
-         */
-        void clone.offsetWidth;
-
-        return clone;
-    }
-
-
-    /**
-     * Prüft einen einzelnen Zustand an der Messkopie.
-     */
-    function cloneLayoutFits(
-        clone,
-        mode
-    ) {
-        setLayoutState(
-            clone,
-            mode
-        );
-
-        /*
-         * Browser nach dem Klassenwechsel zur Neuberechnung
-         * zwingen.
-         */
-        void clone.offsetWidth;
-
-        const cloneList =
-            clone.querySelector(
-                LIST_SELECTOR
-            );
-
-        if (!cloneList) {
-            return false;
-        }
-
-        return !listNeedsWrapping(
-            cloneList
-        );
-    }
-
-
-    /**
-     * Ermittelt den besten Layoutzustand.
-     */
-    function determineLayout(
-        wrapper,
-        width
-    ) {
-        const clone =
-            createMeasurementClone(
-                wrapper,
-                width
-            );
-
-        let result =
-            'stacked';
+        let mode = 'row';
 
         try {
-            if (
-                cloneLayoutFits(
-                    clone,
-                    'row'
-                )
-            ) {
-                result = 'row';
-            } else if (
-                cloneLayoutFits(
-                    clone,
-                    'shrink-1'
-                )
-            ) {
-                result = 'shrink-1';
-            } else if (
-                cloneLayoutFits(
-                    clone,
-                    'shrink-2'
-                )
-            ) {
-                result = 'shrink-2';
-            }
+            mode =
+                determineBenefitsModeOnClone(
+                    clone
+                );
         } finally {
             clone.remove();
         }
 
-        return result;
+        return mode;
     }
 
 
-    /**
-     * Initialisiert einen Benefits-Container.
-     */
     function initializeBenefits(wrapper) {
         if (
             wrapper.getAttribute(
@@ -467,18 +431,16 @@
 
         const listContainer =
             wrapper.querySelector(
-                LIST_SELECTOR
+                BENEFITS_LIST_SELECTOR
             );
 
         const imageContainer =
             wrapper.querySelector(
-                IMAGE_SELECTOR
+                BENEFITS_IMAGE_SELECTOR
             );
 
         const image =
-            imageContainer?.querySelector(
-                'img'
-            );
+            imageContainer?.querySelector('img');
 
         if (
             !listContainer ||
@@ -509,15 +471,10 @@
         );
 
         /*
-         * Alte Inline-Höhen entfernen.
+         * Überbleibsel älterer Versionen entfernen.
          */
-        image.style.removeProperty(
-            'height'
-        );
-
-        image.style.removeProperty(
-            'max-height'
-        );
+        image.style.removeProperty('height');
+        image.style.removeProperty('max-height');
 
         imageContainer.style.removeProperty(
             'height'
@@ -527,45 +484,20 @@
             'max-height'
         );
 
-
-        let animationFrameId = null;
-        let updateRunning = false;
-        let updateAgain = false;
-        let lastMeasuredWidth = 0;
+        let frameId = null;
+        let running = false;
+        let requestedAgain = false;
+        let lastWidth = 0;
         let currentMode = null;
 
 
-        /**
-         * Endgültiges Layout anwenden.
-         */
-        function applyFinalLayout(mode) {
-            if (mode !== currentMode) {
-                setLayoutState(
-                    wrapper,
-                    mode
-                );
-
-                currentMode =
-                    mode;
-            }
-
-            wrapper.setAttribute(
-                'data-benefits-ready',
-                'true'
-            );
-        }
-
-
-        /**
-         * Layout vollständig neu berechnen.
-         */
-        function updateLayout() {
-            if (updateRunning) {
-                updateAgain = true;
+        function updateBenefitsLayout() {
+            if (running) {
+                requestedAgain = true;
                 return;
             }
 
-            if (!isMeasurable(wrapper)) {
+            if (!isDisplayed(wrapper)) {
                 return;
             }
 
@@ -581,63 +513,67 @@
                 return;
             }
 
-            updateRunning = true;
-            updateAgain = false;
+            running = true;
+            requestedAgain = false;
 
-            const bestMode =
-                determineLayout(
+            const mode =
+                measureBenefitsMode(
                     wrapper,
                     width
                 );
 
-            applyFinalLayout(
-                bestMode
-            );
+            if (mode !== currentMode) {
+                setBenefitsLayout(
+                    wrapper,
+                    mode
+                );
 
-            lastMeasuredWidth =
+                currentMode = mode;
+            }
+
+            lastWidth =
                 Math.round(width);
 
-            updateRunning = false;
+            wrapper.setAttribute(
+                'data-benefits-ready',
+                'true'
+            );
 
-            if (updateAgain) {
-                updateAgain = false;
-                scheduleUpdate(true);
+            running = false;
+
+            if (requestedAgain) {
+                requestedAgain = false;
+                scheduleBenefitsUpdate(true);
             }
         }
 
 
-        /**
-         * Aktualisierung für den nächsten Browser-Frame planen.
-         */
-        function scheduleUpdate(force) {
+        function scheduleBenefitsUpdate(force) {
             if (force) {
-                lastMeasuredWidth = 0;
+                lastWidth = 0;
             }
 
-            if (updateRunning) {
-                updateAgain = true;
+            if (running) {
+                requestedAgain = true;
                 return;
             }
 
-            if (animationFrameId !== null) {
+            if (frameId !== null) {
                 window.cancelAnimationFrame(
-                    animationFrameId
+                    frameId
                 );
             }
 
-            animationFrameId =
+            frameId =
                 window.requestAnimationFrame(
                     function () {
-                        animationFrameId = null;
-                        updateLayout();
+                        frameId = null;
+                        updateBenefitsLayout();
                     }
                 );
         }
 
 
-        /**
-         * Nur tatsächliche Breitenänderungen beobachten.
-         */
         const resizeObserver =
             new ResizeObserver(
                 function (entries) {
@@ -648,316 +584,283 @@
                         return;
                     }
 
-                    const newWidth =
+                    const width =
                         Math.round(
                             entry.contentRect.width
                         );
 
-                    if (newWidth <= 0) {
+                    if (width <= 0) {
                         return;
                     }
 
                     if (
-                        lastMeasuredWidth > 0 &&
+                        lastWidth > 0 &&
                         Math.abs(
-                            newWidth -
-                            lastMeasuredWidth
+                            width - lastWidth
                         ) < 2
                     ) {
                         return;
                     }
 
-                    scheduleUpdate(false);
+                    scheduleBenefitsUpdate(false);
                 }
             );
 
-        resizeObserver.observe(
-            wrapper
-        );
+        resizeObserver.observe(wrapper);
 
 
-        /**
-         * Fensteränderungen.
+        /*
+         * Wird vom Flow-Skript nach einer endgültigen
+         * Positionsänderung ausgelöst.
          */
-        window.addEventListener(
-            'resize',
+        wrapper.addEventListener(
+            'jg-benefits-recalculate',
             function () {
-                scheduleUpdate(false);
-            },
-            { passive: true }
-        );
-
-        window.addEventListener(
-            'orientationchange',
-            function () {
-                scheduleUpdate(true);
+                scheduleBenefitsUpdate(true);
             }
         );
 
 
-        /**
-         * Nach dem Laden der Schrift erneut messen.
-         */
+        window.addEventListener(
+            'resize',
+            function () {
+                scheduleBenefitsUpdate(false);
+            },
+            { passive: true }
+        );
+
+
+        window.addEventListener(
+            'orientationchange',
+            function () {
+                scheduleBenefitsUpdate(true);
+            }
+        );
+
+
         if (
             document.fonts &&
             document.fonts.ready
         ) {
             document.fonts.ready.then(
                 function () {
-                    scheduleUpdate(true);
+                    scheduleBenefitsUpdate(true);
                 }
             );
         }
 
 
-        /**
-         * Nach dem Laden des Bildes erneut messen.
-         */
         if (!image.complete) {
             image.addEventListener(
                 'load',
                 function () {
-                    scheduleUpdate(true);
+                    scheduleBenefitsUpdate(true);
                 },
                 { once: true }
             );
         }
 
 
-        /**
-         * Erste Messung.
-         */
-        scheduleUpdate(true);
+        scheduleBenefitsUpdate(true);
     }
 
 
-    /**
-     * Alle Benefits-Bereiche initialisieren.
-     */
-    function startBenefitsLayout() {
-        document
-            .querySelectorAll(
-                WRAPPER_SELECTOR
-            )
-            .forEach(
-                initializeBenefits
+    /* =====================================================
+       DYNAMISCHE FLOW-ANORDNUNG
+       ===================================================== */
+
+    function initializeProductFlow(layout) {
+        const productTop =
+            layout.querySelector(
+                '.product-top'
             );
-    }
+
+        const galleryColumn =
+            layout.querySelector(
+                '.product-gallery-column'
+            );
+
+        const infoColumn =
+            layout.querySelector(
+                '.product-info-column'
+            );
+
+        const infoMain =
+            layout.querySelector(
+                '.product-info-main'
+            );
+
+        const flowElements = [
+            layout.querySelector(
+                '.product-flow-jg'
+            ),
+            layout.querySelector(
+                '.product-flow-additional'
+            )
+        ].filter(Boolean);
+
+        if (
+            !productTop ||
+            !galleryColumn ||
+            !infoColumn ||
+            !infoMain ||
+            flowElements.length !== 2
+        ) {
+            console.warn(
+                'Dynamisches Produktlayout ist unvollständig.',
+                {
+                    productTop,
+                    galleryColumn,
+                    infoColumn,
+                    infoMain,
+                    flowElements
+                }
+            );
+
+            return;
+        }
 
 
-    if (
-        document.readyState ===
-        'loading'
-    ) {
-        document.addEventListener(
-            'DOMContentLoaded',
-            startBenefitsLayout
-        );
-    } else {
-        startBenefitsLayout();
-    }
-})();
+        const items =
+            flowElements.map(
+                function (element, index) {
+                    const placeholder =
+                        document.createComment(
+                            `product-flow-${index}`
+                        );
 
-/* =========================================================
-   DYNAMISCHE ANORDNUNG DER PRODUKT-CONTAINER
+                    element.parentNode.insertBefore(
+                        placeholder,
+                        element
+                    );
 
-   Reihenfolge:
-   1. Hauptinformationen
-   2. JG Info
-   3. Additional Information
-
-   Jeder Zusatzbereich wird zunächst unsichtbar rechts
-   eingesetzt und dort mit seinem echten Layout vermessen.
-   Nur wenn er tatsächlich über die Galerie hinausreicht,
-   wird er wieder unter die Galerie verschoben.
-   ========================================================= */
-
-document.addEventListener('DOMContentLoaded', function () {
-    document
-        .querySelectorAll('.product-layout')
-        .forEach(initializeProductFlow);
-});
+                    return {
+                        element,
+                        placeholder,
+                        name:
+                            index === 0
+                                ? 'jgInfoFlow'
+                                : 'additionalFlow'
+                    };
+                }
+            );
 
 
-function initializeProductFlow(layout) {
-    const productTop =
-        layout.querySelector('.product-top');
+        let frameId = null;
+        let running = false;
+        let requestedAgain = false;
+        let applyingResult = false;
 
-    const galleryColumn =
-        layout.querySelector(
-            '.product-gallery-column'
-        );
 
-    const infoColumn =
-        layout.querySelector(
-            '.product-info-column'
-        );
-
-    const infoMain =
-        layout.querySelector(
-            '.product-info-main'
-        );
-
-    const flowElements = [
-        layout.querySelector(
-            '.product-flow-jg'
-        ),
-        layout.querySelector(
-            '.product-flow-additional'
-        ),
-    ].filter(Boolean);
-
-    if (
-        !productTop ||
-        !galleryColumn ||
-        !infoColumn ||
-        !infoMain ||
-        flowElements.length !== 2
-    ) {
-        console.warn(
-            'Dynamisches Produktlayout ist unvollständig.',
-            {
-                productTop,
-                galleryColumn,
-                infoColumn,
-                infoMain,
-                flowElements,
+        function columnsAreSideBySide() {
+            if (
+                !isDisplayed(galleryColumn) ||
+                !isDisplayed(infoColumn)
+            ) {
+                return false;
             }
-        );
 
-        return;
-    }
+            const galleryRect =
+                galleryColumn
+                    .getBoundingClientRect();
+
+            const infoRect =
+                infoColumn
+                    .getBoundingClientRect();
+
+            return (
+                Math.abs(
+                    galleryRect.top -
+                    infoRect.top
+                ) <= 15 &&
+                infoRect.left >
+                    galleryRect.left + 20
+            );
+        }
 
 
-    /*
-     * Ursprüngliche Elementor-Positionen speichern.
-     */
-    const items = flowElements.map(
-        function (element, index) {
-            const placeholder =
-                document.createComment(
-                    `product-flow-position-${index}`
+        function getInfoColumnGap() {
+            const style =
+                window.getComputedStyle(
+                    infoColumn
                 );
 
-            element.parentNode.insertBefore(
-                placeholder,
-                element
-            );
+            const rowGap =
+                parseFloat(style.rowGap);
 
-            return {
-                element,
-                placeholder,
-                name:
-                    index === 0
-                        ? 'jgInfoFlow'
-                        : 'additionalFlow',
-            };
-        }
-    );
+            if (Number.isFinite(rowGap)) {
+                return rowGap;
+            }
 
+            const gap =
+                parseFloat(style.gap);
 
-    let animationFrameId = null;
-    let updateRunning = false;
-    let updateRequested = false;
-    let observersPaused = false;
-
-
-    /**
-     * Prüft nur display:none.
-     *
-     * visibility:hidden wird absichtlich ignoriert,
-     * weil Elemente während der Messung unsichtbar
-     * dargestellt werden.
-     */
-    function isDisplayed(element) {
-        if (!element) {
-            return false;
+            return Number.isFinite(gap)
+                ? gap
+                : 0;
         }
 
-        const style =
-            window.getComputedStyle(element);
 
-        return (
-            style.display !== 'none' &&
-            element.getClientRects().length > 0
-        );
-    }
+        function getVisibleGalleryWidget() {
+            const selectors = [
+                '.elementor-widget-wd_single_product_gallery',
+                '.woocommerce-product-gallery',
+                '.wd-gallery-images',
+                '.wd-carousel-container'
+            ];
 
+            const directChildren =
+                Array.from(
+                    galleryColumn.children
+                ).filter(isDisplayed);
 
-    /**
-     * Wartet auf den nächsten Browser-Frame.
-     */
-    function nextFrame() {
-        return new Promise(function (resolve) {
-            window.requestAnimationFrame(resolve);
-        });
-    }
+            if (directChildren.length) {
+                return directChildren.reduce(
+                    function (largest, current) {
+                        const largestRect =
+                            largest
+                                .getBoundingClientRect();
 
+                        const currentRect =
+                            current
+                                .getBoundingClientRect();
 
-    /**
-     * Mehrere Layoutzyklen abwarten.
-     *
-     * Dadurch können auch das separate Benefits-Skript,
-     * Elementor und Woodmart auf die neue Breite reagieren.
-     */
-    async function waitForLayout() {
-        await nextFrame();
-        await nextFrame();
-        await nextFrame();
-    }
+                        const largestArea =
+                            largestRect.width *
+                            largestRect.height;
 
+                        const currentArea =
+                            currentRect.width *
+                            currentRect.height;
 
-    /**
-     * Prüft, ob Galerie und Infospalte nebeneinander stehen.
-     */
-    function columnsAreSideBySide() {
-        if (
-            !isDisplayed(galleryColumn) ||
-            !isDisplayed(infoColumn)
-        ) {
-            return false;
-        }
+                        return currentArea > largestArea
+                            ? current
+                            : largest;
+                    }
+                );
+            }
 
-        const galleryRect =
-            galleryColumn.getBoundingClientRect();
+            const candidates =
+                Array.from(
+                    galleryColumn
+                        .querySelectorAll(
+                            selectors.join(',')
+                        )
+                ).filter(isDisplayed);
 
-        const infoRect =
-            infoColumn.getBoundingClientRect();
+            if (!candidates.length) {
+                return null;
+            }
 
-        const sameRow =
-            Math.abs(
-                galleryRect.top -
-                infoRect.top
-            ) <= 15;
-
-        const infoIsRight =
-            infoRect.left >
-            galleryRect.left + 20;
-
-        return sameRow && infoIsRight;
-    }
-
-
-    /**
-     * Tatsächlich sichtbares Galerie-Widget bestimmen.
-     *
-     * Es wird nicht die eventuell gestreckte äußere
-     * Galerie-Spalte verwendet.
-     */
-    function getVisibleGalleryWidget() {
-        const directChildren =
-            Array.from(
-                galleryColumn.children
-            ).filter(isDisplayed);
-
-        if (directChildren.length) {
-            return directChildren.reduce(
+            return candidates.reduce(
                 function (largest, current) {
                     const largestRect =
-                        largest.getBoundingClientRect();
+                        largest
+                            .getBoundingClientRect();
 
                     const currentRect =
-                        current.getBoundingClientRect();
+                        current
+                            .getBoundingClientRect();
 
                     const largestArea =
                         largestRect.width *
@@ -974,410 +877,474 @@ function initializeProductFlow(layout) {
             );
         }
 
-        const candidates =
-            Array.from(
-                galleryColumn.querySelectorAll(
-                    [
-                        '.elementor-widget-wd_single_product_gallery',
-                        '.woocommerce-product-gallery',
-                        '.wd-gallery-images',
-                        '.wd-carousel-container',
-                    ].join(',')
-                )
-            ).filter(isDisplayed);
 
-        if (!candidates.length) {
-            return null;
-        }
-
-        return candidates.reduce(
-            function (largest, current) {
-                const largestRect =
-                    largest.getBoundingClientRect();
-
-                const currentRect =
-                    current.getBoundingClientRect();
-
-                const largestArea =
-                    largestRect.width *
-                    largestRect.height;
-
-                const currentArea =
-                    currentRect.width *
-                    currentRect.height;
-
-                return currentArea > largestArea
-                    ? current
-                    : largest;
-            }
-        );
-    }
-
-
-    /**
-     * Element an seine ursprüngliche Position zurücksetzen.
-     */
-    function moveBelow(item) {
-        const originalParent =
-            item.placeholder.parentNode;
-
-        if (!originalParent) {
-            return;
-        }
-
-        const alreadyBelow =
-            item.element.parentNode === originalParent &&
-            item.element.previousSibling ===
-                item.placeholder;
-
-        if (!alreadyBelow) {
-            originalParent.insertBefore(
-                item.element,
-                item.placeholder.nextSibling
-            );
-        }
-
-        item.element.classList.remove(
-            'is-beside-gallery'
-        );
-
-        item.element.style.removeProperty(
-            'visibility'
-        );
-
-        item.element.style.removeProperty(
-            'pointer-events'
-        );
-    }
-
-
-    /**
-     * Element zunächst unsichtbar rechts einsetzen.
-     */
-    function moveBesideForMeasurement(item) {
-        if (
-            item.element.parentNode !==
-            infoColumn
-        ) {
-            infoColumn.appendChild(
-                item.element
-            );
-        }
-
-        item.element.classList.add(
-            'is-beside-gallery'
-        );
-
-        item.element.style.setProperty(
-            'visibility',
-            'hidden',
-            'important'
-        );
-
-        item.element.style.setProperty(
-            'pointer-events',
-            'none',
-            'important'
-        );
-    }
-
-
-    /**
-     * Rechts eingesetztes Element sichtbar machen.
-     */
-    function showBeside(item) {
-        item.element.style.removeProperty(
-            'visibility'
-        );
-
-        item.element.style.removeProperty(
-            'pointer-events'
-        );
-    }
-
-
-    /**
-     * Alle Zusatzbereiche nach unten setzen.
-     */
-    function resetAllItems() {
-        items.forEach(moveBelow);
-
-        layout.dataset.jgInfoFlow =
-            'below';
-
-        layout.dataset.additionalFlow =
-            'below';
-    }
-
-
-    /**
-     * Prüft die tatsächliche Unterkante der rechten Spalte.
-     */
-    function rightContentFits(
-        galleryWidget,
-        safetySpace
-    ) {
-        const galleryRect =
-            galleryWidget.getBoundingClientRect();
-
-        const infoRect =
-            infoColumn.getBoundingClientRect();
-
-        return (
-            infoRect.bottom + safetySpace <=
-            galleryRect.bottom
-        );
-    }
-
-
-    /**
-     * Vollständige Layoutentscheidung.
-     */
-    async function updateLayout() {
-        if (updateRunning) {
-            updateRequested = true;
-            return;
-        }
-
-        updateRunning = true;
-        updateRequested = false;
-        observersPaused = true;
-
-        resetAllItems();
-
-        await waitForLayout();
-
-        if (
-            !isDisplayed(productTop) ||
-            !isDisplayed(galleryColumn) ||
-            !isDisplayed(infoColumn) ||
-            !isDisplayed(infoMain) ||
-            !columnsAreSideBySide()
-        ) {
-            observersPaused = false;
-            updateRunning = false;
-            return;
-        }
-
-        const galleryWidget =
-            getVisibleGalleryWidget();
-
-        if (!galleryWidget) {
-            console.warn(
-                'Kein sichtbares Galerie-Widget gefunden.'
-            );
-
-            observersPaused = false;
-            updateRunning = false;
-            return;
-        }
-
-        /*
-         * Kleine Reserve zum unteren Galerierand.
+        /**
+         * Misst einen kompletten Flow-Container in der Breite
+         * der rechten Info-Spalte, ohne das Original zu bewegen.
          */
-        const safetySpace = 2;
-
-        /*
-         * Elemente der Reihe nach testen.
-         */
-        for (
-            let index = 0;
-            index < items.length;
-            index += 1
+        function measureFlowItem(
+            element,
+            targetWidth
         ) {
-            const item =
-                items[index];
+            const clone =
+                element.cloneNode(true);
 
-            if (!isDisplayed(item.element)) {
-                layout.dataset[item.name] =
-                    'hidden';
+            removeIds(clone);
 
-                continue;
-            }
+            clone.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+            clone.style.setProperty(
+                'position',
+                'fixed',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'left',
+                '-100000px',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'top',
+                '0',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'width',
+                `${targetWidth}px`,
+                'important'
+            );
+
+            clone.style.setProperty(
+                'min-width',
+                '0',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'max-width',
+                `${targetWidth}px`,
+                'important'
+            );
+
+            clone.style.setProperty(
+                'visibility',
+                'hidden',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'pointer-events',
+                'none',
+                'important'
+            );
+
+            clone.style.setProperty(
+                'z-index',
+                '-1',
+                'important'
+            );
 
             /*
-             * Unsichtbar rechts einsetzen.
+             * Innerhalb der Info-Spalte einfügen, damit
+             * übergeordnete CSS-Selektoren erhalten bleiben.
+             *
+             * position:fixed verhindert eine Änderung
+             * des sichtbaren Layouts.
              */
-            moveBesideForMeasurement(item);
+            infoColumn.appendChild(clone);
 
             /*
-             * Benefits-Skript und Browser auf die neue
-             * Spaltenbreite reagieren lassen.
+             * In der Kopie enthaltene Benefits-Container
+             * auf den für diese Breite passenden Zustand setzen.
              */
-            await waitForLayout();
-
-            if (
-                rightContentFits(
-                    galleryWidget,
-                    safetySpace
+            clone
+                .querySelectorAll(
+                    BENEFITS_SELECTOR
                 )
-            ) {
-                showBeside(item);
-
-                layout.dataset[item.name] =
-                    'beside';
-            } else {
-                /*
-                 * Dieses Element passt nicht mehr.
-                 */
-                moveBelow(item);
-
-                layout.dataset[item.name] =
-                    'below';
-
-                /*
-                 * Alle folgenden Elemente bleiben ebenfalls
-                 * unten, damit die Reihenfolge erhalten bleibt.
-                 */
-                for (
-                    let nextIndex =
-                        index + 1;
-                    nextIndex < items.length;
-                    nextIndex += 1
+                .forEach(function (
+                    benefitsClone
                 ) {
-                    const nextItem =
-                        items[nextIndex];
+                    benefitsClone.setAttribute(
+                        'data-benefits-ready',
+                        'true'
+                    );
 
-                    moveBelow(nextItem);
+                    const mode =
+                        determineBenefitsModeOnClone(
+                            benefitsClone
+                        );
 
-                    layout.dataset[nextItem.name] =
-                        isDisplayed(nextItem.element)
-                            ? 'below'
-                            : 'hidden';
-                }
+                    setBenefitsLayout(
+                        benefitsClone,
+                        mode
+                    );
+                });
 
-                break;
+            void clone.offsetWidth;
+
+            const height =
+                getOuterHeight(clone);
+
+            clone.remove();
+
+            return height;
+        }
+
+
+        function moveBelow(item) {
+            const originalParent =
+                item.placeholder.parentNode;
+
+            if (!originalParent) {
+                return;
             }
-        }
 
-        const galleryRect =
-            galleryWidget.getBoundingClientRect();
+            const alreadyBelow =
+                item.element.parentNode ===
+                    originalParent &&
+                item.element.previousSibling ===
+                    item.placeholder;
 
-        const infoRect =
-            infoColumn.getBoundingClientRect();
-
-        layout.dataset.galleryBottom =
-            Math.round(galleryRect.bottom);
-
-        layout.dataset.infoBottom =
-            Math.round(infoRect.bottom);
-
-        observersPaused = false;
-        updateRunning = false;
-
-        if (updateRequested) {
-            updateRequested = false;
-            scheduleUpdate();
-        }
-    }
-
-
-    /**
-     * Aktualisierung für nächsten Frame einplanen.
-     */
-    function scheduleUpdate() {
-        if (observersPaused) {
-            updateRequested = true;
-            return;
-        }
-
-        if (animationFrameId !== null) {
-            window.cancelAnimationFrame(
-                animationFrameId
-            );
-        }
-
-        animationFrameId =
-            window.requestAnimationFrame(
-                function () {
-                    animationFrameId = null;
-                    updateLayout();
-                }
-            );
-    }
-
-
-    /**
-     * Relevante Größenänderungen beobachten.
-     *
-     * Die Zusatzbereiche selbst werden nicht beobachtet,
-     * damit ihre interne row-/stacked-Umschaltung keine
-     * Endlosschleife auslöst.
-     */
-    const resizeObserver =
-        new ResizeObserver(function () {
-            if (!observersPaused) {
-                scheduleUpdate();
-            }
-        });
-
-    [
-        productTop,
-        galleryColumn,
-        infoMain,
-    ].forEach(function (element) {
-        resizeObserver.observe(element);
-    });
-
-
-    /**
-     * Nachgeladene Galerie-Bilder.
-     */
-    galleryColumn
-        .querySelectorAll('img')
-        .forEach(function (image) {
-            if (!image.complete) {
-                image.addEventListener(
-                    'load',
-                    scheduleUpdate,
-                    { once: true }
+            if (!alreadyBelow) {
+                originalParent.insertBefore(
+                    item.element,
+                    item.placeholder.nextSibling
                 );
             }
+
+            item.element.classList.remove(
+                'is-beside-gallery'
+            );
+        }
+
+
+        function moveBeside(item) {
+            if (
+                item.element.parentNode !==
+                infoColumn
+            ) {
+                infoColumn.appendChild(
+                    item.element
+                );
+            }
+
+            item.element.classList.add(
+                'is-beside-gallery'
+            );
+        }
+
+
+        function notifyBenefits(element) {
+            element
+                .querySelectorAll(
+                    BENEFITS_SELECTOR
+                )
+                .forEach(function (benefits) {
+                    benefits.dispatchEvent(
+                        new CustomEvent(
+                            'jg-benefits-recalculate'
+                        )
+                    );
+                });
+        }
+
+
+        function updateFlowLayout() {
+            if (running) {
+                requestedAgain = true;
+                return;
+            }
+
+            running = true;
+            requestedAgain = false;
+
+            if (
+                !isDisplayed(productTop) ||
+                !isDisplayed(galleryColumn) ||
+                !isDisplayed(infoColumn) ||
+                !isDisplayed(infoMain) ||
+                !columnsAreSideBySide()
+            ) {
+                applyingResult = true;
+
+                items.forEach(moveBelow);
+
+                applyingResult = false;
+                running = false;
+
+                return;
+            }
+
+            const galleryWidget =
+                getVisibleGalleryWidget();
+
+            if (!galleryWidget) {
+                running = false;
+                return;
+            }
+
+            const infoWidth =
+                infoColumn
+                    .getBoundingClientRect()
+                    .width;
+
+            if (
+                !Number.isFinite(infoWidth) ||
+                infoWidth <= 0
+            ) {
+                running = false;
+                return;
+            }
+
+            const galleryHeight =
+                getOuterHeight(galleryWidget);
+
+            const infoMainHeight =
+                getOuterHeight(infoMain);
+
+            const gap =
+                getInfoColumnGap();
+
+            let usedHeight =
+                infoMainHeight;
+
+            let furtherItemsMayMove =
+                true;
+
+            const decisions =
+                items.map(
+                    function (item) {
+                        if (
+                            !isDisplayed(
+                                item.element
+                            )
+                        ) {
+                            return 'hidden';
+                        }
+
+                        if (!furtherItemsMayMove) {
+                            return 'below';
+                        }
+
+                        const itemHeight =
+                            measureFlowItem(
+                                item.element,
+                                infoWidth
+                            );
+
+                        const requiredHeight =
+                            usedHeight +
+                            gap +
+                            itemHeight +
+                            FLOW_HEIGHT_RESERVE;
+
+                        if (
+                            requiredHeight <=
+                            galleryHeight
+                        ) {
+                            usedHeight +=
+                                gap +
+                                itemHeight;
+
+                            return 'beside';
+                        }
+
+                        furtherItemsMayMove =
+                            false;
+
+                        return 'below';
+                    }
+                );
+
+
+            /*
+             * Erst jetzt die sichtbaren Originale genau einmal
+             * entsprechend dem fertigen Ergebnis verschieben.
+             */
+            applyingResult = true;
+
+            items.forEach(
+                function (item, index) {
+                    const decision =
+                        decisions[index];
+
+                    if (decision === 'beside') {
+                        moveBeside(item);
+                    } else {
+                        moveBelow(item);
+                    }
+
+                    layout.dataset[item.name] =
+                        decision;
+                }
+            );
+
+            applyingResult = false;
+
+
+            /*
+             * Benefits-Layout nach der endgültigen Position
+             * gezielt neu berechnen.
+             */
+            items.forEach(function (item) {
+                notifyBenefits(item.element);
+            });
+
+
+            layout.dataset.galleryHeight =
+                Math.round(galleryHeight);
+
+            layout.dataset.usedRightHeight =
+                Math.round(usedHeight);
+
+            running = false;
+
+            if (requestedAgain) {
+                requestedAgain = false;
+                scheduleFlowUpdate();
+            }
+        }
+
+
+        function scheduleFlowUpdate() {
+            if (applyingResult) {
+                return;
+            }
+
+            if (running) {
+                requestedAgain = true;
+                return;
+            }
+
+            if (frameId !== null) {
+                window.cancelAnimationFrame(
+                    frameId
+                );
+            }
+
+            frameId =
+                window.requestAnimationFrame(
+                    function () {
+                        frameId = null;
+                        updateFlowLayout();
+                    }
+                );
+        }
+
+
+        /*
+         * Die Flow-Elemente selbst werden nicht beobachtet.
+         * Dadurch löst deren internes Benefits-Layout keine
+         * erneute Flow-Berechnung aus.
+         */
+        const resizeObserver =
+            new ResizeObserver(
+                function () {
+                    if (!applyingResult) {
+                        scheduleFlowUpdate();
+                    }
+                }
+            );
+
+        [
+            productTop,
+            galleryColumn,
+            infoMain
+        ].forEach(function (element) {
+            resizeObserver.observe(element);
         });
 
 
-    /**
-     * Browser- und Geräteänderungen.
-     */
-    window.addEventListener(
-        'resize',
-        scheduleUpdate,
-        { passive: true }
-    );
-
-    window.addEventListener(
-        'orientationchange',
-        scheduleUpdate
-    );
+        galleryColumn
+            .querySelectorAll('img')
+            .forEach(function (image) {
+                if (!image.complete) {
+                    image.addEventListener(
+                        'load',
+                        scheduleFlowUpdate,
+                        { once: true }
+                    );
+                }
+            });
 
 
-    /**
-     * WooCommerce-Variationen.
-     */
-    if (window.jQuery) {
-        window.jQuery(document).on(
-            [
-                'found_variation',
-                'reset_data',
-                'woocommerce_variation_has_changed',
-            ].join(' '),
-            scheduleUpdate
+        window.addEventListener(
+            'resize',
+            scheduleFlowUpdate,
+            { passive: true }
         );
+
+
+        window.addEventListener(
+            'orientationchange',
+            scheduleFlowUpdate
+        );
+
+
+        if (window.jQuery) {
+            window.jQuery(document).on(
+                [
+                    'found_variation',
+                    'reset_data',
+                    'woocommerce_variation_has_changed'
+                ].join(' '),
+                scheduleFlowUpdate
+            );
+        }
+
+
+        if (
+            document.fonts &&
+            document.fonts.ready
+        ) {
+            document.fonts.ready.then(
+                scheduleFlowUpdate
+            );
+        }
+
+
+        scheduleFlowUpdate();
     }
 
 
-    /**
-     * Webfonts können die Texthöhen verändern.
-     */
+    /* =====================================================
+       INITIALISIERUNG
+       ===================================================== */
+
+    function startLayouts() {
+        document
+            .querySelectorAll(
+                BENEFITS_SELECTOR
+            )
+            .forEach(
+                initializeBenefits
+            );
+
+        document
+            .querySelectorAll(
+                '.product-layout'
+            )
+            .forEach(
+                initializeProductFlow
+            );
+    }
+
+
     if (
-        document.fonts &&
-        document.fonts.ready
+        document.readyState === 'loading'
     ) {
-        document.fonts.ready.then(
-            scheduleUpdate
+        document.addEventListener(
+            'DOMContentLoaded',
+            startLayouts
         );
+    } else {
+        startLayouts();
     }
 
-
-    scheduleUpdate();
-}
+})();
