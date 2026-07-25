@@ -8,10 +8,6 @@
     const COMPACT_CLASS = 'product-benefits_compact';
     const STACKED_CLASS = 'product-benefits_stacked';
 
-    /**
-     * Prüft, ob das Textelement tatsächlich mehr als
-     * eine sichtbare Textzeile enthält.
-     */
     function textIsWrapped(textElement) {
         const style = window.getComputedStyle(textElement);
 
@@ -27,24 +23,22 @@
         const actualHeight =
             textElement.getBoundingClientRect().height;
 
+        /*
+         * Eine zweite Zeile ist ungefähr doppelt so hoch.
+         * 1,5 verhindert Fehlmessungen durch Rundungsdifferenzen.
+         */
         return actualHeight > lineHeight * 1.5;
     }
 
-    /**
-     * Prüft alle Texte der Elementor Icon List.
-     */
     function listHasWrappedText(listContainer) {
-        const textElements = Array.from(
+        const texts = Array.from(
             listContainer.querySelectorAll(TEXT_SELECTOR)
         );
 
-        return textElements.some(textIsWrapped);
+        return texts.some(textIsWrapped);
     }
 
     function initializeBenefits(wrapper) {
-        /*
-         * Mehrfache Initialisierung verhindern.
-         */
         if (
             wrapper.getAttribute(
                 'data-benefits-script-initialized'
@@ -57,13 +51,8 @@
             wrapper.querySelector(LIST_SELECTOR);
 
         if (!listContainer) {
-            wrapper.setAttribute(
-                'data-benefits-ready',
-                'true'
-            );
-
             console.error(
-                'Product Benefits: Icon-List-Container fehlt.',
+                'Product Benefits: Icon-List-Container nicht gefunden.',
                 wrapper
             );
 
@@ -78,9 +67,6 @@
         let resizeTimer = null;
         let updateRunning = false;
 
-        /**
-         * Setzt einen eindeutigen Layoutzustand.
-         */
         function setLayout(mode) {
             wrapper.classList.toggle(
                 COMPACT_CLASS,
@@ -98,13 +84,15 @@
             );
         }
 
-        /**
-         * Prüft die Zustände in der gewünschten Reihenfolge:
-         *
-         * 1. Normal nebeneinander
-         * 2. Kompakt nebeneinander
-         * 3. Untereinander
-         */
+        function finishUpdate() {
+            wrapper.setAttribute(
+                'data-benefits-ready',
+                'true'
+            );
+
+            updateRunning = false;
+        }
+
         function updateLayout() {
             if (updateRunning) {
                 return;
@@ -113,59 +101,41 @@
             updateRunning = true;
 
             /*
-             * Zunächst den normalen Zustand herstellen.
+             * Schritt 1:
+             * Normal nebeneinander messen.
              */
             setLayout('row');
 
-            /*
-             * Browser zur sofortigen Layoutberechnung zwingen.
-             */
             void wrapper.offsetWidth;
 
             window.requestAnimationFrame(function () {
-                /*
-                 * Passt alles normal nebeneinander?
-                 */
                 if (!listHasWrappedText(listContainer)) {
                     setLayout('row');
-
-                    wrapper.setAttribute(
-                        'data-benefits-ready',
-                        'true'
-                    );
-
-                    updateRunning = false;
+                    finishUpdate();
                     return;
                 }
 
                 /*
-                 * Erster Textumbruch:
-                 * Bild weiter nach rechts schieben und Abstand reduzieren.
+                 * Schritt 2:
+                 * Abstand reduzieren und erneut messen.
                  */
                 setLayout('compact');
 
                 void wrapper.offsetWidth;
 
                 window.requestAnimationFrame(function () {
-                    /*
-                     * Passt es im kompakten Zustand?
-                     */
                     if (!listHasWrappedText(listContainer)) {
                         setLayout('compact');
                     } else {
                         /*
-                         * Auch kompakt nicht ausreichend:
-                         * Bild unter die Icon-Liste setzen.
+                         * Schritt 3:
+                         * Nur wenn der Text weiterhin umbricht,
+                         * Bild unter die Liste setzen.
                          */
                         setLayout('stacked');
                     }
 
-                    wrapper.setAttribute(
-                        'data-benefits-ready',
-                        'true'
-                    );
-
-                    updateRunning = false;
+                    finishUpdate();
                 });
             });
         }
@@ -179,30 +149,16 @@
             );
         }
 
-        /*
-         * Nur auf echte Größenänderungen des Browserfensters
-         * reagieren. Kein ResizeObserver, damit keine
-         * Umschaltschleife entsteht.
-         */
         window.addEventListener(
             'resize',
             scheduleUpdate,
             { passive: true }
         );
 
-        /*
-         * Nach dem Laden der Schriftarten erneut messen.
-         */
-        if (
-            document.fonts &&
-            document.fonts.ready
-        ) {
+        if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(updateLayout);
         }
 
-        /*
-         * Nach vollständigem Laden der Seite erneut messen.
-         */
         window.addEventListener(
             'load',
             updateLayout

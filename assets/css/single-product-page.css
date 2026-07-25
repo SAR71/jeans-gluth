@@ -53,23 +53,19 @@
 /* =========================================================
    PRODUCT BENEFITS
 
+   Elementor-Klassen:
    Elterncontainer:     product-benefits
    Icon-Liste:          product-benefits_list
    Bildcontainer:       product-benefits_image
    ========================================================= */
 
-
-/* Bis zur ersten JS-Messung unsichtbar, verhindert Aufblitzen */
-.product-benefits:not([data-benefits-ready="true"]) {
-    visibility: hidden;
-}
-
-
-/* =========================================================
-   1. NORMALZUSTAND: NEBENEINANDER
-   ========================================================= */
-
 .product-benefits {
+    /*
+     * Gewünschte sichtbare Breite der Illustration.
+     * Diesen Wert bei Bedarf anpassen.
+     */
+    --benefits-image-width: 190px;
+
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -82,21 +78,25 @@
 }
 
 
-/* Icon-Liste bekommt den verfügbaren Platz */
+/* Icon-Liste bekommt den restlichen Platz */
 .product-benefits > .product-benefits_list {
-    flex: 1 1 auto !important;
+    flex: 1 1 0 !important;
     min-width: 0 !important;
     width: auto !important;
 }
 
 
-/* Bildcontainer behält seine Elementor-Größe */
+/* Bildcontainer mit eindeutig begrenzter Breite */
 .product-benefits > .product-benefits_image {
     display: flex !important;
 
-    flex: 0 0 auto !important;
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
+    flex-basis: var(--benefits-image-width) !important;
+
+    width: var(--benefits-image-width) !important;
+    min-width: var(--benefits-image-width) !important;
+    max-width: var(--benefits-image-width) !important;
 
     justify-content: center !important;
     align-items: center !important;
@@ -106,24 +106,46 @@
 }
 
 
-/* Elementor-Inhalt innerhalb des Bildcontainers zentrieren */
-.product-benefits > .product-benefits_image
+/* Elementor-Bildwidget füllt nur den begrenzten Bildcontainer */
+.product-benefits
+> .product-benefits_image
+.elementor-widget-image {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Innerer Elementor-Container */
+.product-benefits
+> .product-benefits_image
 .elementor-widget-container {
+    width: 100% !important;
+    max-width: 100% !important;
+
     text-align: center !important;
 }
 
 
-/* Die Bildgröße wird nicht verändert */
-.product-benefits > .product-benefits_image img {
+/* Bild wird niemals anhand seiner 1994-px-Originalgröße dargestellt */
+.product-benefits
+> .product-benefits_image
+img {
+    display: block !important;
+
+    width: 100% !important;
+    max-width: var(--benefits-image-width) !important;
     height: auto !important;
+
+    margin: 0 auto !important;
 }
 
 
 /* =========================================================
-   2. KOMPAKTER NEBENEINANDER-ZUSTAND
-
-   Das Bild wird so weit wie möglich nach rechts geschoben.
-   Der Abstand zwischen Liste und Bild wird reduziert.
+   Kompakter Zustand:
+   Bild bleibt rechts, Abstand wird reduziert
    ========================================================= */
 
 .product-benefits.product-benefits_compact {
@@ -131,14 +153,9 @@
 }
 
 
-.product-benefits.product-benefits_compact
-> .product-benefits_image {
-    margin-left: auto !important;
-}
-
-
 /* =========================================================
-   3. GESTAPELTER ZUSTAND
+   Gestapelter Zustand:
+   Icon-Liste oben, Bild darunter
    ========================================================= */
 
 .product-benefits.product-benefits_stacked {
@@ -150,23 +167,25 @@
      */
     gap: 10px !important;
 
-    /*
-     * 5 px zwischen Bild und unterem grauen Rand.
-     */
     padding-right: 0 !important;
+
+    /*
+     * 5 px Abstand zwischen Bild und unterem grauen Rand.
+     */
     padding-bottom: 5px !important;
 }
 
 
-/* Icon-Liste oben über volle Breite */
+/* Liste oben über volle Breite */
 .product-benefits.product-benefits_stacked
 > .product-benefits_list {
     flex: 0 0 auto !important;
+
     width: 100% !important;
     min-width: 0 !important;
 
     margin: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 0 !important;
 }
 
 
@@ -176,7 +195,10 @@
     display: flex !important;
 
     flex: 0 0 auto !important;
+
     width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
 
     justify-content: center !important;
     align-items: flex-start !important;
@@ -186,27 +208,32 @@
 }
 
 
-/* Elementor-Bildwidget mittig ausrichten */
+/* Bildwidget bleibt im gestapelten Zustand 190 px breit */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
 .elementor-widget-image {
-    margin-right: auto !important;
-    margin-left: auto !important;
+    width: var(--benefits-image-width) !important;
+    max-width: var(--benefits-image-width) !important;
+
+    margin: 0 auto !important;
 }
 
 
-/* Inneren Bildinhalt mittig ausrichten */
+/* Bild bleibt mittig und gleich groß */
 .product-benefits.product-benefits_stacked
 > .product-benefits_image
-.elementor-widget-container {
-    text-align: center !important;
+img {
+    width: 100% !important;
+    max-width: var(--benefits-image-width) !important;
+    height: auto !important;
+
+    margin: 0 auto !important;
 }
 
 
-/* Bild mittig, ohne Größenänderung */
-.product-benefits.product-benefits_stacked
-> .product-benefits_image img {
-    display: inline-block !important;
-    margin-right: auto !important;
-    margin-left: auto !important;
+/* Auf sehr schmalen Smartphones etwas kleiner */
+@media (max-width: 480px) {
+    .product-benefits {
+        --benefits-image-width: 130px;
+    }
 }
