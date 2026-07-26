@@ -1,36 +1,17 @@
 /* =========================================================
-   FOOTER – GEMEINSAME GRUNDLAGE
+   FOOTER – ÄUSSERER ELEMENTOR-CONTAINER
    ========================================================= */
 
 body .jg-footer-row {
   --jg-footer-font-size: 20px;
 
-  display: grid !important;
-
   /*
-   * Anschrift | Öffnungszeiten | Kundenservice |
-   * Rechtliches | Social Media
+   * Elementor-Inhaltsbegrenzung aufheben.
    */
-  grid-template-columns:
-    minmax(280px, 340px)
-    minmax(320px, 400px)
-    minmax(190px, 1fr)
-    minmax(190px, 1fr)
-    max-content;
+  --content-width: 100%;
 
-  column-gap: clamp(30px, 3vw, 70px);
-  align-items: start;
-
-  /*
-   * Unabhängig von Elementor auf die gesamte
-   * Fensterbreite bringen.
-   */
-  width: calc(100vw - 30px) !important;
+  width: 100% !important;
   max-width: none !important;
-
-  position: relative !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
 
   margin: 0 !important;
   padding: 0 !important;
@@ -40,13 +21,78 @@ body .jg-footer-row {
 
 
 /* =========================================================
-   DIREKTE UNTERCONTAINER
+   EIGENTLICHES FOOTER-GRID
    ========================================================= */
 
-body .jg-footer-row > .jg-footer-location,
-body .jg-footer-row > .jg-footer-hours,
-body .jg-footer-row > .jg-footer-customer,
-body .jg-footer-row > .jg-footer-legal {
+body .jg-footer-row > .e-con-inner {
+  display: grid !important;
+
+  /*
+   * Spalten:
+   *
+   * 1 Anschrift
+   * 2 Öffnungszeiten
+   * 3 zusätzlicher Abstand
+   * 4 Kundenservice
+   * 5 Rechtliches
+   * 6 Social Media
+   */
+  grid-template-columns:
+    minmax(280px, 340px)
+    minmax(320px, 400px)
+    clamp(10px, 1.5vw, 35px)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    minmax(max-content, 1fr);
+
+  column-gap: clamp(20px, 2vw, 45px);
+  align-items: start;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  margin: 0 !important;
+
+  padding-left: clamp(15px, 2.5vw, 50px) !important;
+  padding-right: clamp(15px, 2.5vw, 50px) !important;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   FOOTER-CONTAINER DEN SPALTEN ZUORDNEN
+   ========================================================= */
+
+body .jg-footer-row > .e-con-inner > .jg-footer-location {
+  grid-column: 1;
+}
+
+body .jg-footer-row > .e-con-inner > .jg-footer-hours {
+  grid-column: 2;
+}
+
+body .jg-footer-row > .e-con-inner > .jg-footer-customer {
+  grid-column: 4;
+}
+
+body .jg-footer-row > .e-con-inner > .jg-footer-legal {
+  grid-column: 5;
+}
+
+body .jg-footer-row > .e-con-inner > .jg-footer-social {
+  grid-column: 6;
+}
+
+
+/* =========================================================
+   GEMEINSAME CONTAINER-EINSTELLUNGEN
+   ========================================================= */
+
+body .jg-footer-row > .e-con-inner > .jg-footer-location,
+body .jg-footer-row > .e-con-inner > .jg-footer-hours,
+body .jg-footer-row > .e-con-inner > .jg-footer-customer,
+body .jg-footer-row > .e-con-inner > .jg-footer-legal {
   min-width: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -60,41 +106,22 @@ body .jg-footer-row > .jg-footer-legal {
 
 
 /* =========================================================
-   ANSCHRIFT
-   ========================================================= */
-
-body .jg-footer-location {
-  grid-column: 1;
-}
-
-
-/* =========================================================
    ÖFFNUNGSZEITEN
    ========================================================= */
 
 body .jg-footer-hours {
-  grid-column: 2;
-
   width: 100% !important;
   max-width: 400px !important;
 }
 
 
 /* =========================================================
-   KUNDENSERVICE
+   KUNDENSERVICE UND RECHTLICHES
    ========================================================= */
 
-body .jg-footer-customer {
-  grid-column: 3;
-}
-
-
-/* =========================================================
-   RECHTLICHES
-   ========================================================= */
-
+body .jg-footer-customer,
 body .jg-footer-legal {
-  grid-column: 4;
+  min-width: 0 !important;
 }
 
 
@@ -102,12 +129,10 @@ body .jg-footer-legal {
    SOCIAL MEDIA GANZ RECHTS
    ========================================================= */
 
-body .jg-footer-row > .jg-footer-social {
-  grid-column: 5;
-
+body .jg-footer-row > .e-con-inner > .jg-footer-social {
   width: max-content !important;
-  max-width: none !important;
   min-width: max-content !important;
+  max-width: none !important;
 
   justify-self: end !important;
   align-self: start !important;
@@ -115,18 +140,6 @@ body .jg-footer-row > .jg-footer-social {
   margin: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
-
-  box-sizing: border-box;
-}
-
-
-/* Elementor-Innenwrapper im Social-Container */
-body .jg-footer-social > .e-con-inner {
-  width: max-content !important;
-  max-width: none !important;
-
-  margin-left: auto !important;
-  margin-right: 0 !important;
 }
 
 
@@ -155,7 +168,7 @@ body .jg-footer-row .ue_business_hours_header_title {
 
 
 /* =========================================================
-   MENÜPUNKTE NICHT UMBRECHEN
+   UNGEWOLLTE UMBRÜCHE VERMEIDEN
    ========================================================= */
 
 body .jg-footer-customer .elementor-icon-list-text,
@@ -169,61 +182,63 @@ body .jg-footer-legal .elementor-icon-list-text {
    ========================================================= */
 
 @media (max-width: 1450px) {
-  body .jg-footer-row {
+  body .jg-footer-row > .e-con-inner {
     grid-template-columns:
-      minmax(240px, 290px)
+      minmax(230px, 290px)
       minmax(290px, 400px)
-      minmax(170px, 1fr)
-      minmax(170px, 1fr)
-      max-content;
+      clamp(5px, 1vw, 20px)
+      minmax(165px, 1fr)
+      minmax(165px, 1fr)
+      minmax(max-content, 1fr);
 
-    column-gap: clamp(18px, 2vw, 40px);
+    column-gap: clamp(15px, 1.5vw, 30px);
   }
 }
 
 
 /* =========================================================
-   TABLET
+   TABLET – ZWEI SPALTEN
    ========================================================= */
 
 @media (max-width: 1024px) {
-  body .jg-footer-row {
-    width: calc(100vw - 40px) !important;
-
+  body .jg-footer-row > .e-con-inner {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 35px 30px;
+
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
 
-  body .jg-footer-location,
-  body .jg-footer-hours,
-  body .jg-footer-customer,
-  body .jg-footer-legal,
-  body .jg-footer-social {
+  body .jg-footer-row > .e-con-inner > .jg-footer-location,
+  body .jg-footer-row > .e-con-inner > .jg-footer-hours,
+  body .jg-footer-row > .e-con-inner > .jg-footer-customer,
+  body .jg-footer-row > .e-con-inner > .jg-footer-legal,
+  body .jg-footer-row > .e-con-inner > .jg-footer-social {
     grid-column: auto;
   }
 
-  body .jg-footer-row > .jg-footer-social {
+  body .jg-footer-row > .e-con-inner > .jg-footer-social {
     width: auto !important;
     min-width: 0 !important;
-
     justify-self: start !important;
   }
 }
 
 
 /* =========================================================
-   SMARTPHONE
+   SMARTPHONE – EINE SPALTE
    ========================================================= */
 
 @media (max-width: 767px) {
-  body .jg-footer-row {
-    width: calc(100vw - 30px) !important;
-
+  body .jg-footer-row > .e-con-inner {
     grid-template-columns: minmax(0, 1fr);
     gap: 30px;
+
+    padding-left: 15px !important;
+    padding-right: 15px !important;
   }
 
-  body .jg-footer-row > .jg-footer-social {
+  body .jg-footer-row > .e-con-inner > .jg-footer-social {
     justify-self: start !important;
   }
 }
