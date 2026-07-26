@@ -1,0 +1,307 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const footer = document.querySelector('.jg-footer-row');
+
+  if (!footer) {
+    console.warn(
+      'Footer-Anpassung: .jg-footer-row wurde nicht gefunden.'
+    );
+    return;
+  }
+
+  /*
+   * Größte und kleinste erlaubte Schriftgröße.
+   */
+  const MAX_FONT_SIZE = 20;
+  const MIN_FONT_SIZE = 14;
+  const FONT_SIZE_STEP = 0.5;
+
+  /*
+   * Ab dieser Breite darf das Footer-Raster laut CSS
+   * auf mehrere Zeilen wechseln.
+   *
+   * Die Textanpassung bleibt trotzdem aktiv.
+   */
+  const TABLET_BREAKPOINT = 1024;
+
+  let animationFrameId = null;
+  let isCalculating = false;
+
+  /*
+   * Nur diese Texte werden auf ungewollte
+   * Zeilenumbrüche geprüft.
+   *
+   * Die eigentlichen Uhrzeitentexte sind bewusst
+   * nicht enthalten, weil dort <br> verwendet wird.
+   */
+  const WRAP_CHECK_SELECTORS = [
+    '.jg-footer-location .elementor-heading-title',
+    '.jg-footer-location .elementor-widget-text-editor p',
+    '.jg-footer-location .elementor-widget-text-editor a',
+
+    '.jg-footer-hours .elementor-heading-title',
+    '.jg-footer-hours .ue_business_hours_header_title',
+    '.jg-footer-hours .ue_business_hours_list_item_title',
+
+    '.jg-footer-customer .elementor-heading-title',
+    '.jg-footer-customer .elementor-icon-list-text',
+
+    '.jg-footer-legal .elementor-heading-title',
+    '.jg-footer-legal .elementor-icon-list-text',
+
+    '.jg-footer-social .elementor-heading-title'
+  ];
+
+  /*
+   * Diese Container werden auf horizontalen Überlauf geprüft.
+   */
+  const OVERFLOW_CHECK_SELECTORS = [
+    '.jg-footer-location',
+    '.jg-footer-hours',
+    '.jg-footer-customer',
+    '.jg-footer-legal',
+    '.jg-footer-social'
+  ];
+
+  function getElementsToCheck() {
+    return Array.from(
+      footer.querySelectorAll(
+        WRAP_CHECK_SELECTORS.join(',')
+      )
+    ).filter((element) => {
+      /*
+       * Unsichtbare oder leere Elemente ignorieren.
+       */
+      if (!element.offsetParent) {
+        return false;
+      }
+
+      return element.textContent.trim() !== '';
+    });
+  }
+
+  function getLineHeight(element) {
+    const style = window.getComputedStyle(element);
+    const lineHeight = parseFloat(style.lineHeight);
+
+    if (Number.isFinite(lineHeight)) {
+      return lineHeight;
+    }
+
+    const fontSize = parseFloat(style.fontSize);
+
+    return Number.isFinite(fontSize)
+      ? fontSize * 1.2
+      : 20;
+  }
+
+  /*
+   * Prüft, ob ein Element mehr als eine Textzeile besitzt.
+   */
+  function elementHasWrapped(element) {
+    const style = window.getComputedStyle(element);
+    const lineHeight = getLineHeight(element);
+
+    const paddingTop =
+      parseFloat(style.paddingTop) || 0;
+
+    const paddingBottom =
+      parseFloat(style.paddingBottom) || 0;
+
+    const contentHeight =
+      element.scrollHeight -
+      paddingTop -
+      paddingBottom;
+
+    /*
+     * Kleine Toleranz gegen Rundungsfehler.
+     */
+    return contentHeight > lineHeight * 1.4;
+  }
+
+  /*
+   * Prüft, ob einer der Footer-Untercontainer
+   * horizontal über seine Breite hinausläuft.
+   */
+  function footerHasHorizontalOverflow() {
+    const containers = footer.querySelectorAll(
+      OVERFLOW_CHECK_SELECTORS.join(',')
+    );
+
+    return Array.from(containers).some((container) => {
+      return (
+        container.scrollWidth >
+        container.clientWidth + 1
+      );
+    });
+  }
+
+  /*
+   * Prüft, ob das gesamte Footer-Grid breiter
+   * als der verfügbare Bereich ist.
+   */
+  function footerGridOverflows() {
+    return (
+      footer.scrollWidth >
+      footer.clientWidth + 1
+    );
+  }
+
+  function footerHasUnwantedWrap() {
+    const elements = getElementsToCheck();
+
+    const hasWrappedText =
+      elements.some(elementHasWrapped);
+
+    return (
+      hasWrappedText ||
+      footerHasHorizontalOverflow() ||
+      footerGridOverflows()
+    );
+  }
+
+  function setFooterFontSize(fontSize) {
+    footer.style.setProperty(
+      '--jg-footer-font-size',
+      `${fontSize}px`
+    );
+  }
+
+  /*
+   * Erzwingt eine Neuberechnung des Layouts.
+   */
+  function forceLayoutCalculation() {
+    void footer.offsetHeight;
+  }
+
+  function fitFooterText() {
+    if (isCalculating) {
+      return;
+    }
+
+    isCalculating = true;
+
+    try {
+      let fontSize = MAX_FONT_SIZE;
+
+      /*
+       * Immer zuerst wieder mit der maximalen
+       * Schriftgröße beginnen.
+       */
+      setFooterFontSize(fontSize);
+      forceLayoutCalculation();
+
+      /*
+       * Auf Desktop wird so lange verkleinert,
+       * bis nichts mehr ungewollt umbricht.
+       */
+      if (window.innerWidth > TABLET_BREAKPOINT) {
+        while (
+          footerHasUnwantedWrap() &&
+          fontSize > MIN_FONT_SIZE
+        ) {
+          fontSize -= FONT_SIZE_STEP;
+
+          setFooterFontSize(fontSize);
+          forceLayoutCalculation();
+        }
+      }
+
+      /*
+       * Auch unterhalb des Tablet-Breakpoints wird geprüft.
+       * Dort sind allerdings die Grid-Umbrüche erlaubt.
+       */
+      if (window.innerWidth <= TABLET_BREAKPOINT) {
+        while (
+          getElementsToCheck().some(elementHasWrapped) &&
+          fontSize > MIN_FONT_SIZE
+        ) {
+          fontSize -= FONT_SIZE_STEP;
+
+          setFooterFontSize(fontSize);
+          forceLayoutCalculation();
+        }
+      }
+
+      footer.dataset.footerFontSize =
+        String(fontSize);
+    } finally {
+      isCalculating = false;
+    }
+  }
+
+  function scheduleFooterFit() {
+    if (animationFrameId !== null) {
+      window.cancelAnimationFrame(
+        animationFrameId
+      );
+    }
+
+    animationFrameId =
+      window.requestAnimationFrame(() => {
+        animationFrameId = null;
+        fitFooterText();
+      });
+  }
+
+  /*
+   * Größenänderungen der Footer-Zeile beobachten.
+   */
+  const resizeObserver = new ResizeObserver(() => {
+    scheduleFooterFit();
+  });
+
+  resizeObserver.observe(footer);
+
+  /*
+   * Auch direkte Untercontainer beobachten.
+   */
+  footer.querySelectorAll(
+    [
+      '.jg-footer-location',
+      '.jg-footer-hours',
+      '.jg-footer-customer',
+      '.jg-footer-legal',
+      '.jg-footer-social'
+    ].join(',')
+  ).forEach((container) => {
+    resizeObserver.observe(container);
+  });
+
+  /*
+   * Nach dem Laden der Schriftarten erneut prüfen.
+   */
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      scheduleFooterFit();
+    });
+  }
+
+  /*
+   * Browsergrößenänderung überwachen.
+   */
+  window.addEventListener(
+    'resize',
+    scheduleFooterFit,
+    {
+      passive: true
+    }
+  );
+
+  /*
+   * Elementor kann Inhalte nachträglich einsetzen.
+   */
+  const mutationObserver = new MutationObserver(() => {
+    scheduleFooterFit();
+  });
+
+  mutationObserver.observe(footer, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  /*
+   * Erste Berechnung.
+   */
+  scheduleFooterFit();
+});

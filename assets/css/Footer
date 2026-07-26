@@ -1,0 +1,229 @@
+/* =========================================================
+   FOOTER – GEMEINSAME GRUNDLAGE
+   ========================================================= */
+
+body .jg-footer-row {
+  --jg-footer-font-size: 20px;
+
+  display: grid !important;
+
+  /*
+   * Anschrift | Öffnungszeiten | Kundenservice |
+   * Rechtliches | Social Media
+   */
+  grid-template-columns:
+    minmax(280px, 340px)
+    minmax(320px, 400px)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    max-content;
+
+  column-gap: clamp(30px, 3vw, 70px);
+  align-items: start;
+
+  /*
+   * Unabhängig von Elementor auf die gesamte
+   * Fensterbreite bringen.
+   */
+  width: calc(100vw - 30px) !important;
+  max-width: none !important;
+
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   DIREKTE UNTERCONTAINER
+   ========================================================= */
+
+body .jg-footer-row > .jg-footer-location,
+body .jg-footer-row > .jg-footer-hours,
+body .jg-footer-row > .jg-footer-customer,
+body .jg-footer-row > .jg-footer-legal {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ANSCHRIFT
+   ========================================================= */
+
+body .jg-footer-location {
+  grid-column: 1;
+}
+
+
+/* =========================================================
+   ÖFFNUNGSZEITEN
+   ========================================================= */
+
+body .jg-footer-hours {
+  grid-column: 2;
+
+  width: 100% !important;
+  max-width: 400px !important;
+}
+
+
+/* =========================================================
+   KUNDENSERVICE
+   ========================================================= */
+
+body .jg-footer-customer {
+  grid-column: 3;
+}
+
+
+/* =========================================================
+   RECHTLICHES
+   ========================================================= */
+
+body .jg-footer-legal {
+  grid-column: 4;
+}
+
+
+/* =========================================================
+   SOCIAL MEDIA GANZ RECHTS
+   ========================================================= */
+
+body .jg-footer-row > .jg-footer-social {
+  grid-column: 5;
+
+  width: max-content !important;
+  max-width: none !important;
+  min-width: max-content !important;
+
+  justify-self: end !important;
+  align-self: start !important;
+
+  margin: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  box-sizing: border-box;
+}
+
+
+/* Elementor-Innenwrapper im Social-Container */
+body .jg-footer-social > .e-con-inner {
+  width: max-content !important;
+  max-width: none !important;
+
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+
+/* =========================================================
+   GEMEINSAME SCHRIFTGRÖSSE
+   ========================================================= */
+
+body .jg-footer-row p,
+body .jg-footer-row a,
+body .jg-footer-row li,
+body .jg-footer-row .elementor-icon-list-text,
+body .jg-footer-row .ue_business_hours_list_item_title,
+body .jg-footer-row .ue_business_hours_list_item_text {
+  font-size: var(--jg-footer-font-size) !important;
+}
+
+
+/* =========================================================
+   ÜBERSCHRIFTEN
+   ========================================================= */
+
+body .jg-footer-row .elementor-heading-title,
+body .jg-footer-row .ue_business_hours_header_title {
+  font-size: calc(var(--jg-footer-font-size) * 1.05) !important;
+}
+
+
+/* =========================================================
+   MENÜPUNKTE NICHT UMBRECHEN
+   ========================================================= */
+
+body .jg-footer-customer .elementor-icon-list-text,
+body .jg-footer-legal .elementor-icon-list-text {
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   MITTLERE DESKTOPBREITEN
+   ========================================================= */
+
+@media (max-width: 1450px) {
+  body .jg-footer-row {
+    grid-template-columns:
+      minmax(240px, 290px)
+      minmax(290px, 400px)
+      minmax(170px, 1fr)
+      minmax(170px, 1fr)
+      max-content;
+
+    column-gap: clamp(18px, 2vw, 40px);
+  }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  body .jg-footer-row {
+    width: calc(100vw - 40px) !important;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 35px 30px;
+  }
+
+  body .jg-footer-location,
+  body .jg-footer-hours,
+  body .jg-footer-customer,
+  body .jg-footer-legal,
+  body .jg-footer-social {
+    grid-column: auto;
+  }
+
+  body .jg-footer-row > .jg-footer-social {
+    width: auto !important;
+    min-width: 0 !important;
+
+    justify-self: start !important;
+  }
+}
+
+
+/* =========================================================
+   SMARTPHONE
+   ========================================================= */
+
+@media (max-width: 767px) {
+  body .jg-footer-row {
+    width: calc(100vw - 30px) !important;
+
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  body .jg-footer-row > .jg-footer-social {
+    justify-self: start !important;
+  }
+}
