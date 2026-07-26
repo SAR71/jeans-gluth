@@ -1,0 +1,92 @@
+/* Gesamte Footer-Zeile */
+.jg-footer-row {
+  --jg-footer-font-size: 20px;
+
+  display: grid !important;
+  grid-template-columns:
+    minmax(280px, 1fr)
+    minmax(320px, 400px)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr)
+    max-content;
+
+  column-gap: clamp(25px, 3vw, 65px);
+  align-items: start;
+  width: 100%;
+}
+
+/* Alle direkten Footer-Container dürfen schrumpfen */
+.jg-footer-row > .e-con,
+.jg-footer-row > .elementor-element {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Öffnungszeiten bleiben maximal 400 px breit */
+.jg-footer-hours {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Größerer Abstand vor Kundenservice */
+.jg-footer-customer {
+  margin-left: clamp(10px, 2vw, 40px);
+}
+
+/* Kundenservice und Rechtliches gleich behandeln */
+.jg-footer-customer,
+.jg-footer-legal {
+  min-width: 0;
+}
+
+/* Social Media ganz nach rechts */
+.jg-footer-social {
+  width: max-content !important;
+  justify-self: end;
+}
+
+/* Gemeinsame Schriftgröße für alle normalen Footer-Texte */
+.jg-footer-row p,
+.jg-footer-row a,
+.jg-footer-row li,
+.jg-footer-row .elementor-icon-list-text,
+.jg-footer-row .ue_business_hours_list_item_title,
+.jg-footer-row .ue_business_hours_list_item_text {
+  font-size: var(--jg-footer-font-size) !important;
+}
+
+/* Überschriften gemeinsam skalieren */
+.jg-footer-row .elementor-heading-title,
+.jg-footer-row .ue_business_hours_header_title {
+  font-size: calc(var(--jg-footer-font-size) * 1.05) !important;
+}
+
+/* Diese Texte sollen möglichst nicht umbrechen */
+.jg-footer-customer .elementor-icon-list-text,
+.jg-footer-legal .elementor-icon-list-text {
+  white-space: nowrap;
+}
+
+/* Tablet: Container auf zwei Zeilen verteilen */
+@media (max-width: 1024px) {
+  .jg-footer-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 35px 30px;
+  }
+
+  .jg-footer-customer {
+    margin-left: 0;
+  }
+
+  .jg-footer-social {
+    justify-self: start;
+  }
+}
+
+/* Smartphone: alles untereinander */
+@media (max-width: 767px) {
+  .jg-footer-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+}
