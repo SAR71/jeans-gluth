@@ -41,7 +41,7 @@
    * Gewünschter Abstand zum linken und rechten Fensterrand.
    */
   padding-left: clamp(15px, 2.5vw, 50px);
-  padding-right: clamp(15px, 2.5vw, 50px);
+  padding-right: 15px;
 
   box-sizing: border-box;
 }
