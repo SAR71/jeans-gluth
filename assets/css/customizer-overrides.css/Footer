@@ -3,16 +3,23 @@
   --jg-footer-font-size: 20px;
 
   display: grid !important;
+
   grid-template-columns:
     minmax(280px, 1fr)
     minmax(320px, 400px)
     minmax(190px, 1fr)
     minmax(190px, 1fr)
-    max-content;
+    minmax(max-content, 1fr);
 
   column-gap: clamp(25px, 3vw, 65px);
+
+  width: 100% !important;
+  max-width: none !important;
+
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
   align-items: start;
-  width: 100%;
 }
 
 /* Alle direkten Footer-Container dürfen schrumpfen */
@@ -39,10 +46,12 @@
   min-width: 0;
 }
 
-/* Social Media ganz nach rechts */
+/* Social Media in der letzten Spalte ganz nach rechts */
 .jg-footer-social {
   width: max-content !important;
-  justify-self: end;
+  min-width: max-content;
+  justify-self: end !important;
+  margin-left: auto !important;
 }
 
 /* Gemeinsame Schriftgröße für alle normalen Footer-Texte */
@@ -82,11 +91,37 @@
     justify-self: start;
   }
 }
+@media (max-width: 1024px) {
+  .jg-footer-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 35px 30px;
+  }
+
+  .jg-footer-customer {
+    margin-left: 0;
+  }
+
+  .jg-footer-social {
+    justify-self: start !important;
+    margin-left: 0 !important;
+  }
+}
 
 /* Smartphone: alles untereinander */
 @media (max-width: 767px) {
   .jg-footer-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 30px;
+  }
+}
+@media (max-width: 767px) {
+  .jg-footer-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  .jg-footer-social {
+    justify-self: start !important;
+    margin-left: 0 !important;
   }
 }
