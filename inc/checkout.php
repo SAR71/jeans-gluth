@@ -76,14 +76,15 @@ add_action('wp_footer', function () {
 /**
  * 10 % Rabatt bei Abholung vor Ort.
  *
- * Der Rabatt wird ausschließlich auf Artikel angewendet,
- * die nicht bereits reduziert sind.
+ * Der Preis wird direkt an der jeweiligen Warenkorbposition
+ * reduziert. Bereits reduzierte Artikel und Varianten werden
+ * ausgeschlossen.
  *
  * Erkannte Versandarten:
  * - local_pickup
  * - pickup_location
  */
-add_action( 'woocommerce_cart_calculate_fees', function ( $cart ) {
+add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 
 	if (
 		is_admin() &&
@@ -107,15 +108,12 @@ add_action( 'woocommerce_cart_calculate_fees', function ( $cart ) {
 	}
 
 	$chosen_methods = WC()->session->get(
-		'chosen_shipping_methods'
+		'chosen_shipping_methods',
+		array()
 	);
 
-	if ( empty( $chosen_methods ) ) {
-		return;
-	}
-
 	/*
-	 * Prüfen, ob Abholung ausgewählt wurde.
+	 * Prüfen, ob Abholung vor Ort gewählt wurde.
 	 */
 	$is_pickup = false;
 
@@ -131,19 +129,7 @@ add_action( 'woocommerce_cart_calculate_fees', function ( $cart ) {
 		}
 	}
 
-	if ( ! $is_pickup ) {
-		return;
-	}
-
-	/*
-	 * Rabattfähige Summe ermitteln.
-	 *
-	 * Reduzierte Produkte und reduzierte Varianten
-	 * werden vollständig übersprungen.
-	 */
-	$discountable_subtotal = 0.0;
-
-	foreach ( $cart->get_cart() as $cart_item ) {
+	foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 
 		if (
 			empty( $cart_item['data'] ) ||
@@ -156,50 +142,97 @@ add_action( 'woocommerce_cart_calculate_fees', function ( $cart ) {
 		$product = $cart_item['data'];
 
 		/*
-		 * Bereits reduzierte Artikel ausschließen.
+		 * Den ursprünglichen Preis einmalig speichern.
+		 *
+		 * Dadurch wird verhindert, dass WooCommerce den Rabatt
+		 * bei jeder Neuberechnung erneut vom bereits reduzierten
+		 * Preis abzieht.
 		 */
-		if ( $product->is_on_sale() ) {
+		if (
+			! isset(
+				$cart->cart_contents[ $cart_item_key ]['jg_original_price']
+			)
+		) {
+			$cart->cart_contents[ $cart_item_key ]['jg_original_price'] =
+				(float) $product->get_price();
+		}
+
+		$original_price = (float) $cart->cart_contents[
+			$cart_item_key
+		]['jg_original_price'];
+
+		/*
+		 * Zunächst immer den ursprünglichen Preis wiederherstellen.
+		 *
+		 * Das ist wichtig, wenn der Kunde zwischen Versand und
+		 * Abholung wechselt.
+		 */
+		$product->set_price( $original_price );
+
+		/*
+		 * Ohne Abholung keinen Rabatt anwenden.
+		 */
+		if ( ! $is_pickup ) {
+			unset(
+				$cart->cart_contents[
+					$cart_item_key
+				]['jg_pickup_discount']
+			);
+
 			continue;
 		}
 
-		$line_subtotal = isset( $cart_item['line_subtotal'] )
-			? (float) $cart_item['line_subtotal']
-			: 0.0;
+		/*
+		 * Bereits reduzierte Produkte und Varianten ausschließen.
+		 */
+		if ( $product->is_on_sale() ) {
+			unset(
+				$cart->cart_contents[
+					$cart_item_key
+				]['jg_pickup_discount']
+			);
 
-		$line_subtotal_tax = isset( $cart_item['line_subtotal_tax'] )
-			? (float) $cart_item['line_subtotal_tax']
-			: 0.0;
+			continue;
+		}
 
-		$discountable_subtotal +=
-			$line_subtotal +
-			$line_subtotal_tax;
+		/*
+		 * 10 % Rabatt auf den einzelnen Produktpreis.
+		 */
+		$discounted_price = round(
+			$original_price * 0.90,
+			wc_get_price_decimals()
+		);
+
+		$product->set_price( $discounted_price );
+
+		/*
+		 * Kennzeichnung für die Anzeige speichern.
+		 */
+		$cart->cart_contents[
+			$cart_item_key
+		]['jg_pickup_discount'] = true;
 	}
-
-	if ( $discountable_subtotal <= 0 ) {
-		return;
-	}
-
-	/*
-	 * 10 % Rabatt ausschließlich auf nicht reduzierte Ware.
-	 */
-	$discount = $discountable_subtotal * 0.10;
-
-	$discount = round(
-		$discount,
-		wc_get_price_decimals()
-	);
-
-	if ( $discount <= 0 ) {
-		return;
-	}
-
-	$cart->add_fee(
-		'10% Rabatt bei Abholung vor Ort',
-		-$discount,
-		false
-	);
 
 }, 20 );
+
+
+/**
+ * Hinweis unter dem betroffenen Produkt anzeigen.
+ */
+add_filter( 'woocommerce_get_item_data', function ( $item_data, $cart_item ) {
+
+	if ( empty( $cart_item['jg_pickup_discount'] ) ) {
+		return $item_data;
+	}
+
+	$item_data[] = array(
+		'key'   => 'Abholrabatt',
+		'value' => '10 %',
+	);
+
+	return $item_data;
+
+}, 20, 2 );
 
 
 /* Checkout: Versandlabel nur in der Bestellübersicht anpassen */
