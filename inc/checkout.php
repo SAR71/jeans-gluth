@@ -73,53 +73,133 @@ add_action('wp_footer', function () {
     <?php
 }, 100);
 
-/****/
-/********** 10 % Rabatt bei Abholung vor Ort / Versand-ID: pickup_location */
-add_action('woocommerce_cart_calculate_fees', function ($cart) {
+/**
+ * 10 % Rabatt bei Abholung vor Ort.
+ *
+ * Der Rabatt wird ausschließlich auf Artikel angewendet,
+ * die nicht bereits reduziert sind.
+ *
+ * Erkannte Versandarten:
+ * - local_pickup
+ * - pickup_location
+ */
+add_action( 'woocommerce_cart_calculate_fees', function ( $cart ) {
 
-    if (is_admin() && !defined('DOING_AJAX')) {
-        return;
-    }
+	if (
+		is_admin() &&
+		! defined( 'DOING_AJAX' )
+	) {
+		return;
+	}
 
-    if (!$cart || $cart->is_empty()) {
-        return;
-    }
+	if (
+		! $cart ||
+		$cart->is_empty()
+	) {
+		return;
+	}
 
-    $chosen_methods = WC()->session->get('chosen_shipping_methods');
+	if (
+		! function_exists( 'WC' ) ||
+		! WC()->session
+	) {
+		return;
+	}
 
-    if (empty($chosen_methods)) {
-        return;
-    }
+	$chosen_methods = WC()->session->get(
+		'chosen_shipping_methods'
+	);
 
-    $is_pickup = false;
+	if ( empty( $chosen_methods ) ) {
+		return;
+	}
 
-    foreach ($chosen_methods as $method) {
-        if (
-            strpos($method, 'local_pickup') !== false ||
-            strpos($method, 'pickup_location') !== false
-        ) {
-            $is_pickup = true;
-            break;
-        }
-    }
+	/*
+	 * Prüfen, ob Abholung ausgewählt wurde.
+	 */
+	$is_pickup = false;
 
-    if (!$is_pickup) {
-        return;
-    }
+	foreach ( $chosen_methods as $method ) {
+		$method = (string) $method;
 
-    $discount = ($cart->get_subtotal() + $cart->get_subtotal_tax()) * 0.10;   /*** -----> 10% Rabatt */
+		if (
+			strpos( $method, 'local_pickup' ) !== false ||
+			strpos( $method, 'pickup_location' ) !== false
+		) {
+			$is_pickup = true;
+			break;
+		}
+	}
 
-    if ($discount <= 0) {
-        return;
-    }
+	if ( ! $is_pickup ) {
+		return;
+	}
 
-    $cart->add_fee(
-        '10% Rabatt bei Abholung vor Ort',
-        -$discount,
-        false
-    );
+	/*
+	 * Rabattfähige Summe ermitteln.
+	 *
+	 * Reduzierte Produkte und reduzierte Varianten
+	 * werden vollständig übersprungen.
+	 */
+	$discountable_subtotal = 0.0;
 
-}, 20);
+	foreach ( $cart->get_cart() as $cart_item ) {
+
+		if (
+			empty( $cart_item['data'] ) ||
+			! $cart_item['data'] instanceof WC_Product
+		) {
+			continue;
+		}
+
+		/** @var WC_Product $product */
+		$product = $cart_item['data'];
+
+		/*
+		 * Bereits reduzierte Artikel ausschließen.
+		 */
+		if ( $product->is_on_sale() ) {
+			continue;
+		}
+
+		$line_subtotal = isset( $cart_item['line_subtotal'] )
+			? (float) $cart_item['line_subtotal']
+			: 0.0;
+
+		$line_subtotal_tax = isset( $cart_item['line_subtotal_tax'] )
+			? (float) $cart_item['line_subtotal_tax']
+			: 0.0;
+
+		$discountable_subtotal +=
+			$line_subtotal +
+			$line_subtotal_tax;
+	}
+
+	if ( $discountable_subtotal <= 0 ) {
+		return;
+	}
+
+	/*
+	 * 10 % Rabatt ausschließlich auf nicht reduzierte Ware.
+	 */
+	$discount = $discountable_subtotal * 0.10;
+
+	$discount = round(
+		$discount,
+		wc_get_price_decimals()
+	);
+
+	if ( $discount <= 0 ) {
+		return;
+	}
+
+	$cart->add_fee(
+		'10% Rabatt bei Abholung vor Ort',
+		-$discount,
+		false
+	);
+
+}, 20 );
 
 
 /* Checkout: Versandlabel nur in der Bestellübersicht anpassen */
