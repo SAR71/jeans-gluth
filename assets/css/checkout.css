@@ -21,3 +21,22 @@
 .wc-gzd-cart-item-thumbnail {
 	display: none !important;
 }
+
+/* Produktname und Mengensteuerung sauber voneinander trennen */
+.woocommerce-checkout
+.wd-checkout-order-review
+.wd-checkout-prod-title {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	column-gap: 12px;
+	row-gap: 6px;
+}
+
+.woocommerce-checkout
+.wd-checkout-order-review
+.wd-checkout-prod-title
+.quantity {
+	margin-left: 0 !important;
+	flex-shrink: 0;
+}
