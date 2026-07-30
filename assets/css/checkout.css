@@ -40,3 +40,9 @@
 	margin: 0 !important;
 	flex: 0 0 auto !important;
 }
+
+.woocommerce-checkout
+.wd-checkout-order-review
+.wc-gzd-cart-item-name-wrapper > .quantity {
+	margin-left: 16px !important;
+}
