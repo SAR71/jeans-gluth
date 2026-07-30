@@ -1,92 +1,4 @@
 <?php
-// LastChanged: 2026-04-23 22:52:00
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-add_action('wp_footer', function () {
-    // Nur auf der Checkout-Seite (Block Checkout eingeschlossen)
-    if ( ! function_exists('is_checkout') || ! is_checkout() ) {
-        return;
-    }
-
-    ?>
-    <script>
-    (function () {
-      function openCouponPanelOnce() {
-        const active = document.activeElement;
-        if (active && /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(active.tagName)) {
-          return false;
-        }
-
-        const btn = document.querySelector(
-          '.wp-block-woocommerce-checkout-order-summary-coupon-form-block .wc-block-components-panel__button[aria-expanded="false"]'
-        );
-        if (btn) {
-          btn.click();
-          document.documentElement.setAttribute('data-coupon-opened', '1');
-          return true;
-        }
-        return false;
-      }
-
-      // Sofort versuchen
-      if (openCouponPanelOnce()) return;
-
-      // Wiederholt versuchen (React rendert oft später)
-      let tries = 0;
-      const maxTries = 30; // ~6 Sekunden
-      const iv = setInterval(() => {
-        tries++;
-        if (document.documentElement.getAttribute('data-coupon-opened') === '1') {
-          clearInterval(iv);
-          return;
-        }
-        if (openCouponPanelOnce() || tries >= maxTries) {
-          clearInterval(iv);
-        }
-      }, 200);
-
-      // Zusätzlich DOM-Observer (sehr zuverlässig)
-      const obs = new MutationObserver(() => {
-        if (document.documentElement.getAttribute('data-coupon-opened') === '1') {
-          obs.disconnect();
-          return;
-        }
-        if (openCouponPanelOnce()) {
-          obs.disconnect();
-        }
-      });
-
-      const startObs = () => {
-        if (!document.body) return;
-        obs.observe(document.body, { childList: true, subtree: true });
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startObs);
-      } else {
-        startObs();
-      }
-    })();
-    </script>
-    <?php
-}, 100);
-
-/**
- * 10 % Rabatt bei Abholung vor Ort.
- *
- * Der Preis wird direkt an der jeweiligen Warenkorbposition
- * reduziert. Bereits reduzierte Artikel und Varianten werden
- * ausgeschlossen.
- *
- * Erkannte Versandarten:
- * - local_pickup
- * - pickup_location
- */
-
-<?php
-// LastChanged: 2026-07-29 17:45:00
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -109,11 +21,17 @@ add_action( 'wp_footer', function () {
 	<script>
 	(function () {
 		function openCouponPanelOnce() {
-			const active = document.activeElement;
+			const activeElement = document.activeElement;
 
+			/*
+			 * Coupon-Bereich nicht automatisch öffnen,
+			 * während der Kunde gerade ein Formularfeld bedient.
+			 */
 			if (
-				active &&
-				/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(active.tagName)
+				activeElement &&
+				/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(
+					activeElement.tagName
+				)
 			) {
 				return false;
 			}
@@ -130,7 +48,7 @@ add_action( 'wp_footer', function () {
 			button.click();
 
 			document.documentElement.setAttribute(
-				'data-coupon-opened',
+				'data-jg-coupon-opened',
 				'1'
 			);
 
@@ -145,40 +63,42 @@ add_action( 'wp_footer', function () {
 		}
 
 		/*
-		 * WooCommerce Blocks werden häufig verzögert gerendert.
+		 * WooCommerce Blocks werden teilweise verzögert geladen.
 		 */
-		let tries = 0;
-		const maxTries = 30;
+		let attempts = 0;
+		const maximumAttempts = 30;
 
 		const interval = setInterval(() => {
-			tries++;
+			attempts++;
 
-			if (
+			const alreadyOpened =
 				document.documentElement.getAttribute(
-					'data-coupon-opened'
-				) === '1'
-			) {
+					'data-jg-coupon-opened'
+				) === '1';
+
+			if (alreadyOpened) {
 				clearInterval(interval);
 				return;
 			}
 
 			if (
 				openCouponPanelOnce() ||
-				tries >= maxTries
+				attempts >= maximumAttempts
 			) {
 				clearInterval(interval);
 			}
 		}, 200);
 
 		/*
-		 * Zusätzlich auf Änderungen im DOM reagieren.
+		 * Zusätzlich auf nachträgliche Änderungen im DOM reagieren.
 		 */
 		const observer = new MutationObserver(() => {
-			if (
+			const alreadyOpened =
 				document.documentElement.getAttribute(
-					'data-coupon-opened'
-				) === '1'
-			) {
+					'data-jg-coupon-opened'
+				) === '1';
+
+			if (alreadyOpened) {
 				observer.disconnect();
 				return;
 			}
@@ -188,7 +108,7 @@ add_action( 'wp_footer', function () {
 			}
 		});
 
-		const startObserver = () => {
+		function startObserver() {
 			if (!document.body) {
 				return;
 			}
@@ -200,7 +120,7 @@ add_action( 'wp_footer', function () {
 					subtree: true
 				}
 			);
-		};
+		}
 
 		if (document.readyState === 'loading') {
 			document.addEventListener(
@@ -220,7 +140,7 @@ add_action( 'wp_footer', function () {
 /**
  * Prüfen, ob eine Abholung vor Ort ausgewählt wurde.
  *
- * Erkannte Versandarten:
+ * Unterstützte Versandarten:
  * - local_pickup
  * - pickup_location
  *
@@ -260,13 +180,12 @@ function jg_is_pickup_shipping_selected() {
 
 
 /**
- * 10 % Rabatt bei Abholung vor Ort.
+ * 10 % Rabatt bei Abholung vor Ort anwenden.
  *
- * Der Rabatt wird direkt auf den Preis der jeweiligen
+ * Der Rabatt wird direkt auf den Produktpreis der jeweiligen
  * Warenkorbposition angewendet.
  *
- * Bereits reduzierte Produkte und reduzierte Varianten
- * erhalten keinen zusätzlichen Abholrabatt.
+ * Bereits reduzierte Produkte und Varianten werden ausgeschlossen.
  */
 add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 
@@ -299,10 +218,10 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 		$product = $cart_item['data'];
 
 		/*
-		 * Ursprünglichen Produktpreis einmalig speichern.
+		 * Ursprünglichen Preis nur einmal speichern.
 		 *
-		 * Dadurch wird verhindert, dass bei jeder Neuberechnung
-		 * erneut 10 % vom bereits rabattierten Preis abgezogen werden.
+		 * Dadurch werden nicht bei jeder Neuberechnung erneut
+		 * 10 % vom bereits rabattierten Preis abgezogen.
 		 */
 		if (
 			! isset(
@@ -321,15 +240,15 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 		]['jg_original_price'];
 
 		/*
-		 * Vor jeder Berechnung den Originalpreis wiederherstellen.
+		 * Vor jeder Berechnung den ursprünglichen Preis setzen.
 		 *
-		 * Das ist wichtig, wenn zwischen Versand und Abholung
+		 * Das ist notwendig, wenn zwischen Versand und Abholung
 		 * gewechselt wird.
 		 */
 		$product->set_price( $original_price );
 
 		/*
-		 * Eventuelle alte Rabattkennzeichnungen entfernen.
+		 * Vorherige Rabattkennzeichnungen entfernen.
 		 */
 		unset(
 			$cart->cart_contents[
@@ -344,26 +263,23 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 		);
 
 		/*
-		 * Ohne gewählte Abholung keinen Rabatt anwenden.
+		 * Ohne ausgewählte Abholung keinen Rabatt anwenden.
 		 */
 		if ( ! $is_pickup ) {
 			continue;
 		}
 
 		/*
-		 * Bereits reduzierte Artikel ausschließen.
-		 *
-		 * Bei Varianten enthält $cart_item['data'] die konkret
-		 * ausgewählte Produktvariante.
+		 * Bereits reduzierte Produkte oder Varianten ausschließen.
 		 */
 		if ( $product->is_on_sale() ) {
 			continue;
 		}
 
 		/*
-		 * Zusätzliche Sicherheitsprüfung:
+		 * Zusätzliche Prüfung:
 		 * Ist der aktuelle Preis niedriger als der reguläre Preis,
-		 * wird der Artikel ebenfalls als reduziert behandelt.
+		 * gilt das Produkt ebenfalls als reduziert.
 		 */
 		$regular_price = (float) $product->get_regular_price();
 
@@ -375,7 +291,7 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 		}
 
 		/*
-		 * 10 % Rabatt berechnen.
+		 * Rabattierten Preis berechnen.
 		 */
 		$discounted_price = round(
 			$original_price * 0.90,
@@ -395,7 +311,7 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 		$product->set_price( $discounted_price );
 
 		/*
-		 * Informationen für Warenkorb und Checkout speichern.
+		 * Rabattinformationen an der Warenkorbposition speichern.
 		 */
 		$cart->cart_contents[
 			$cart_item_key
@@ -416,10 +332,13 @@ add_action( 'woocommerce_before_calculate_totals', function ( $cart ) {
 /**
  * Abholrabatt als Produktinformation anzeigen.
  *
- * Beispiel:
+ * Ausgabe:
  * Abholrabatt: 10 %
  */
-add_filter( 'woocommerce_get_item_data', function ( $item_data, $cart_item ) {
+add_filter( 'woocommerce_get_item_data', function (
+	$item_data,
+	$cart_item
+) {
 
 	if ( empty( $cart_item['jg_pickup_discount'] ) ) {
 		return $item_data;
@@ -442,11 +361,9 @@ add_filter( 'woocommerce_get_item_data', function ( $item_data, $cart_item ) {
 
 
 /**
- * Klassischer Warenkorb:
- * Ursprünglichen Preis durchstreichen und neuen Preis anzeigen.
- *
- * Beispiel:
- * 39,99 € 35,99 €
+ * Klassischer Warenkorb und klassischer Checkout:
+ * Ursprünglichen Einzelpreis durchstreichen und
+ * rabattierten Einzelpreis anzeigen.
  */
 add_filter( 'woocommerce_cart_item_price', function (
 	$product_price,
@@ -487,7 +404,7 @@ add_filter( 'woocommerce_cart_item_price', function (
 
 
 /**
- * Klassischer Warenkorb:
+ * Klassischer Warenkorb und klassischer Checkout:
  * Ursprüngliche Positionssumme durchstreichen und
  * rabattierte Positionssumme anzeigen.
  */
@@ -524,8 +441,11 @@ add_filter( 'woocommerce_cart_item_subtotal', function (
 		return $product_subtotal;
 	}
 
-	$original_subtotal   = $original_price * $quantity;
-	$discounted_subtotal = $discounted_price * $quantity;
+	$original_subtotal =
+		$original_price * $quantity;
+
+	$discounted_subtotal =
+		$discounted_price * $quantity;
 
 	return sprintf(
 		'<del class="jg-pickup-original-price">%s</del> <ins class="jg-pickup-discounted-price">%s</ins>',
@@ -537,10 +457,10 @@ add_filter( 'woocommerce_cart_item_subtotal', function (
 
 
 /**
- * WooCommerce Cart- und Checkout-Blocks:
+ * Preisdarstellung für WooCommerce Cart- und Checkout-Blocks.
  *
- * Beim Abholrabatt den ursprünglichen Preis durchstreichen
- * und anschließend den neuen Preis anzeigen.
+ * Der ursprüngliche Preis wird durchgestrichen und anschließend
+ * der rabattierte Preis angezeigt.
  */
 add_action( 'wp_footer', function () {
 
@@ -570,7 +490,8 @@ add_action( 'wp_footer', function () {
 			text-decoration: none;
 		}
 
-		.wc-block-components-product-price del.jg-pickup-original-price {
+		.wc-block-components-product-price
+		del.jg-pickup-original-price {
 			margin-right: 6px;
 			opacity: 0.6;
 			font-weight: 400;
@@ -580,9 +501,9 @@ add_action( 'wp_footer', function () {
 	<script>
 	(function () {
 		let filterRegistered = false;
-		let tries = 0;
+		let attempts = 0;
 
-		const maxTries = 100;
+		const maximumAttempts = 100;
 
 		/**
 		 * Preis aus der kleinsten Währungseinheit formatieren.
@@ -721,18 +642,18 @@ add_action( 'wp_footer', function () {
 
 		/*
 		 * Filter sofort registrieren oder auf das Laden
-		 * der WooCommerce Blocks warten.
+		 * von WooCommerce Blocks warten.
 		 */
 		if (registerPickupPriceFilter()) {
 			return;
 		}
 
 		const interval = setInterval(() => {
-			tries++;
+			attempts++;
 
 			if (
 				registerPickupPriceFilter() ||
-				tries >= maxTries
+				attempts >= maximumAttempts
 			) {
 				clearInterval(interval);
 			}
@@ -745,7 +666,7 @@ add_action( 'wp_footer', function () {
 
 
 /**
- * Versandlabel in der klassischen Bestellübersicht anpassen.
+ * Versandlabel im klassischen Warenkorb und Checkout anpassen.
  */
 add_filter(
 	'woocommerce_cart_shipping_method_full_label',
@@ -762,7 +683,6 @@ add_filter(
 		}
 
 		return $label;
-
 	},
 	20,
 	2
@@ -770,15 +690,14 @@ add_filter(
 
 
 /**
- * Versandlabel für WooCommerce Blocks beziehungsweise
- * die WooCommerce Store API anpassen.
+ * Versandlabel für WooCommerce Blocks und Store API anpassen.
  */
 add_filter(
 	'woocommerce_shipping_rate_label',
 	function ( $label, $rate ) {
 
 		/*
-		 * WooCommerce Blocks / Store API.
+		 * WooCommerce Blocks und Store API.
 		 */
 		if (
 			is_object( $rate ) &&
@@ -806,49 +725,7 @@ add_filter(
 		}
 
 		return $label;
-
 	},
 	20,
 	2
 );
-
-/* Checkout: Versandlabel nur in der Bestellübersicht anpassen */
-
-
-add_filter('woocommerce_cart_shipping_method_full_label', function ($label, $method) {
-
-    if (
-        isset($method->id) &&
-        strpos($method->id, 'pickup_location') !== false
-    ) {
-        return 'Abholung vor Ort @ Jeans Gluth Helmbrechts';
-    }
-
-    return $label;
-
-}, 20, 2);
-
-
-add_filter('woocommerce_shipping_rate_label', function ($label, $rate) {
-
-    // WooCommerce Blocks / Store API
-    if (
-        is_object($rate) &&
-        method_exists($rate, 'get_id') &&
-        strpos($rate->get_id(), 'pickup_location') !== false
-    ) {
-        return 'Abholung vor Ort @ Jeans Gluth Helmbrechts';
-    }
-
-    // Klassischer Checkout (Fallback)
-    if (
-        is_object($rate) &&
-        property_exists($rate, 'id') &&
-        strpos($rate->id, 'pickup_location') !== false
-    ) {
-        return 'vor Ort abholen (@ Jeans Gluth Helmbrechts)';
-    }
-
-    return $label;
-
-}, 20, 2);
