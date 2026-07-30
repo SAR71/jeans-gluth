@@ -22,10 +22,21 @@
 	display: none !important;
 }
 
-/* Abstand zwischen Produktname und Mengensteuerung im Woodmart Checkout */
+/* Abstand zwischen Produktname und Mengensteuerung im Woodmart-Checkout */
 .woocommerce-checkout
 .wd-checkout-order-review
-.wd-checkout-prod-title
-.quantity {
-	margin-left: 12px !important;
+.wc-gzd-cart-item-name-wrapper {
+	display: flex !important;
+	align-items: center !important;
+	flex-wrap: wrap !important;
+	column-gap: 16px !important;
+	row-gap: 8px !important;
+}
+
+/* Mengenfeld nicht direkt an den Produktnamen kleben */
+.woocommerce-checkout
+.wd-checkout-order-review
+.wc-gzd-cart-item-name-wrapper > .quantity {
+	margin: 0 !important;
+	flex: 0 0 auto !important;
 }
