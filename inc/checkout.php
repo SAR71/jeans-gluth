@@ -457,10 +457,14 @@ add_filter( 'woocommerce_cart_item_subtotal', function (
 
 
 /**
- * Preisdarstellung für WooCommerce Cart- und Checkout-Blocks.
+ * WooCommerce Block-Warenkorb und Block-Checkout:
  *
- * Der ursprüngliche Preis wird durchgestrichen und anschließend
- * der rabattierte Preis angezeigt.
+ * Bei Artikeln mit Abholrabatt wird der ursprüngliche Preis
+ * als echtes <del>-Element vor dem rabattierten Preis eingefügt.
+ *
+ * Der cartItemPrice-Filter kann in manchen WooCommerce-Versionen
+ * kein beliebiges HTML ausgeben. Deshalb wird die Darstellung
+ * nach dem Rendern direkt im DOM ergänzt.
  */
 add_action( 'wp_footer', function () {
 
@@ -477,8 +481,14 @@ add_action( 'wp_footer', function () {
 
 	?>
 	<style>
+		.jg-pickup-price-wrapper {
+			display: inline-flex;
+			align-items: baseline;
+			gap: 6px;
+			white-space: nowrap;
+		}
+
 		.jg-pickup-original-price {
-			margin-right: 6px;
 			opacity: 0.6;
 			font-weight: 400;
 			text-decoration: line-through;
@@ -489,175 +499,221 @@ add_action( 'wp_footer', function () {
 			font-weight: 600;
 			text-decoration: none;
 		}
-
-		.wc-block-components-product-price
-		del.jg-pickup-original-price {
-			margin-right: 6px;
-			opacity: 0.6;
-			font-weight: 400;
-		}
 	</style>
 
 	<script>
 	(function () {
-		let filterRegistered = false;
-		let attempts = 0;
-
-		const maximumAttempts = 100;
+		let updateRunning = false;
 
 		/**
-		 * Preis aus der kleinsten Währungseinheit formatieren.
+		 * Deutschen Preistext in eine Zahl umwandeln.
 		 *
-		 * Beispiel:
-		 * 3999 wird zu 39,99 €.
+		 * Beispiele:
+		 * 35,99 €    -> 35.99
+		 * 1.035,99 € -> 1035.99
 		 */
-		function formatWooCommercePrice(rawPrice, prices) {
-			const minorUnit = Number(
-				prices?.currency_minor_unit ?? 2
-			);
+		function parseGermanPrice(value) {
+			const normalized = String(value ?? '')
+				.replace(/\s/g, '')
+				.replace(/[^\d,.-]/g, '')
+				.replace(/\./g, '')
+				.replace(',', '.');
 
-			const divisor = Math.pow(10, minorUnit);
-			const numericPrice = Number(rawPrice) / divisor;
+			const price = Number(normalized);
 
-			if (!Number.isFinite(numericPrice)) {
-				return '';
-			}
+			return Number.isFinite(price)
+				? price
+				: null;
+		}
 
+		/**
+		 * Preis entsprechend der deutschen Shopdarstellung
+		 * formatieren.
+		 */
+		function formatGermanPrice(value) {
 			return new Intl.NumberFormat(
 				'de-DE',
 				{
 					style: 'currency',
-					currency:
-						prices?.currency_code ||
-						'EUR'
+					currency: 'EUR'
 				}
-			).format(numericPrice);
+			).format(value);
 		}
 
 		/**
-		 * Prüfen, ob die Warenkorbposition mit dem
-		 * Abholrabatt gekennzeichnet ist.
+		 * Prüfen, ob die Position den Text
+		 * "Abholrabatt" enthält.
 		 */
-		function hasPickupDiscount(cartItem) {
-			const itemData = Array.isArray(cartItem?.item_data)
-				? cartItem.item_data
-				: [];
-
-			return itemData.some((item) => {
-				const key = String(
-					item?.key ??
-					item?.name ??
-					''
-				)
-					.trim()
-					.toLowerCase();
-
-				return key === 'abholrabatt';
-			});
+		function hasPickupDiscount(row) {
+			return String(row?.textContent ?? '')
+				.toLowerCase()
+				.includes('abholrabatt');
 		}
 
 		/**
-		 * WooCommerce-Block-Filter registrieren.
+		 * Preise im Block-Warenkorb und Block-Checkout ergänzen.
 		 */
-		function registerPickupPriceFilter() {
-			if (filterRegistered) {
-				return true;
+		function updatePickupPrices() {
+			if (updateRunning) {
+				return;
 			}
 
-			if (
-				!window.wc ||
-				!window.wc.blocksCheckout ||
-				typeof window.wc.blocksCheckout
-					.registerCheckoutFilters !== 'function'
-			) {
-				return false;
-			}
+			updateRunning = true;
 
-			const {
-				registerCheckoutFilters
-			} = window.wc.blocksCheckout;
+			try {
+				const rows = document.querySelectorAll(
+					'.wc-block-cart-items__row, ' +
+					'.wc-block-components-order-summary-item'
+				);
 
-			registerCheckoutFilters(
-				'jg-pickup-discount-price',
-				{
-					cartItemPrice: (
-						defaultValue,
-						extensions,
-						args
-					) => {
-						const cartItem = args?.cartItem;
-
-						if (!hasPickupDiscount(cartItem)) {
-							return defaultValue;
-						}
-
-						const prices = cartItem?.prices;
-
-						if (!prices) {
-							return defaultValue;
-						}
-
-						const currentPrice = Number(
-							prices.price
-						);
-
-						const regularPrice = Number(
-							prices.regular_price
-						);
-
-						if (
-							!Number.isFinite(currentPrice) ||
-							!Number.isFinite(regularPrice) ||
-							regularPrice <= currentPrice
-						) {
-							return defaultValue;
-						}
-
-						const formattedRegularPrice =
-							formatWooCommercePrice(
-								regularPrice,
-								prices
-							);
-
-						if (!formattedRegularPrice) {
-							return defaultValue;
-						}
-
-						return (
-							'<del class="jg-pickup-original-price">' +
-								formattedRegularPrice +
-							'</del>' +
-							'<ins class="jg-pickup-discounted-price">' +
-								'<price/>' +
-							'</ins>'
-						);
+				rows.forEach((row) => {
+					if (!hasPickupDiscount(row)) {
+						return;
 					}
-				}
+
+					/*
+					 * Bereits bearbeitete Position nicht erneut ändern.
+					 */
+					if (
+						row.querySelector(
+							'.jg-pickup-price-wrapper'
+						)
+					) {
+						return;
+					}
+
+					const priceContainer = row.querySelector(
+						'.wc-block-components-product-price'
+					);
+
+					if (!priceContainer) {
+						return;
+					}
+
+					/*
+					 * Den aktuell angezeigten rabattierten Preis lesen.
+					 */
+					const discountedElement =
+						priceContainer.querySelector(
+							'.wc-block-components-product-price__value'
+						) ||
+						priceContainer.querySelector(
+							'ins'
+						) ||
+						priceContainer;
+
+					const discountedPrice = parseGermanPrice(
+						discountedElement.textContent
+					);
+
+					if (
+						discountedPrice === null ||
+						discountedPrice <= 0
+					) {
+						return;
+					}
+
+					/*
+					 * Der rabattierte Preis entspricht 90 %.
+					 * Daraus wird der ursprüngliche Preis zurückgerechnet.
+					 */
+					const originalPrice =
+						Math.round(
+							(discountedPrice / 0.90) * 100
+						) / 100;
+
+					if (originalPrice <= discountedPrice) {
+						return;
+					}
+
+					const wrapper =
+						document.createElement('span');
+
+					wrapper.className =
+						'jg-pickup-price-wrapper';
+
+					const originalElement =
+						document.createElement('del');
+
+					originalElement.className =
+						'jg-pickup-original-price';
+
+					originalElement.textContent =
+						formatGermanPrice(originalPrice);
+
+					const newPriceElement =
+						document.createElement('ins');
+
+					newPriceElement.className =
+						'jg-pickup-discounted-price';
+
+					newPriceElement.textContent =
+						formatGermanPrice(discountedPrice);
+
+					wrapper.appendChild(originalElement);
+					wrapper.appendChild(newPriceElement);
+
+					priceContainer.replaceChildren(wrapper);
+				});
+			} finally {
+				updateRunning = false;
+			}
+		}
+
+		/**
+		 * Aktualisierung leicht verzögert ausführen, damit mehrere
+		 * React-Änderungen zusammen verarbeitet werden.
+		 */
+		let updateTimer = null;
+
+		function scheduleUpdate() {
+			clearTimeout(updateTimer);
+
+			updateTimer = setTimeout(
+				updatePickupPrices,
+				50
 			);
+		}
 
-			filterRegistered = true;
-
-			return true;
+		if (document.readyState === 'loading') {
+			document.addEventListener(
+				'DOMContentLoaded',
+				scheduleUpdate
+			);
+		} else {
+			scheduleUpdate();
 		}
 
 		/*
-		 * Filter sofort registrieren oder auf das Laden
-		 * von WooCommerce Blocks warten.
+		 * WooCommerce rendert den Checkout bei Änderungen der
+		 * Versandart und Menge erneut.
 		 */
-		if (registerPickupPriceFilter()) {
-			return;
+		const observer = new MutationObserver(
+			scheduleUpdate
+		);
+
+		function startObserver() {
+			if (!document.body) {
+				return;
+			}
+
+			observer.observe(
+				document.body,
+				{
+					childList: true,
+					subtree: true
+				}
+			);
 		}
 
-		const interval = setInterval(() => {
-			attempts++;
-
-			if (
-				registerPickupPriceFilter() ||
-				attempts >= maximumAttempts
-			) {
-				clearInterval(interval);
-			}
-		}, 100);
+		if (document.readyState === 'loading') {
+			document.addEventListener(
+				'DOMContentLoaded',
+				startObserver
+			);
+		} else {
+			startObserver();
+		}
 	})();
 	</script>
 	<?php
