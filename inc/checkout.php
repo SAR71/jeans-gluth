@@ -459,12 +459,8 @@ add_filter( 'woocommerce_cart_item_subtotal', function (
 /**
  * WooCommerce Block-Warenkorb und Block-Checkout:
  *
- * Bei Artikeln mit Abholrabatt wird der ursprüngliche Preis
- * als echtes <del>-Element vor dem rabattierten Preis eingefügt.
- *
- * Der cartItemPrice-Filter kann in manchen WooCommerce-Versionen
- * kein beliebiges HTML ausgeben. Deshalb wird die Darstellung
- * nach dem Rendern direkt im DOM ergänzt.
+ * Beim Abholrabatt den ursprünglichen Preis durchgestrichen
+ * vor dem rabattierten Preis anzeigen.
  */
 add_action( 'wp_footer', function () {
 
@@ -482,44 +478,50 @@ add_action( 'wp_footer', function () {
 	?>
 	<style>
 		.jg-pickup-price-wrapper {
-			display: inline-flex;
+			display: inline-flex !important;
 			align-items: baseline;
+			justify-content: flex-end;
 			gap: 6px;
 			white-space: nowrap;
 		}
 
 		.jg-pickup-original-price {
+			display: inline !important;
 			opacity: 0.6;
 			font-weight: 400;
-			text-decoration: line-through;
+			text-decoration: line-through !important;
 		}
 
 		.jg-pickup-discounted-price {
+			display: inline !important;
 			color: inherit;
 			font-weight: 600;
-			text-decoration: none;
+			text-decoration: none !important;
 		}
 	</style>
 
 	<script>
 	(function () {
+		'use strict';
+
+		let updateTimer = null;
 		let updateRunning = false;
 
 		/**
 		 * Deutschen Preistext in eine Zahl umwandeln.
 		 *
-		 * Beispiele:
 		 * 35,99 €    -> 35.99
 		 * 1.035,99 € -> 1035.99
 		 */
 		function parseGermanPrice(value) {
-			const normalized = String(value ?? '')
+			const text = String(value ?? '')
+				.replace(/\u00a0/g, '')
 				.replace(/\s/g, '')
 				.replace(/[^\d,.-]/g, '')
 				.replace(/\./g, '')
 				.replace(',', '.');
 
-			const price = Number(normalized);
+			const price = Number(text);
 
 			return Number.isFinite(price)
 				? price
@@ -527,8 +529,7 @@ add_action( 'wp_footer', function () {
 		}
 
 		/**
-		 * Preis entsprechend der deutschen Shopdarstellung
-		 * formatieren.
+		 * Preis im deutschen Euroformat ausgeben.
 		 */
 		function formatGermanPrice(value) {
 			return new Intl.NumberFormat(
@@ -541,17 +542,93 @@ add_action( 'wp_footer', function () {
 		}
 
 		/**
-		 * Prüfen, ob die Position den Text
-		 * "Abholrabatt" enthält.
+		 * Zu einem Element die vollständige Produktposition suchen.
 		 */
-		function hasPickupDiscount(row) {
-			return String(row?.textContent ?? '')
-				.toLowerCase()
-				.includes('abholrabatt');
+		function findProductRow(element) {
+			if (!element) {
+				return null;
+			}
+
+			return element.closest(
+				'.wc-block-components-order-summary-item, ' +
+				'.wc-block-cart-items__row, ' +
+				'[class*="order-summary-item"]'
+			);
 		}
 
 		/**
-		 * Preise im Block-Warenkorb und Block-Checkout ergänzen.
+		 * Alle Produktpositionen mit Abholrabatt suchen.
+		 */
+		function findDiscountedRows() {
+			const rows = new Set();
+
+			/*
+			 * Standardpositionen im Warenkorb und Checkout.
+			 */
+			document.querySelectorAll(
+				'.wc-block-components-order-summary-item, ' +
+				'.wc-block-cart-items__row, ' +
+				'[class*="order-summary-item"]'
+			).forEach((row) => {
+				const text = String(row.textContent ?? '')
+					.toLowerCase();
+
+				if (text.includes('abholrabatt')) {
+					rows.add(row);
+				}
+			});
+
+			/*
+			 * Zusätzlicher Fallback:
+			 * Direkt nach dem Text "Abholrabatt" suchen und
+			 * von dort zur Produktposition hochgehen.
+			 */
+			document.querySelectorAll(
+				'.wc-block-components-product-details, ' +
+				'.wc-block-components-product-details__name, ' +
+				'.wc-block-components-product-details__value, ' +
+				li, dt, dd'
+			).forEach((element) => {
+				const text = String(element.textContent ?? '')
+					.toLowerCase();
+
+				if (!text.includes('abholrabatt')) {
+					return;
+				}
+
+				const row = findProductRow(element);
+
+				if (row) {
+					rows.add(row);
+				}
+			});
+
+			return Array.from(rows);
+		}
+
+		/**
+		 * Preiscontainer innerhalb einer Produktposition suchen.
+		 */
+		function findPriceContainer(row) {
+			if (!row) {
+				return null;
+			}
+
+			return (
+				row.querySelector(
+					'.wc-block-components-product-price'
+				) ||
+				row.querySelector(
+					'[class*="product-price"]'
+				) ||
+				row.querySelector(
+					'.wc-block-components-order-summary-item__individual-prices'
+				)
+			);
+		}
+
+		/**
+		 * Rabattdarstellung ergänzen.
 		 */
 		function updatePickupPrices() {
 			if (updateRunning) {
@@ -561,39 +638,32 @@ add_action( 'wp_footer', function () {
 			updateRunning = true;
 
 			try {
-				const rows = document.querySelectorAll(
-					'.wc-block-cart-items__row, ' +
-					'.wc-block-components-order-summary-item'
-				);
+				const rows = findDiscountedRows();
 
 				rows.forEach((row) => {
-					if (!hasPickupDiscount(row)) {
-						return;
-					}
-
-					/*
-					 * Bereits bearbeitete Position nicht erneut ändern.
-					 */
-					if (
-						row.querySelector(
-							'.jg-pickup-price-wrapper'
-						)
-					) {
-						return;
-					}
-
-					const priceContainer = row.querySelector(
-						'.wc-block-components-product-price'
-					);
+					const priceContainer =
+						findPriceContainer(row);
 
 					if (!priceContainer) {
 						return;
 					}
 
 					/*
-					 * Den aktuell angezeigten rabattierten Preis lesen.
+					 * Bereits korrekt bearbeitete Preise überspringen.
 					 */
-					const discountedElement =
+					if (
+						priceContainer.querySelector(
+							'.jg-pickup-price-wrapper'
+						)
+					) {
+						return;
+					}
+
+					/*
+					 * Eventuell vorhandenen normalen Angebotspreis
+					 * bevorzugt auslesen.
+					 */
+					const currentPriceElement =
 						priceContainer.querySelector(
 							'.wc-block-components-product-price__value'
 						) ||
@@ -603,7 +673,7 @@ add_action( 'wp_footer', function () {
 						priceContainer;
 
 					const discountedPrice = parseGermanPrice(
-						discountedElement.textContent
+						currentPriceElement.textContent
 					);
 
 					if (
@@ -614,15 +684,16 @@ add_action( 'wp_footer', function () {
 					}
 
 					/*
-					 * Der rabattierte Preis entspricht 90 %.
-					 * Daraus wird der ursprüngliche Preis zurückgerechnet.
+					 * Der neue Preis entspricht 90 % des Originalpreises.
 					 */
 					const originalPrice =
 						Math.round(
 							(discountedPrice / 0.90) * 100
 						) / 100;
 
-					if (originalPrice <= discountedPrice) {
+					if (
+						originalPrice <= discountedPrice
+					) {
 						return;
 					}
 
@@ -641,17 +712,17 @@ add_action( 'wp_footer', function () {
 					originalElement.textContent =
 						formatGermanPrice(originalPrice);
 
-					const newPriceElement =
+					const discountedElement =
 						document.createElement('ins');
 
-					newPriceElement.className =
+					discountedElement.className =
 						'jg-pickup-discounted-price';
 
-					newPriceElement.textContent =
+					discountedElement.textContent =
 						formatGermanPrice(discountedPrice);
 
 					wrapper.appendChild(originalElement);
-					wrapper.appendChild(newPriceElement);
+					wrapper.appendChild(discountedElement);
 
 					priceContainer.replaceChildren(wrapper);
 				});
@@ -661,41 +732,43 @@ add_action( 'wp_footer', function () {
 		}
 
 		/**
-		 * Aktualisierung leicht verzögert ausführen, damit mehrere
-		 * React-Änderungen zusammen verarbeitet werden.
+		 * Änderungen gebündelt ausführen.
 		 */
-		let updateTimer = null;
-
 		function scheduleUpdate() {
-			clearTimeout(updateTimer);
+			window.clearTimeout(updateTimer);
 
-			updateTimer = setTimeout(
+			updateTimer = window.setTimeout(
 				updatePickupPrices,
-				50
+				100
 			);
-		}
-
-		if (document.readyState === 'loading') {
-			document.addEventListener(
-				'DOMContentLoaded',
-				scheduleUpdate
-			);
-		} else {
-			scheduleUpdate();
 		}
 
 		/*
-		 * WooCommerce rendert den Checkout bei Änderungen der
-		 * Versandart und Menge erneut.
+		 * Beim ersten Laden mehrfach versuchen.
 		 */
-		const observer = new MutationObserver(
-			scheduleUpdate
-		);
+		let attempts = 0;
 
+		const initialInterval = window.setInterval(() => {
+			attempts++;
+			updatePickupPrices();
+
+			if (attempts >= 50) {
+				window.clearInterval(initialInterval);
+			}
+		}, 200);
+
+		/*
+		 * WooCommerce rendert die Bestellübersicht bei Änderungen
+		 * der Versandart und anderer Checkout-Daten erneut.
+		 */
 		function startObserver() {
 			if (!document.body) {
 				return;
 			}
+
+			const observer = new MutationObserver(
+				scheduleUpdate
+			);
 
 			observer.observe(
 				document.body,
@@ -704,6 +777,8 @@ add_action( 'wp_footer', function () {
 					subtree: true
 				}
 			);
+
+			scheduleUpdate();
 		}
 
 		if (document.readyState === 'loading') {
