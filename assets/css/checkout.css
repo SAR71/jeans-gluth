@@ -22,21 +22,10 @@
 	display: none !important;
 }
 
-/* Produktname und Mengensteuerung sauber voneinander trennen */
-.woocommerce-checkout
-.wd-checkout-order-review
-.wd-checkout-prod-title {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	column-gap: 12px;
-	row-gap: 6px;
-}
-
+/* Abstand zwischen Produktname und Mengensteuerung im Woodmart Checkout */
 .woocommerce-checkout
 .wd-checkout-order-review
 .wd-checkout-prod-title
 .quantity {
-	margin-left: 0 !important;
-	flex-shrink: 0;
+	margin-left: 12px !important;
 }
