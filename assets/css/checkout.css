@@ -15,9 +15,9 @@
   color: #ffffff !important;
 }
 
-/* Doppeltes Thumbnail im Woodmart Checkout beheben */
+/* Germanized-Produktbild im Woodmart-Checkout ausblenden */
 .woocommerce-checkout
-.wd-checkout-order-review
+.woocommerce-checkout-review-order-table
 .wc-gzd-cart-item-thumbnail {
 	display: none !important;
 }
