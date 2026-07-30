@@ -15,3 +15,9 @@
   color: #ffffff !important;
 }
 
+/* Doppeltes Thumbnail im Woodmart Checkout beheben */
+.woocommerce-checkout
+.wd-checkout-order-review
+.wc-gzd-cart-item-thumbnail {
+	display: none !important;
+}
