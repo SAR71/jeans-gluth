@@ -860,3 +860,80 @@ add_filter(
 	20,
 	2
 );
+
+/* =========================================================
+ * CHECKOUT – SCHRIFT DER VERSANDARTEN AUTOMATISCH ANPASSEN
+ * ========================================================= */
+
+add_action( 'wp_footer', function () {
+
+	if ( ! is_checkout() || is_order_received_page() ) {
+		return;
+	}
+	?>
+	<script>
+	jQuery(function ($) {
+
+		function jgFitShippingLabels() {
+
+			$('.woocommerce-checkout-review-order-table ' +
+			  '.woocommerce-shipping-totals.shipping ' +
+			  '.woocommerce-shipping-methods li').each(function () {
+
+				const $item  = $(this);
+				const $label = $item.find('label');
+
+				if (!$label.length) {
+					return;
+				}
+
+				/*
+				 * Bei jedem Checkout-Update zunächst wieder
+				 * mit der normalen Schriftgröße beginnen.
+				 */
+				let fontSize = 16;
+
+				$label.css({
+					fontSize: fontSize + 'px',
+					whiteSpace: 'nowrap'
+				});
+
+				const inputWidth = $item
+					.find('input.shipping_method')
+					.outerWidth(true) || 20;
+
+				const availableWidth =
+					$item.innerWidth() - inputWidth - 10;
+
+				/*
+				 * Schrift schrittweise verkleinern,
+				 * bis der Text vollständig in eine Zeile passt.
+				 */
+				while (
+					$label[0].scrollWidth > availableWidth &&
+					fontSize > 10
+				) {
+					fontSize -= 0.5;
+					$label.css('font-size', fontSize + 'px');
+				}
+			});
+		}
+
+		jgFitShippingLabels();
+
+		$(window).on('resize', function () {
+			window.requestAnimationFrame(jgFitShippingLabels);
+		});
+
+		/*
+		 * WooCommerce baut den Checkout bei Änderungen
+		 * per AJAX neu auf.
+		 */
+		$(document.body).on(
+			'updated_checkout updated_shipping_method',
+			jgFitShippingLabels
+		);
+	});
+	</script>
+	<?php
+}, 100 );

@@ -49,3 +49,90 @@ body.woocommerce-checkout
     font-weight: 600;
     text-decoration: none;
 }
+
+/* =========================================================
+   CHECKOUT – VERSANDARTEN UNTER "SENDUNG" DARSTELLEN
+   ========================================================= */
+
+@media (max-width: 1586px) {
+
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        width: 100% !important;
+    }
+
+    /* Überschrift SENDUNG */
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping > th {
+        display: block !important;
+        width: 100% !important;
+        padding-bottom: 8px !important;
+        text-align: left !important;
+    }
+
+    /* Versandarten unterhalb der Überschrift */
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping > td {
+        display: block !important;
+        width: 100% !important;
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        text-align: right !important;
+    }
+
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping
+    ul.woocommerce-shipping-methods {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping
+    ul.woocommerce-shipping-methods li {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 7px !important;
+        width: 100% !important;
+        margin: 0 0 8px !important;
+        padding: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping
+    ul.woocommerce-shipping-methods li:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    /* Text zuerst, Radio-Button rechts */
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping
+    input.shipping_method {
+        order: 2 !important;
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+    }
+
+    body.woocommerce-checkout
+    .woocommerce-checkout-review-order-table
+    tr.woocommerce-shipping-totals.shipping
+    label {
+        order: 1 !important;
+        display: block !important;
+        margin: 0 !important;
+        line-height: 1.3 !important;
+        white-space: nowrap !important;
+    }
+}
