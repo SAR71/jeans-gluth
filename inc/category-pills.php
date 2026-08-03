@@ -102,3 +102,35 @@ function jg_checkout_ist_abholung() {
 
 	return false;
 }
+/* =========================================================
+ * Checkout – sichtbaren Titel der Block-Abholung
+ * im klassischen Woodmart-Checkout ändern
+ * ========================================================= */
+
+add_filter(
+	'woocommerce_cart_shipping_method_full_label',
+	'jg_pickup_location_label',
+	100,
+	2
+);
+
+function jg_pickup_location_label( $label, $method ) {
+
+	if ( ! is_object( $method ) ) {
+		return $label;
+	}
+
+	$method_id = '';
+
+	if ( method_exists( $method, 'get_method_id' ) ) {
+		$method_id = (string) $method->get_method_id();
+	} elseif ( isset( $method->method_id ) ) {
+		$method_id = (string) $method->method_id;
+	}
+
+	if ( 'pickup_location' !== $method_id ) {
+		return $label;
+	}
+
+	return 'Abholung vor Ort – 10 % Rabatt auf nicht reduzierte Ware';
+}
