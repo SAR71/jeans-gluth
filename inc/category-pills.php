@@ -134,3 +134,96 @@ function jg_pickup_location_label( $label, $method ) {
 
 	return 'Abholung vor Ort – 10 % Rabatt auf nicht reduzierte Ware';
 }
+/* =========================================================
+ * CHECKOUT – REGULÄREN UND REDUZIERTEN PREIS ANZEIGEN
+ *
+ * Nur bei echten WooCommerce-Sale-Artikeln.
+ * Der Abholrabatt auf reguläre Ware wird nicht als Sale
+ * dargestellt.
+ * ========================================================= */
+
+add_filter(
+	'woocommerce_cart_item_subtotal',
+	'jg_checkout_show_sale_price',
+	20,
+	3
+);
+
+function jg_checkout_show_sale_price( $subtotal_html, $cart_item, $cart_item_key ) {
+
+	// Nur im Checkout ändern, nicht im Warenkorb.
+	if (
+		! is_checkout() ||
+		is_order_received_page() ||
+		! function_exists( 'WC' )
+	) {
+		return $subtotal_html;
+	}
+
+	if (
+		empty( $cart_item['data'] ) ||
+		! $cart_item['data'] instanceof WC_Product
+	) {
+		return $subtotal_html;
+	}
+
+	$product  = $cart_item['data'];
+	$quantity = isset( $cart_item['quantity'] )
+		? (float) $cart_item['quantity']
+		: 1;
+
+	/*
+	 * Die gespeicherten Produktpreise verwenden.
+	 * Dadurch wird nur ein echter, im Produkt hinterlegter
+	 * Sale-Preis erkannt – nicht der dynamische Abholrabatt.
+	 */
+	$regular_price = (float) $product->get_regular_price( 'edit' );
+	$sale_price    = (float) $product->get_sale_price( 'edit' );
+
+	if (
+		$regular_price <= 0 ||
+		$sale_price <= 0 ||
+		$sale_price >= $regular_price
+	) {
+		return $subtotal_html;
+	}
+
+	/*
+	 * Prüfen, ob ein zeitlich geplanter Sale aktuell gültig ist.
+	 */
+	$sale_from = $product->get_date_on_sale_from( 'edit' );
+	$sale_to   = $product->get_date_on_sale_to( 'edit' );
+	$now       = current_time( 'timestamp', true );
+
+	if ( $sale_from && $sale_from->getTimestamp() > $now ) {
+		return $subtotal_html;
+	}
+
+	if ( $sale_to && $sale_to->getTimestamp() < $now ) {
+		return $subtotal_html;
+	}
+
+	/*
+	 * Preis passend zur WooCommerce-Steuereinstellung berechnen.
+	 */
+	$regular_total = wc_get_price_to_display(
+		$product,
+		array(
+			'price' => $regular_price,
+			'qty'   => $quantity,
+		)
+	);
+
+	$sale_total = wc_get_price_to_display(
+		$product,
+		array(
+			'price' => $sale_price,
+			'qty'   => $quantity,
+		)
+	);
+
+	return wc_format_sale_price(
+		$regular_total,
+		$sale_total
+	);
+}

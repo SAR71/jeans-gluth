@@ -29,3 +29,23 @@
 > .quantity {
 	margin-left: 16px !important;
 }
+/* =========================================================
+   Checkout – Sale-Preis wie im Warenkorb darstellen
+   ========================================================= */
+
+body.woocommerce-checkout
+.woocommerce-checkout-review-order-table
+.product-total del {
+    margin-right: 5px;
+    color: #767676;
+    font-weight: 400;
+    opacity: 1;
+}
+
+body.woocommerce-checkout
+.woocommerce-checkout-review-order-table
+.product-total ins {
+    color: #002d55;
+    font-weight: 600;
+    text-decoration: none;
+}
