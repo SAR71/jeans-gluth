@@ -52,7 +52,7 @@ body.woocommerce-checkout
 
 /* =========================================================
    CHECKOUT – VERSANDARTEN DYNAMISCH UMBRECHEN
-   Die Klasse wird nur bei tatsächlichem Platzmangel gesetzt.
+   Elementor-Padding links und rechts bleibt erhalten
    ========================================================= */
 
 /*
@@ -86,8 +86,13 @@ body.woocommerce-checkout
 tr.woocommerce-shipping-totals.shipping.jg-shipping-stacked > th {
     display: block !important;
     width: 100% !important;
-    padding-bottom: 10px !important;
     text-align: left !important;
+
+    /*
+     * Nur vertikalen Abstand verändern.
+     * Padding links und rechts bleibt erhalten.
+     */
+    padding-bottom: 10px !important;
 }
 
 
@@ -97,20 +102,26 @@ body.woocommerce-checkout
 tr.woocommerce-shipping-totals.shipping.jg-shipping-stacked > td {
     display: block !important;
     width: 100% !important;
-    padding-top: 0 !important;
-    padding-left: 0 !important;
     text-align: right !important;
+
+    /*
+     * Kein padding-left, padding-right oder padding: 0.
+     */
 }
 
 
-/* Liste über die vollständige Breite */
+/* Liste nutzt die Breite innerhalb des vorhandenen Paddings */
 body.woocommerce-checkout
 .woocommerce-checkout-review-order-table
 tr.woocommerce-shipping-totals.shipping.jg-shipping-stacked
 ul.woocommerce-shipping-methods {
     width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+
+    /*
+     * Kein padding: 0.
+     */
 }
 
 
@@ -124,9 +135,15 @@ ul.woocommerce-shipping-methods > li {
     justify-content: flex-end !important;
     gap: 7px !important;
     width: 100% !important;
-    margin: 0 0 8px !important;
-    padding: 0 !important;
+
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
+
     white-space: nowrap !important;
+
+    /*
+     * Kein padding: 0.
+     */
 }
 
 body.woocommerce-checkout
