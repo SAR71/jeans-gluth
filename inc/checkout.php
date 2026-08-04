@@ -862,78 +862,268 @@ add_filter(
 );
 
 /* =========================================================
- * CHECKOUT – SCHRIFT DER VERSANDARTEN AUTOMATISCH ANPASSEN
+ * CHECKOUT – VERSANDARTEN DYNAMISCH POSITIONIEREN
+ *
+ * Ablauf:
+ * 1. Normale Schrift und normale Tabellenansicht herstellen.
+ * 2. Prüfen, ob eine Versandoption rechts neben SENDUNG passt.
+ * 3. Nur bei Platzmangel die Optionen unter SENDUNG verschieben.
+ * 4. Schrift erst dann verkleinern, wenn sie dort noch überläuft.
  * ========================================================= */
 
 add_action( 'wp_footer', function () {
 
-	if ( ! is_checkout() || is_order_received_page() ) {
+	if (
+		! function_exists( 'is_checkout' ) ||
+		! is_checkout() ||
+		is_order_received_page()
+	) {
 		return;
 	}
+
 	?>
 	<script>
 	jQuery(function ($) {
+		'use strict';
 
-		function jgFitShippingLabels() {
+		const rowSelector =
+			'.woocommerce-checkout-review-order-table ' +
+			'tr.woocommerce-shipping-totals.shipping';
 
-			$('.woocommerce-checkout-review-order-table ' +
-			  '.woocommerce-shipping-totals.shipping ' +
-			  '.woocommerce-shipping-methods li').each(function () {
+		const minimumFontSize = 11;
+		let resizeTimer = null;
 
-				const $item  = $(this);
-				const $label = $item.find('label');
+
+		/**
+		 * Breite eines Elements einschließlich horizontaler
+		 * Außenabstände ermitteln.
+		 */
+		function outerWidthWithMargins($element) {
+
+			if (!$element.length) {
+				return 0;
+			}
+
+			const element = $element[0];
+			const style = window.getComputedStyle(element);
+
+			return (
+				element.getBoundingClientRect().width +
+				parseFloat(style.marginLeft || 0) +
+				parseFloat(style.marginRight || 0)
+			);
+		}
+
+
+		/**
+		 * Prüfen, ob eine Versandoption innerhalb ihrer
+		 * aktuellen Zeile vollständig Platz hat.
+		 */
+		function itemHasHorizontalOverflow($item) {
+
+			const $label = $item.find('label').first();
+			const $input = $item.find('input.shipping_method').first();
+
+			if (!$label.length) {
+				return false;
+			}
+
+			const itemWidth = $item[0].getBoundingClientRect().width;
+			const inputWidth = outerWidthWithMargins($input);
+
+			/*
+			 * Sicherheitsabstand zwischen Text und Radio-Button.
+			 */
+			const gap = 10;
+
+			const availableLabelWidth =
+				itemWidth - inputWidth - gap;
+
+			const requiredLabelWidth =
+				$label[0].scrollWidth;
+
+			return requiredLabelWidth > availableLabelWidth + 1;
+		}
+
+
+		/**
+		 * Eine Versandzeile vollständig neu berechnen.
+		 */
+		function updateShippingRow($row) {
+
+			const $items = $row.find(
+				'ul.woocommerce-shipping-methods > li'
+			);
+
+			if (!$items.length) {
+				return;
+			}
+
+			/*
+			 * Zuerst immer den normalen Zustand wiederherstellen.
+			 * Dadurch bleiben breite Breakpoints unverändert.
+			 */
+			$row.removeClass('jg-shipping-stacked');
+
+			$items.find('label').each(function () {
+				this.style.removeProperty('font-size');
+				this.style.removeProperty('white-space');
+			});
+
+
+			/*
+			 * Browser zunächst den normalen Tabellenzustand
+			 * vollständig berechnen lassen.
+			 */
+			void $row[0].offsetWidth;
+
+
+			/*
+			 * Prüfen, ob mindestens eine Option im normalen
+			 * rechten Tabellenfeld zu wenig Platz hat.
+			 */
+			let mustStack = false;
+
+			$items.each(function () {
+
+				const $item = $(this);
+				const $label = $item.find('label').first();
 
 				if (!$label.length) {
 					return;
 				}
 
 				/*
-				 * Bei jedem Checkout-Update zunächst wieder
-				 * mit der normalen Schriftgröße beginnen.
+				 * Für die Messung einen Umbruch verhindern,
+				 * ohne die Schriftgröße zu verändern.
 				 */
-				let fontSize = 16;
+				$label.css('white-space', 'nowrap');
 
-				$label.css({
-					fontSize: fontSize + 'px',
-					whiteSpace: 'nowrap'
+				if (itemHasHorizontalOverflow($item)) {
+					mustStack = true;
+				}
+			});
+
+
+			/*
+			 * Genügend Platz:
+			 * Normalzustand verwenden und nichts verkleinern.
+			 */
+			if (!mustStack) {
+
+				$items.find('label').each(function () {
+					this.style.removeProperty('font-size');
+					this.style.removeProperty('white-space');
 				});
 
-				const inputWidth = $item
-					.find('input.shipping_method')
-					.outerWidth(true) || 20;
+				return;
+			}
 
-				const availableWidth =
-					$item.innerWidth() - inputWidth - 10;
+
+			/*
+			 * Platzmangel:
+			 * Versandoptionen unter SENDUNG verschieben.
+			 */
+			$row.addClass('jg-shipping-stacked');
+
+			void $row[0].offsetWidth;
+
+
+			/*
+			 * Erst jetzt prüfen, ob der Text trotz voller
+			 * Zeilenbreite noch überläuft.
+			 */
+			$items.each(function () {
+
+				const $item = $(this);
+				const $label = $item.find('label').first();
+
+				if (!$label.length) {
+					return;
+				}
+
+				$label.css('white-space', 'nowrap');
 
 				/*
-				 * Schrift schrittweise verkleinern,
-				 * bis der Text vollständig in eine Zeile passt.
+				 * Tatsächliche reguläre Schriftgröße übernehmen.
+				 */
+				let fontSize = parseFloat(
+					window.getComputedStyle($label[0]).fontSize
+				);
+
+				if (!Number.isFinite(fontSize) || fontSize <= 0) {
+					fontSize = 16;
+				}
+
+				/*
+				 * Nur bei weiter bestehendem Platzmangel
+				 * schrittweise verkleinern.
 				 */
 				while (
-					$label[0].scrollWidth > availableWidth &&
-					fontSize > 10
+					itemHasHorizontalOverflow($item) &&
+					fontSize > minimumFontSize
 				) {
 					fontSize -= 0.5;
-					$label.css('font-size', fontSize + 'px');
+
+					$label.css(
+						'font-size',
+						fontSize + 'px'
+					);
 				}
 			});
 		}
 
-		jgFitShippingLabels();
 
-		$(window).on('resize', function () {
-			window.requestAnimationFrame(jgFitShippingLabels);
-		});
+		/**
+		 * Alle Versandzeilen aktualisieren.
+		 */
+		function updateShippingLayout() {
+
+			$(rowSelector).each(function () {
+				updateShippingRow($(this));
+			});
+		}
+
+
+		/**
+		 * Neuberechnung verzögert bündeln.
+		 */
+		function scheduleShippingUpdate() {
+
+			window.clearTimeout(resizeTimer);
+
+			resizeTimer = window.setTimeout(
+				updateShippingLayout,
+				80
+			);
+		}
+
 
 		/*
-		 * WooCommerce baut den Checkout bei Änderungen
-		 * per AJAX neu auf.
+		 * Beim ersten Laden berechnen.
+		 */
+		scheduleShippingUpdate();
+
+
+		/*
+		 * Bei Größenänderungen dynamisch neu entscheiden.
+		 */
+		$(window).on(
+			'resize orientationchange',
+			scheduleShippingUpdate
+		);
+
+
+		/*
+		 * WooCommerce ersetzt die Bestellübersicht bei
+		 * Versand- und Adressänderungen per AJAX.
 		 */
 		$(document.body).on(
 			'updated_checkout updated_shipping_method',
-			jgFitShippingLabels
+			scheduleShippingUpdate
 		);
 	});
 	</script>
 	<?php
+
 }, 100 );
