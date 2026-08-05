@@ -259,13 +259,23 @@
   color: var(--wd-entities-title-color, inherit);
 }
 
-/* Aktive Kategorie: Titel fett (Fix #2) + Farbe */
+/* Aktive Kategorie: genau eine Unterstreichung */
+.jg-subcat-item.is-active .jg-subcat-title,
+.jg-subcat-item.is-active:hover .jg-subcat-title{
+  font-weight: 700;
+  color: #000000;
+  text-decoration-line: underline !important;
+  text-decoration-style: solid !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 4px !important;
+}
+
 .jg-subcat-item.is-active .jg-subcat-title{
   font-weight: 700;
   color: #000000;
-  text-decoration: underline;        /* <-- NEU */
-  text-decoration-thickness: 2px;    /* <-- optional: Strichstärke */
-  text-underline-offset: 4px;        /* <-- optional: Abstand zum Text */
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 
