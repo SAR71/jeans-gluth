@@ -259,25 +259,6 @@
   color: var(--wd-entities-title-color, inherit);
 }
 
-/* Aktive Kategorie: genau eine Unterstreichung */
-.jg-subcat-item.is-active .jg-subcat-title,
-.jg-subcat-item.is-active:hover .jg-subcat-title{
-  font-weight: 700;
-  color: #000000;
-  text-decoration-line: underline !important;
-  text-decoration-style: solid !important;
-  text-decoration-thickness: 2px !important;
-  text-underline-offset: 4px !important;
-}
-
-.jg-subcat-item.is-active .jg-subcat-title{
-  font-weight: 700;
-  color: #000000;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-}
-
 
 /* =================================================
    Ring-Logik (Fix #1 + #2)
@@ -411,4 +392,65 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 
 .jg-subcat-nav[hidden]{
   display: none !important;
+}
+
+/* =========================================================
+   Unterstreichung der Subkategorien
+   Woodmart-Hover-Strich vollständig deaktivieren
+   ========================================================= */
+
+/* Woodmart kann den Hover-Strich über Link, Span,
+   Background, Box-Shadow oder Pseudoelement erzeugen */
+.jg-subcat-carousel .jg-subcat-item,
+.jg-subcat-carousel .jg-subcat-item:hover,
+.jg-subcat-carousel .jg-subcat-item:focus,
+.jg-subcat-carousel .jg-subcat-item:active,
+.jg-subcat-carousel .jg-subcat-item .jg-subcat-title,
+.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title,
+.jg-subcat-carousel .jg-subcat-item:focus .jg-subcat-title,
+.jg-subcat-carousel .jg-subcat-item:active .jg-subcat-title {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  background-size: 0 0 !important;
+}
+
+/* Pseudoelemente von Woodmart sicher abschalten */
+.jg-subcat-carousel .jg-subcat-item::before,
+.jg-subcat-carousel .jg-subcat-item::after,
+.jg-subcat-carousel .jg-subcat-title::before,
+.jg-subcat-carousel .jg-subcat-title::after,
+.jg-subcat-carousel .jg-subcat-item:hover::before,
+.jg-subcat-carousel .jg-subcat-item:hover::after,
+.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title::before,
+.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+/* Nur unsere eigene Unterstreichung für die aktive Kategorie */
+.jg-subcat-carousel
+.jg-subcat-item.is-active
+.jg-subcat-title,
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover
+.jg-subcat-title {
+  font-weight: 700 !important;
+  color: #000000 !important;
+
+  text-decoration-line: underline !important;
+  text-decoration-style: solid !important;
+  text-decoration-color: #000000 !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 4px !important;
+
+  border-bottom: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
 }
