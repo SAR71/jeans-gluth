@@ -394,63 +394,47 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
   display: none !important;
 }
 
-/* =========================================================
-   Unterstreichung der Subkategorien
-   Woodmart-Hover-Strich vollständig deaktivieren
-   ========================================================= */
-
-/* Woodmart kann den Hover-Strich über Link, Span,
-   Background, Box-Shadow oder Pseudoelement erzeugen */
-.jg-subcat-carousel .jg-subcat-item,
-.jg-subcat-carousel .jg-subcat-item:hover,
-.jg-subcat-carousel .jg-subcat-item:focus,
-.jg-subcat-carousel .jg-subcat-item:active,
-.jg-subcat-carousel .jg-subcat-item .jg-subcat-title,
-.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title,
-.jg-subcat-carousel .jg-subcat-item:focus .jg-subcat-title,
-.jg-subcat-carousel .jg-subcat-item:active .jg-subcat-title {
-  text-decoration: none !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-  background-image: none !important;
-  background-size: 0 0 !important;
-}
-
-/* Pseudoelemente von Woodmart sicher abschalten */
-.jg-subcat-carousel .jg-subcat-item::before,
-.jg-subcat-carousel .jg-subcat-item::after,
-.jg-subcat-carousel .jg-subcat-title::before,
-.jg-subcat-carousel .jg-subcat-title::after,
-.jg-subcat-carousel .jg-subcat-item:hover::before,
-.jg-subcat-carousel .jg-subcat-item:hover::after,
-.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title::before,
-.jg-subcat-carousel .jg-subcat-item:hover .jg-subcat-title::after {
-  content: none !important;
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  background: none !important;
-}
-
-/* Nur unsere eigene Unterstreichung für die aktive Kategorie */
+/* Aktive Kategorie dauerhaft unterstreichen */
 .jg-subcat-carousel
 .jg-subcat-item.is-active
-.jg-subcat-title,
-.jg-subcat-carousel
-.jg-subcat-item.is-active:hover
 .jg-subcat-title {
   font-weight: 700 !important;
   color: #000000 !important;
-
   text-decoration-line: underline !important;
   text-decoration-style: solid !important;
   text-decoration-color: #000000 !important;
   text-decoration-thickness: 2px !important;
   text-underline-offset: 4px !important;
+}
 
+/* Zusätzlichen Woodmart-Hover-Strich nur bei aktiver Kategorie entfernen */
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover {
+  text-decoration: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
   background-image: none !important;
+}
+
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover
+.jg-subcat-title {
+  background-image: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* Pseudoelement nur bei aktiver Kategorie im Hover ausschalten */
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover::before,
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover::after,
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover
+.jg-subcat-title::before,
+.jg-subcat-carousel
+.jg-subcat-item.is-active:hover
+.jg-subcat-title::after {
+  content: none !important;
+  display: none !important;
 }
