@@ -1,51 +1,67 @@
 /* =========================================================
-   WOODMART WISHLIST – WoodMart 8.4+
-   Grau = nicht gespeichert
-   Rot  = gespeichert
+   WOODMART WISHLIST ICON – WoodMart 8.5.5
+   Standard = grau
+   Wishlist = voll rot
    ========================================================= */
 
 
-/* WoodMart Check/Success Icon nicht anzeigen */
-.wd-wishlist-btn .wd-check-icon{
+/* WoodMart-Haken ausblenden */
+.wd-wishlist-btn .wd-check-icon {
     display: none !important;
 }
 
 
-/* =========================================================
-   STANDARDZUSTAND
-   ========================================================= */
+/* ---------------------------------------------------------
+   STANDARD: graues Herz
+   --------------------------------------------------------- */
 
-.wd-wishlist-btn .wd-action-icon{
+.wd-wishlist-btn.wd-action-btn .wd-action-icon::before {
     color: #dcdcdc !important;
 }
 
 
-/* Das neue WoodMart-Icon übernimmt die Farbe */
-.wd-wishlist-btn .wd-action-icon::before,
-.wd-wishlist-btn .wd-action-icon::after{
-    color: inherit !important;
-}
+/* ---------------------------------------------------------
+   AUF WUNSCHLISTE: rotes Herz
+   --------------------------------------------------------- */
 
-
-/* =========================================================
-   AUF WUNSCHLISTE = ROT
-   ========================================================= */
-
-.wd-wishlist-btn a.added .wd-action-icon,
-.wd-wishlist-btn.added .wd-action-icon,
-.wd-wishlist-btn.wd-added .wd-action-icon{
+.wd-wishlist-btn.wd-action-btn a.added .wd-action-icon::before,
+.wd-wishlist-btn.wd-action-btn.added .wd-action-icon::before {
     color: #761611 !important;
 }
 
 
-/* =========================================================
-   SOFORTIGES FEEDBACK DURCH DEIN JS
-   ========================================================= */
+/* ---------------------------------------------------------
+   Dein JS: sofort rot beim Anklicken
+   --------------------------------------------------------- */
 
-.wd-wishlist-btn a.wd-pending-add .wd-action-icon{
+.wd-wishlist-btn.wd-action-btn a.wd-pending-add
+.wd-action-icon::before {
     color: #761611 !important;
 }
 
-.wd-wishlist-btn a.wd-pending-remove .wd-action-icon{
+
+/* sofort grau beim Entfernen */
+.wd-wishlist-btn.wd-action-btn a.wd-pending-remove
+.wd-action-icon::before {
     color: #dcdcdc !important;
+}
+
+/* =========================================================
+   AKTIV: vollständig gefülltes Herz
+   ========================================================= */
+
+.wd-wishlist-btn.wd-action-btn a.added
+.wd-action-icon::before,
+.wd-wishlist-btn.wd-action-btn a.wd-pending-add
+.wd-action-icon::before {
+
+    content: "♥" !important;
+
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: 700 !important;
+
+    color: #761611 !important;
+
+    font-size: 30px !important;
+    line-height: 1 !important;
 }
