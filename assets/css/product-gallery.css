@@ -125,3 +125,21 @@ body.page-id-37307
 .wd-action-text {
     display: none !important;
 }
+
+/* =========================================================
+   WISHLIST – Tooltip komplett deaktivieren
+   ========================================================= */
+
+/* Tooltip-Inhalt verstecken */
+.wd-product .wd-wishlist-btn .wd-action-text {
+    display: none !important;
+}
+
+/* WoodMart Tooltip-Container für Wishlist ausblenden */
+.wd-product .wd-wishlist-btn .tooltip,
+.wd-product .wd-wishlist-btn .wd-tooltip-label,
+.wd-product .wd-wishlist-btn + .tooltip {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
