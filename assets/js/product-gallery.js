@@ -1,40 +1,118 @@
-// LastChanged: 2026-06-14 00:00:00
-/* ******************************** VERHALTEN WHISHLIST ICON ******************* */
+// LastChanged: 2026-08-10
+/* =========================================================
+   JEANS GLUTH – WISHLIST STATUS
+   WoodMart 8.5+
+   ========================================================= */
+
 (function () {
-  function setPending(a) {
-    if (!a) return;
 
-    // sofortiger Zustand je nach Toggle-Richtung
-    const willRemove = a.classList.contains('added');
-    a.classList.remove('wd-pending-add', 'wd-pending-remove');
-    a.classList.add(willRemove ? 'wd-pending-remove' : 'wd-pending-add');
+    function isWishlistActive(button) {
+        if (!button) return false;
 
-    // Beobachte Klassenwechsel (Ajax setzt/entfernt "added")
-    const obs = new MutationObserver(() => {
-      const isAdded = a.classList.contains('added');
+        const textElement = button.querySelector('.wd-action-text');
 
-      // Wenn Zielzustand erreicht, Pending entfernen
-      if (!willRemove && isAdded) {
-        a.classList.remove('wd-pending-add', 'wd-pending-remove');
-        obs.disconnect();
-      } else if (willRemove && !isAdded) {
-        a.classList.remove('wd-pending-add', 'wd-pending-remove');
-        obs.disconnect();
-      }
+        if (!textElement) return false;
+
+        const text = textElement.textContent
+            .trim()
+            .toLowerCase();
+
+        /*
+         * WoodMart kennzeichnet den Zustand bei uns nicht mehr
+         * zuverlässig über "added".
+         *
+         * Deshalb verwenden wir den tatsächlich ausgegebenen
+         * Button-Text.
+         */
+        return (
+            text.includes('von wunschliste entfernen') ||
+            text.includes('remove from wishlist')
+        );
+    }
+
+
+    function syncButton(button) {
+        if (!button) return;
+
+        button.classList.toggle(
+            'jg-wishlist-active',
+            isWishlistActive(button)
+        );
+    }
+
+
+    function syncAllButtons() {
+        document
+            .querySelectorAll('.wd-wishlist-btn')
+            .forEach(syncButton);
+    }
+
+
+    /* Beim Laden */
+    document.addEventListener('DOMContentLoaded', function () {
+        syncAllButtons();
     });
 
-    obs.observe(a, { attributes: true, attributeFilter: ['class'] });
 
-    // Fallback: falls Woodmart den Link ersetzt
-    setTimeout(() => {
-      try { a.classList.remove('wd-pending-add', 'wd-pending-remove'); } catch (e) {}
-      try { obs.disconnect(); } catch (e) {}
-    }, 2500);
-  }
+    /* Back/Forward Cache */
+    window.addEventListener('pageshow', function () {
+        syncAllButtons();
+    });
 
-  document.addEventListener('click', function (e) {
-    const a = e.target.closest('.wd-wishlist-btn a');
-    if (!a) return;
-    setPending(a);
-  }, true);
+
+    /*
+     * Sofortiges visuelles Feedback beim Klick.
+     * Wir schalten unsere Klasse direkt um.
+     */
+    document.addEventListener('click', function (event) {
+
+        const link = event.target.closest('.wd-wishlist-btn a');
+
+        if (!link) return;
+
+        const button = link.closest('.wd-wishlist-btn');
+
+        if (!button) return;
+
+        button.classList.toggle('jg-wishlist-active');
+
+
+        /*
+         * WoodMart arbeitet per AJAX.
+         * Danach nochmal mit dem tatsächlichen Zustand
+         * synchronisieren.
+         */
+        setTimeout(syncAllButtons, 300);
+        setTimeout(syncAllButtons, 800);
+        setTimeout(syncAllButtons, 1500);
+
+    }, true);
+
+
+    /*
+     * WoodMart kann Produkte/Button-Inhalte durch AJAX ersetzen.
+     * Deshalb beobachten wir Änderungen am DOM.
+     */
+    let rafPending = false;
+
+    const observer = new MutationObserver(function () {
+
+        if (rafPending) return;
+
+        rafPending = true;
+
+        requestAnimationFrame(function () {
+            rafPending = false;
+            syncAllButtons();
+        });
+
+    });
+
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
 })();

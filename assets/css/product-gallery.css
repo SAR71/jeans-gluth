@@ -1,67 +1,31 @@
 /* =========================================================
-   WOODMART WISHLIST ICON – WoodMart 8.5.5
-   Standard = grau
-   Wishlist = voll rot
+   JEANS GLUTH – WISHLIST HERZ
+   Standard = voll grau
+   Aktiv    = voll rot
    ========================================================= */
-
 
 /* WoodMart-Haken ausblenden */
 .wd-wishlist-btn .wd-check-icon {
     display: none !important;
 }
 
-
-/* ---------------------------------------------------------
-   STANDARD: graues Herz
-   --------------------------------------------------------- */
-
+/* WoodMarts eigenes Herz ersetzen */
 .wd-wishlist-btn.wd-action-btn .wd-action-icon::before {
-    color: #dcdcdc !important;
-}
-
-
-/* ---------------------------------------------------------
-   AUF WUNSCHLISTE: rotes Herz
-   --------------------------------------------------------- */
-
-.wd-wishlist-btn.wd-action-btn a.added .wd-action-icon::before,
-.wd-wishlist-btn.wd-action-btn.added .wd-action-icon::before {
-    color: #761611 !important;
-}
-
-
-/* ---------------------------------------------------------
-   Dein JS: sofort rot beim Anklicken
-   --------------------------------------------------------- */
-
-.wd-wishlist-btn.wd-action-btn a.wd-pending-add
-.wd-action-icon::before {
-    color: #761611 !important;
-}
-
-
-/* sofort grau beim Entfernen */
-.wd-wishlist-btn.wd-action-btn a.wd-pending-remove
-.wd-action-icon::before {
-    color: #dcdcdc !important;
-}
-
-/* =========================================================
-   AKTIV: vollständig gefülltes Herz
-   ========================================================= */
-
-.wd-wishlist-btn.wd-action-btn a.added
-.wd-action-icon::before,
-.wd-wishlist-btn.wd-action-btn a.wd-pending-add
-.wd-action-icon::before {
-
     content: "♥" !important;
 
     font-family: Arial, Helvetica, sans-serif !important;
     font-weight: 700 !important;
 
-    color: #761611 !important;
+    color: #dcdcdc !important;
 
     font-size: 30px !important;
     line-height: 1 !important;
+
+    transition: color 0.12s linear !important;
+}
+
+/* Auf Wunschliste = vollständig rot */
+.wd-wishlist-btn.jg-wishlist-active
+.wd-action-icon::before {
+    color: #761611 !important;
 }
