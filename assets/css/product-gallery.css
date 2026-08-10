@@ -1,5 +1,6 @@
 /* =========================================================
    JEANS GLUTH – WISHLIST HERZ
+   voll gefüllt, weich/rund
    ========================================================= */
 
 /* WoodMart-Haken ausblenden */
@@ -7,25 +8,53 @@
     display: none !important;
 }
 
-/* Standard: WoodMart-Herz grau */
+
+/* =========================================================
+   HERZ – Standard vollständig grau
+   ========================================================= */
+
 .wd-product
 .wd-wishlist-btn
 .wd-action-icon::before {
-    color: #dcdcdc !important;
 
-    font-family: woodmart-font !important;
-    font-weight: 400 !important;
+    content: "" !important;
 
-    font-size: 28px !important;
-    line-height: 1 !important;
+    display: block !important;
 
-    transition: color .12s linear !important;
+    width: 27px !important;
+    height: 27px !important;
+
+    /* Füllfarbe */
+    background-color: #dcdcdc !important;
+
+    /* Rundes, gefülltes Herz */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") !important;
+
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") !important;
+
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+
+    -webkit-mask-position: center !important;
+    mask-position: center !important;
+
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+
+    font-family: initial !important;
+
+    transition: background-color .12s linear !important;
 }
 
-/* Auf Wunschliste: WoodMart-Herz rot */
+
+/* =========================================================
+   AUF WUNSCHLISTE – vollständig rot
+   ========================================================= */
+
 .wd-product
 .wd-wishlist-btn
 a.added
 .wd-action-icon::before {
-    color: #761611 !important;
+
+    background-color: #761611 !important;
 }
