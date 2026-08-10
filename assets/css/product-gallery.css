@@ -1,6 +1,5 @@
 /* =========================================================
    JEANS GLUTH – WISHLIST HERZ
-   WoodMart 8.5.5
    ========================================================= */
 
 /* WoodMart-Haken ausblenden */
@@ -8,42 +7,21 @@
     display: none !important;
 }
 
-
-/* =========================================================
-   STANDARD – vollständig graues Herz
-   ========================================================= */
-
-.wd-product
-.wd-wishlist-btn
-.wd-action-icon::before {
+/* Standard: vollständig graues Herz */
+.wd-product .wd-wishlist-btn .wd-action-icon::before {
     content: "♥" !important;
-
     font-family: Arial, Helvetica, sans-serif !important;
     font-style: normal !important;
     font-weight: 700 !important;
-
     font-size: 30px !important;
     line-height: 1 !important;
-
     color: #dcdcdc !important;
-
-    transition: color .12s linear !important;
 }
 
-
-/* =========================================================
-   WISHLIST AKTIV – vollständig rotes Herz
-   WoodMart setzt "added" am Link
-   ========================================================= */
-
-.wd-product
-.wd-wishlist-btn
-a.added
-.wd-action-icon::before {
+/* Auf Wunschliste: vollständig rot */
+.wd-product .wd-wishlist-btn a.added .wd-action-icon::before {
     content: "♥" !important;
-
     font-family: Arial, Helvetica, sans-serif !important;
     font-weight: 700 !important;
-
     color: #761611 !important;
 }
