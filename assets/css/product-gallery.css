@@ -114,3 +114,10 @@ body.page-id-37307
     background-color: #761611 !important;
     opacity: 1 !important;
 }
+
+/* Tooltip "Zum Wunschzettel hinzufügen/entfernen" deaktivieren */
+.wd-product .wd-wishlist-btn > a.wd-tooltip::before,
+.wd-product .wd-wishlist-btn > a.wd-tooltip::after {
+    display: none !important;
+    content: none !important;
+}
