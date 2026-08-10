@@ -95,30 +95,22 @@ a.added
     font-family: initial !important;
 }
 /* =========================================================
-   WISHLIST-SEITE – volle Deckkraft erzwingen
+   WISHLIST-SEITE – WoodMart-Abblendung entfernen
    ========================================================= */
 
-/* Wishlist-Seite: Herz immer voll rot */
 body.page-id-37307
-.wd-wishlist-btn
-.wd-action-icon,
-body.page-id-37307
-.wd-wishlist-btn
-.wd-action-icon::before {
+.wd-wishlist-content
+.wd-product
+.wd-wishlist-btn.wd-action-btn {
     opacity: 1 !important;
 }
 
+/* Herz auf der Wishlist immer kräftig rot */
 body.page-id-37307
-.wd-wishlist-btn
+.wd-wishlist-content
+.wd-product
+.wd-wishlist-btn.wd-action-btn
 .wd-action-icon::before {
     background-color: #761611 !important;
-}
-
-/* =========================================================
-   WISHLIST-SEITE – Wishlist-Herz volle Deckkraft
-   ========================================================= */
-
-.wd-wishlist-content
-.wd-wishlist-btn {
     opacity: 1 !important;
 }
