@@ -1,118 +1,82 @@
 // LastChanged: 2026-08-10
 /* =========================================================
    JEANS GLUTH – WISHLIST STATUS
-   WoodMart 8.5+
    ========================================================= */
 
-(function () {
+(() => {
 
-    function isWishlistActive(button) {
-        if (!button) return false;
-
-        const textElement = button.querySelector('.wd-action-text');
-
-        if (!textElement) return false;
-
-        const text = textElement.textContent
-            .trim()
-            .toLowerCase();
-
-        /*
-         * WoodMart kennzeichnet den Zustand bei uns nicht mehr
-         * zuverlässig über "added".
-         *
-         * Deshalb verwenden wir den tatsächlich ausgegebenen
-         * Button-Text.
-         */
-        return (
-            text.includes('von wunschliste entfernen') ||
-            text.includes('remove from wishlist')
-        );
-    }
-
-
-    function syncButton(button) {
+    function syncWishlistButton(button) {
         if (!button) return;
 
-        button.classList.toggle(
-            'jg-wishlist-active',
-            isWishlistActive(button)
-        );
+        const text = button
+            .querySelector('.wd-action-text')
+            ?.textContent
+            .trim()
+            .toLowerCase() || '';
+
+        const active =
+            text.includes('von wunschliste entfernen') ||
+            text.includes('remove from wishlist');
+
+        button.classList.toggle('jg-wishlist-active', active);
     }
 
 
-    function syncAllButtons() {
+    function syncAllWishlistButtons() {
         document
             .querySelectorAll('.wd-wishlist-btn')
-            .forEach(syncButton);
+            .forEach(syncWishlistButton);
     }
 
 
-    /* Beim Laden */
-    document.addEventListener('DOMContentLoaded', function () {
-        syncAllButtons();
-    });
+    /* Initial */
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            syncAllWishlistButtons
+        );
+    } else {
+        syncAllWishlistButtons();
+    }
 
 
-    /* Back/Forward Cache */
-    window.addEventListener('pageshow', function () {
-        syncAllButtons();
-    });
-
-
-    /*
-     * Sofortiges visuelles Feedback beim Klick.
-     * Wir schalten unsere Klasse direkt um.
-     */
-    document.addEventListener('click', function (event) {
+    /* Klick: sofort optisch umschalten */
+    document.addEventListener('click', (event) => {
 
         const link = event.target.closest('.wd-wishlist-btn a');
-
         if (!link) return;
 
         const button = link.closest('.wd-wishlist-btn');
-
         if (!button) return;
 
         button.classList.toggle('jg-wishlist-active');
 
-
-        /*
-         * WoodMart arbeitet per AJAX.
-         * Danach nochmal mit dem tatsächlichen Zustand
-         * synchronisieren.
-         */
-        setTimeout(syncAllButtons, 300);
-        setTimeout(syncAllButtons, 800);
-        setTimeout(syncAllButtons, 1500);
+        /* nach WoodMart-AJAX wieder mit echtem Zustand abgleichen */
+        setTimeout(syncAllWishlistButtons, 250);
+        setTimeout(syncAllWishlistButtons, 750);
+        setTimeout(syncAllWishlistButtons, 1500);
 
     }, true);
 
 
     /*
-     * WoodMart kann Produkte/Button-Inhalte durch AJAX ersetzen.
-     * Deshalb beobachten wir Änderungen am DOM.
+     * WoodMart tauscht Inhalte per AJAX aus.
+     * Änderungen deshalb automatisch erkennen.
      */
-    let rafPending = false;
-
-    const observer = new MutationObserver(function () {
-
-        if (rafPending) return;
-
-        rafPending = true;
-
-        requestAnimationFrame(function () {
-            rafPending = false;
-            syncAllButtons();
-        });
-
+    const observer = new MutationObserver(() => {
+        syncAllWishlistButtons();
     });
-
 
     observer.observe(document.body, {
         childList: true,
         subtree: true,
         characterData: true
     });
+
+
+    window.addEventListener(
+        'pageshow',
+        syncAllWishlistButtons
+    );
 
 })();
