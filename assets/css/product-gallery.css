@@ -115,9 +115,13 @@ body.page-id-37307
     opacity: 1 !important;
 }
 
-/* Tooltip "Zum Wunschzettel hinzufügen/entfernen" deaktivieren */
-.wd-product .wd-wishlist-btn > a.wd-tooltip::before,
-.wd-product .wd-wishlist-btn > a.wd-tooltip::after {
+
+/* =========================================================
+   WISHLIST – Hovertext ausblenden
+   ========================================================= */
+
+.wd-product
+.wd-wishlist-btn
+.wd-action-text {
     display: none !important;
-    content: none !important;
 }
