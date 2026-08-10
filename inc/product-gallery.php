@@ -364,3 +364,107 @@ function jg_get_category_tree_tt_ids( $slug ) {
 
 	return $cache[ $slug ];
 }
+
+/* =========================================================
+ * JEANS GLUTH – WISHLIST STATUS FÜR WOODMART 8.5+
+ * ========================================================= */
+
+add_action( 'wp_footer', function () {
+    ?>
+    <script>
+    (() => {
+
+        function syncWishlistButton(button) {
+            if (!button) return;
+
+            const textElement = button.querySelector('.wd-action-text');
+
+            if (!textElement) {
+                button.classList.remove('jg-wishlist-active');
+                return;
+            }
+
+            const text = textElement.textContent
+                .trim()
+                .toLowerCase();
+
+            const isActive =
+                text.includes('von wunschliste entfernen') ||
+                text.includes('remove from wishlist');
+
+            button.classList.toggle(
+                'jg-wishlist-active',
+                isActive
+            );
+        }
+
+
+        function syncAllWishlistButtons() {
+            document
+                .querySelectorAll('.wd-wishlist-btn')
+                .forEach(syncWishlistButton);
+        }
+
+
+        /* Seite bereits geladen? */
+        if (document.readyState === 'loading') {
+            document.addEventListener(
+                'DOMContentLoaded',
+                syncAllWishlistButtons
+            );
+        } else {
+            syncAllWishlistButtons();
+        }
+
+
+        /* Klick auf Wishlist */
+        document.addEventListener('click', (event) => {
+
+            const link = event.target.closest('.wd-wishlist-btn a');
+
+            if (!link) return;
+
+            const button = link.closest('.wd-wishlist-btn');
+
+            if (!button) return;
+
+            /*
+             * Sofortige optische Reaktion.
+             */
+            button.classList.toggle('jg-wishlist-active');
+
+            /*
+             * Danach WoodMarts tatsächlichen AJAX-Zustand prüfen.
+             */
+            setTimeout(syncAllWishlistButtons, 300);
+            setTimeout(syncAllWishlistButtons, 800);
+            setTimeout(syncAllWishlistButtons, 1500);
+
+        }, true);
+
+
+        /*
+         * WoodMart ersetzt beim Filtern/AJAX Teile der Produktliste.
+         * Diese Änderungen ebenfalls erfassen.
+         */
+        const observer = new MutationObserver(() => {
+            syncAllWishlistButtons();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+
+
+        /* Browser Back/Forward Cache */
+        window.addEventListener(
+            'pageshow',
+            syncAllWishlistButtons
+        );
+
+    })();
+    </script>
+    <?php
+}, 100 );
