@@ -113,3 +113,12 @@ body.page-id-37307
 .wd-action-icon::before {
     background-color: #761611 !important;
 }
+
+/* =========================================================
+   WISHLIST-SEITE – Wishlist-Herz volle Deckkraft
+   ========================================================= */
+
+.wd-wishlist-content
+.wd-wishlist-btn {
+    opacity: 1 !important;
+}
