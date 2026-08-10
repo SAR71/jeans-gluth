@@ -94,3 +94,22 @@ a.added
 
     font-family: initial !important;
 }
+/* =========================================================
+   WISHLIST-SEITE – volle Deckkraft erzwingen
+   ========================================================= */
+
+.wd-wishlist-content
+.wd-wishlist-btn
+.wd-action-icon,
+.wd-wishlist-content
+.wd-wishlist-btn
+.wd-action-icon::before {
+    opacity: 1 !important;
+}
+
+/* Auf der Wishlist immer vollständig rot */
+.wd-wishlist-content
+.wd-wishlist-btn
+.wd-action-icon::before {
+    background-color: #761611 !important;
+}
