@@ -145,12 +145,9 @@ function woodmart_child_styles() {
 		'woodmart-child-category-pills' => woodmart_child_is_shop_archive(),
 		'woodmart-child-checkout' => function_exists( 'is_checkout' ) && is_checkout(),
 		'woodmart-child-header' => true,
-		'woodmart-child-product-gallery' =>
-			( function_exists( 'is_product' ) && is_product() ) ||
-			woodmart_child_is_shop_archive() ||
-			( function_exists( 'is_account_page' ) && is_account_page() ),
-				'woodmart-child-single-product-page' => function_exists( 'is_product' ) && is_product(),
-			);
+		'woodmart-child-product-gallery' => true,
+		'woodmart-child-single-product-page' => function_exists( 'is_product' ) && is_product(),
+);
 
 	foreach ( $styles as $handle => $path ) {
 		if ( isset( $should_load[ $handle ] ) && ! $should_load[ $handle ] ) {
