@@ -1,49 +1,51 @@
 /* =========================================================
-   Woodmart Wishlist – Woodmart 8.4+
+   WOODMART WISHLIST – WoodMart 8.4+
+   Grau = nicht gespeichert
+   Rot  = gespeichert
    ========================================================= */
 
-/* Haken-Kreis entfernen */
+
+/* WoodMart Check/Success Icon nicht anzeigen */
 .wd-wishlist-btn .wd-check-icon{
-  display:none !important;
+    display: none !important;
 }
 
-/* eventuelle Pseudo-Elemente entfernen */
-.wd-wishlist-btn::after,
-.wd-wishlist-btn > a::after,
+
+/* =========================================================
+   STANDARDZUSTAND
+   ========================================================= */
+
+.wd-wishlist-btn .wd-action-icon{
+    color: #dcdcdc !important;
+}
+
+
+/* Das neue WoodMart-Icon übernimmt die Farbe */
+.wd-wishlist-btn .wd-action-icon::before,
 .wd-wishlist-btn .wd-action-icon::after{
-  display:none !important;
-  content:none !important;
+    color: inherit !important;
 }
 
-/* Herz immer sichtbar */
-.wd-wishlist-btn .wd-action-icon::before{
-  content:"\f004" !important;
 
-  font-family:
-    "Font Awesome 6 Free",
-    "Font Awesome 5 Free",
-    "Font Awesome 5 Pro" !important;
+/* =========================================================
+   AUF WUNSCHLISTE = ROT
+   ========================================================= */
 
-  font-weight:900 !important;
-  color:#dcdcdc !important;
-
-  display:inline-block !important;
-  line-height:1 !important;
-
-  transition:color 0.12s linear !important;
+.wd-wishlist-btn a.added .wd-action-icon,
+.wd-wishlist-btn.added .wd-action-icon,
+.wd-wishlist-btn.wd-added .wd-action-icon{
+    color: #761611 !important;
 }
 
-/* Produkt ist auf der Wunschliste */
-.wd-wishlist-btn a.added .wd-action-icon::before{
-  color:#761611 !important;
+
+/* =========================================================
+   SOFORTIGES FEEDBACK DURCH DEIN JS
+   ========================================================= */
+
+.wd-wishlist-btn a.wd-pending-add .wd-action-icon{
+    color: #761611 !important;
 }
 
-/* sofort rot beim Hinzufügen */
-.wd-wishlist-btn a.wd-pending-add .wd-action-icon::before{
-  color:#761611 !important;
-}
-
-/* sofort grau beim Entfernen */
-.wd-wishlist-btn a.wd-pending-remove .wd-action-icon::before{
-  color:#dcdcdc !important;
+.wd-wishlist-btn a.wd-pending-remove .wd-action-icon{
+    color: #dcdcdc !important;
 }
