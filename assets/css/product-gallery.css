@@ -98,17 +98,17 @@ a.added
    WISHLIST-SEITE – volle Deckkraft erzwingen
    ========================================================= */
 
-.wd-wishlist-content
+/* Wishlist-Seite: Herz immer voll rot */
+body.page-id-37307
 .wd-wishlist-btn
 .wd-action-icon,
-.wd-wishlist-content
+body.page-id-37307
 .wd-wishlist-btn
 .wd-action-icon::before {
     opacity: 1 !important;
 }
 
-/* Auf der Wishlist immer vollständig rot */
-.wd-wishlist-content
+body.page-id-37307
 .wd-wishlist-btn
 .wd-action-icon::before {
     background-color: #761611 !important;
