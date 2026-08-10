@@ -356,7 +356,7 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
   box-shadow: 0 2px 12px rgba(0,0,0,.18) !important;
 
   cursor: pointer !important;
-  z-index: 999 !important;
+  z-index: 2 !important;
 }
 
 .jg-subcat-carousel--overflow .jg-subcat-nav{
