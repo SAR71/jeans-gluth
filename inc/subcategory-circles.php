@@ -138,8 +138,13 @@ $show_filter_circles =
                <?php echo $new_active ? 'aria-current="page"' : ''; ?>
                data-has-thumb="0">
               <span class="jg-subcat-thumb">
-                <span class="jg-subcat-thumb-label">Neu</span>
-              </span>
+                <img
+                    class="jg-subcat-img jg-subcat-filter-img"
+                    src="https://jeans-gluth.de/wp-content/uploads/2026/08/Neu.png"
+                    alt=""
+                    aria-hidden="true"
+                >
+            </span>
               <span class="jg-subcat-title">Neu</span>
             </a>
           <?php endif; ?>
