@@ -1127,3 +1127,172 @@ add_action( 'wp_footer', function () {
 	<?php
 
 }, 100 );
+
+/**
+ * =========================================================
+ * BESTELLPOSITIONEN – PREISSTATUS DAUERHAFT SPEICHERN
+ * =========================================================
+ *
+ * Speichert bei Bestellung:
+ *
+ * SALE:
+ * - regulären Preis zum Kaufzeitpunkt
+ * - Sale-Preis zum Kaufzeitpunkt
+ *
+ * ABHOLRABATT:
+ * - ursprünglichen Preis
+ * - rabattierten Preis
+ * - Rabatt in Prozent
+ * - Rabattbetrag
+ */
+add_action(
+    'woocommerce_checkout_create_order_line_item',
+    function ( $item, $cart_item_key, $values, $order ) {
+
+        if (
+            empty( $values['data'] ) ||
+            ! $values['data'] instanceof WC_Product
+        ) {
+            return;
+        }
+
+        /** @var WC_Product $product */
+        $product = $values['data'];
+
+        $quantity = isset( $values['quantity'] )
+            ? (float) $values['quantity']
+            : 1;
+
+
+        /* =====================================================
+         * 1. ABHOLRABATT
+         * ===================================================== */
+        if ( ! empty( $values['jg_pickup_discount'] ) ) {
+
+            $discount_percent = isset(
+                $values['jg_pickup_discount_percent']
+            )
+                ? (int) $values['jg_pickup_discount_percent']
+                : 10;
+
+            $original_price = isset(
+                $values['jg_original_price']
+            )
+                ? (float) $values['jg_original_price']
+                : 0;
+
+            $discounted_price = (float) $product->get_price();
+
+            /*
+             * Sichtbare Information
+             */
+            $item->add_meta_data(
+                'Abholrabatt',
+                $discount_percent . ' %',
+                true
+            );
+
+
+            /*
+             * Interne historische Daten
+             */
+            $item->add_meta_data(
+                '_jg_pickup_discount',
+                'yes',
+                true
+            );
+
+            $item->add_meta_data(
+                '_jg_pickup_discount_percent',
+                $discount_percent,
+                true
+            );
+
+            $item->add_meta_data(
+                '_jg_original_price_at_purchase',
+                $original_price,
+                true
+            );
+
+            $item->add_meta_data(
+                '_jg_discounted_price_at_purchase',
+                $discounted_price,
+                true
+            );
+
+
+            /*
+             * Tatsächlichen Rabattbetrag der Position speichern
+             */
+            if (
+                $original_price > 0 &&
+                $discounted_price > 0 &&
+                $original_price > $discounted_price
+            ) {
+
+                $discount_amount =
+                    ( $original_price - $discounted_price ) *
+                    $quantity;
+
+                $item->add_meta_data(
+                    '_jg_pickup_discount_amount',
+                    $discount_amount,
+                    true
+                );
+            }
+        }
+
+
+        /* =====================================================
+         * 2. SALE-ARTIKEL
+         * ===================================================== */
+
+        $regular_price = (float) $product->get_regular_price();
+        $sale_price    = (float) $product->get_sale_price();
+
+        /*
+         * Nur als Sale speichern, wenn tatsächlich ein
+         * gültiger Sale-Preis vorhanden ist.
+         */
+        if (
+            $regular_price > 0 &&
+            $sale_price > 0 &&
+            $sale_price < $regular_price
+        ) {
+
+            /*
+             * Sichtbare Information
+             */
+            $item->add_meta_data(
+                'Preis',
+                'Sale-Preis',
+                true
+            );
+
+
+            /*
+             * Historische Werte zum Bestellzeitpunkt
+             */
+            $item->add_meta_data(
+                '_jg_was_sale',
+                'yes',
+                true
+            );
+
+            $item->add_meta_data(
+                '_jg_regular_price_at_purchase',
+                $regular_price,
+                true
+            );
+
+            $item->add_meta_data(
+                '_jg_sale_price_at_purchase',
+                $sale_price,
+                true
+            );
+        }
+
+    },
+    20,
+    4
+);
