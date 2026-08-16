@@ -136,11 +136,11 @@ $show_filter_circles =
                href="<?php echo esc_url($new_link); ?>"
                     aria-label="<?php echo esc_attr( $new_active ? 'Neu Filter, aktiv' : 'Neu Filter' ); ?>"
                <?php echo $new_active ? 'aria-current="page"' : ''; ?>
-               data-has-thumb="0">
+               data-has-thumb="1">
               <span class="jg-subcat-thumb">
                 <img
                     class="jg-subcat-img jg-subcat-filter-img"
-                    src="https://jeans-gluth.de/wp-content/uploads/2026/08/Neu.png"
+                    src="https://jeans-gluth.de/wp-content/uploads/2026/08/20260801-NEU.png"     /* ---------> URL BILD THUMBNAIL **** */
                     alt=""
                     aria-hidden="true"
                 >
@@ -157,10 +157,14 @@ $show_filter_circles =
                href="<?php echo esc_url($sale_link); ?>"
                     aria-label="<?php echo esc_attr( $sale_active ? 'Sale Filter, aktiv' : 'Sale Filter' ); ?>"
                <?php echo $sale_active ? 'aria-current="page"' : ''; ?>
-               data-has-thumb="0">
-              <span class="jg-subcat-thumb">
-                <span class="jg-subcat-thumb-label">Sale</span>
-              </span>
+               data-has-thumb="1">
+            <span class="jg-subcat-thumb">
+            <img
+                class="jg-subcat-img jg-subcat-filter-img"
+                src="https://jeans-gluth.de/wp-content/uploads/2026/08/DEIN-SALE-BILD.png" /* ---------> URL BILD THUMBNAIL **** */
+                alt=""
+                aria-hidden="true"
+            >            </span>
               <span class="jg-subcat-title">Sale</span>
             </a>
           <?php endif; ?>
