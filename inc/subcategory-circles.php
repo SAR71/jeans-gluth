@@ -48,11 +48,10 @@ add_shortcode('jg_top_subcats', function($atts) {
         $active_subcat_id = $current_parent_id > 0 ? $current_parent_id : $current_id;
     }
 
-    // NEU + SALE nur direkt auf den Hauptkategorien Damen und Herren anzeigen
+  // NEU + SALE auf Damen/Herren und allen Unterkategorien anzeigen
 $allowed_top_slugs = ['damen', 'herren'];
 
 $show_filter_circles =
-    $current_id === $top_id &&
     in_array($top_term->slug, $allowed_top_slugs, true);
 
     if (empty($children) && !$show_filter_circles) {
