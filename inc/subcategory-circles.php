@@ -90,27 +90,19 @@ $show_filter_circles =
         }
     }
 
-    $build_filter_link = function($key) use ($term, $current_args) {
-        $args = $current_args;
+    $build_filter_link = function($key) use ($top_term) {
 
-        $is_active = !empty($args[$key]) && $args[$key] === '1';
+        $args = [];
 
-        // Neu/Sale sollen sich gegenseitig ausschliessen.
         if ($key === 'jg_sale') {
-            unset($args['jg_new']);
+            $args['jg_sale'] = '1';
         } elseif ($key === 'jg_new') {
-            unset($args['jg_sale']);
+            $args['jg_new'] = '1';
         }
 
-        if ($is_active) {
-            unset($args[$key]);
-        } else {
-            $args[$key] = '1';
-        }
+        // Immer auf die Hauptkategorie Damen bzw. Herren verlinken
+        $base_link = get_term_link($top_term);
 
-        unset($args['paged']);
-
-        $base_link = get_term_link($term);
         if (is_wp_error($base_link)) {
             return '';
         }
@@ -127,10 +119,10 @@ $show_filter_circles =
       <div class="jg-subcat-circles">
 
         <?php if ($show_filter_circles): ?>
-          <?php
-          $new_link = $build_filter_link('jg_new');
-          if ($new_link):
-          ?>
+     <?php
+        $new_link = $build_filter_link('jg_new');
+        if ($new_link):
+        ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $new_active ? ' is-active' : ''; ?>"
                href="<?php echo esc_url($new_link); ?>"
                     aria-label="<?php echo esc_attr( $new_active ? 'Neu Filter, aktiv' : 'Neu Filter' ); ?>"
@@ -148,10 +140,10 @@ $show_filter_circles =
             </a>
           <?php endif; ?>
 
-          <?php
-          $sale_link = $build_filter_link('jg_sale');
-          if ($sale_link):
-          ?>
+       <?php
+            $sale_link = $build_filter_link('jg_sale');
+            if ($sale_link):
+            ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $sale_active ? ' is-active' : ''; ?>"
                href="<?php echo esc_url($sale_link); ?>"
                     aria-label="<?php echo esc_attr( $sale_active ? 'Sale Filter, aktiv' : 'Sale Filter' ); ?>"
