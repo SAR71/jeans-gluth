@@ -161,7 +161,7 @@ $show_filter_circles =
             <span class="jg-subcat-thumb">
             <img
                 class="jg-subcat-img jg-subcat-filter-img"
-                src="https://jeans-gluth.de/wp-content/uploads/2026/08/20260801-Sale.png"
+                src="https://jeans-gluth.de/wp-content/uploads/2026/08/20260802-Sale.png"
                 alt=""
                 aria-hidden="true"
             >            </span>
