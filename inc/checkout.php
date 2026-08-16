@@ -1260,16 +1260,7 @@ add_action(
             $sale_price < $regular_price
         ) {
 
-            /*
-             * Sichtbare Information
-             */
-            $item->add_meta_data(
-                'Preis',
-                'Sale-Preis',
-                true
-            );
-
-
+         
             /*
              * Historische Werte zum Bestellzeitpunkt
              */
@@ -1295,4 +1286,100 @@ add_action(
     },
     20,
     4
+);
+
+/**
+ * =========================================================
+ * BESTELLDETAILS + E-MAIL:
+ * ORIGINALPREIS DURCHSTREICHEN + REDUZIERTEN PREIS ANZEIGEN
+ * =========================================================
+ *
+ * Funktioniert für:
+ * - Thank-you-Seite
+ * - Mein Konto > Bestellung
+ * - HTML-Bestell-E-Mails
+ */
+add_filter(
+    'woocommerce_order_formatted_line_subtotal',
+    function ( $subtotal_html, $item, $order ) {
+
+        if (
+            ! $item instanceof WC_Order_Item_Product ||
+            ! $order instanceof WC_Order
+        ) {
+            return $subtotal_html;
+        }
+
+        $quantity = max( 1, (float) $item->get_quantity() );
+
+
+        /* =====================================================
+         * 1. ABHOLRABATT
+         * ===================================================== */
+
+        $has_pickup_discount =
+            $item->get_meta( '_jg_pickup_discount', true ) === 'yes';
+
+        if ( $has_pickup_discount ) {
+
+            $original_price = (float) $item->get_meta(
+                '_jg_original_price_at_purchase',
+                true
+            );
+
+            if ( $original_price > 0 ) {
+
+                $original_total = $original_price * $quantity;
+
+                return sprintf(
+                    '<span class="jg-order-price-wrapper"><del class="jg-order-original-price">%s</del> <ins class="jg-order-discounted-price">%s</ins></span>',
+                    wc_price(
+                        $original_total,
+                        array(
+                            'currency' => $order->get_currency(),
+                        )
+                    ),
+                    $subtotal_html
+                );
+            }
+        }
+
+
+        /* =====================================================
+         * 2. SALE
+         * ===================================================== */
+
+        $was_sale =
+            $item->get_meta( '_jg_was_sale', true ) === 'yes';
+
+        if ( $was_sale ) {
+
+            $regular_price = (float) $item->get_meta(
+                '_jg_regular_price_at_purchase',
+                true
+            );
+
+            if ( $regular_price > 0 ) {
+
+                $regular_total = $regular_price * $quantity;
+
+                return sprintf(
+                    '<span class="jg-order-price-wrapper"><del class="jg-order-original-price">%s</del> <ins class="jg-order-discounted-price">%s</ins></span>',
+                    wc_price(
+                        $regular_total,
+                        array(
+                            'currency' => $order->get_currency(),
+                        )
+                    ),
+                    $subtotal_html
+                );
+            }
+        }
+
+
+        return $subtotal_html;
+
+    },
+    20,
+    3
 );
