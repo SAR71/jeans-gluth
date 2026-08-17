@@ -293,3 +293,14 @@ function woodmart_child_additional_css() {
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
+/* ===============================
+ Test
+   =============================== */
+
+add_filter( 'template_include', function( $template ) {
+    if ( is_page( 'testlos' ) && current_user_can( 'manage_options' ) ) {
+        error_log( 'TESTLOS TEMPLATE: ' . $template );
+    }
+
+    return $template;
+}, 9999 );
