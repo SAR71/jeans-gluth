@@ -1,54 +1,62 @@
 /* Germanized Widerrufsbutton im Footer */
-.jg-widerruf-footer { 
-    margin: -8px 0 0 0 !important; 
-    padding: 0 !important;
-    width: 100%;
 
-    /* Ausrichtung vom Elementor-Container übernehmen */
-    text-align: inherit !important;
-} 
-
-.jg-widerruf-footer .elementor-widget-container, 
-.jg-widerruf-footer p { 
-    margin: 0 !important; 
+.jg-widerruf-footer {
+    margin: -8px 0 0 0 !important;
     padding: 0 !important;
 
-    /* Ausrichtung vom übergeordneten Element übernehmen */
-    text-align: inherit !important;
-} 
+    /* Nur so breit wie der Inhalt */
+    width: fit-content !important;
+    max-width: 100% !important;
 
-.jg-widerruf-footer a, 
-.jg-widerruf-footer button { 
-    display: inline-block !important; 
-    width: auto !important; 
-    min-width: 0 !important; 
- 
-    margin: 0 !important; 
-    padding: 8px 14px !important; 
- 
-    background: #02294e !important; 
-    border: 1px solid #02294e !important; 
-    color: #fff !important; 
- 
-    /* Schrift vom Footer übernehmen */ 
-    font-family: inherit !important; 
-    font-size: inherit !important; 
-    font-weight: inherit !important; 
-    line-height: inherit !important; 
-    letter-spacing: inherit !important; 
-    text-transform: none !important; 
- 
-    box-shadow: none !important; 
-} 
+    /* Ausrichtung durch Elementor-Elterncontainer */
+    align-self: auto !important;
+}
 
-.jg-widerruf-footer a:hover, 
-.jg-widerruf-footer button:hover { 
-    text-decoration: underline !important; 
-    text-underline-offset: 3px; 
-} 
+.jg-widerruf-footer .elementor-widget-container,
+.jg-widerruf-footer p {
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
-.jg-widerruf-footer a:focus-visible, 
-.jg-widerruf-footer button:focus-visible { 
-    outline: 3px solid #ffffff !important; 
-    outline-offset: 3px !important; 
+.jg-widerruf-footer a,
+.jg-widerruf-footer button {
+    display: inline-block !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+    padding: 8px 14px !important;
+
+    background: #02294e !important;
+    border: 1px solid #02294e !important;
+    border-radius: 0 !important;
+
+    color: #ffffff !important;
+
+    /* Schrift vom Footer übernehmen */
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
+    text-transform: none !important;
+
+    text-decoration: none !important;
+
+    box-shadow: none !important;
+}
+
+.jg-widerruf-footer a:hover,
+.jg-widerruf-footer button:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+}
+
+.jg-widerruf-footer a:focus-visible,
+.jg-widerruf-footer button:focus-visible {
+    outline: 3px solid #ffffff !important;
+    outline-offset: 3px !important;
 }
