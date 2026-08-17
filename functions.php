@@ -214,11 +214,6 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_scripts', 20 );
    PHP MODULE LADEN
    =============================== */
 $child_modules = array(
-	'account',
-	'category-pills',
-	'checkout',
-	'single-product-layout',
-	'subcategory-circles',
 );
 
 foreach ( $child_modules as $module ) {
