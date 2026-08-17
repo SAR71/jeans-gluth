@@ -296,24 +296,29 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
 
 /* ===============================
-   TEST: gefilterter Seiteninhalt
+   TEST: WoodMart Content
    =============================== */
 
 add_filter( 'template_include', function( $template ) {
 
     if ( is_page( 'testlos' ) ) {
 
+        global $post;
+
         $page_id = get_queried_object_id();
-        $raw     = get_post_field( 'post_content', $page_id );
-        $filtered = apply_filters( 'the_content', $raw );
+        $post    = get_post( $page_id );
+
+        setup_postdata( $post );
+
+        $woodmart_content = function_exists( 'woodmart_get_the_content' )
+            ? woodmart_get_the_content()
+            : 'FUNKTION NICHT VORHANDEN';
+
+        wp_reset_postdata();
 
         wp_die(
-            '<strong>ROHER INHALT:</strong><br><pre>' .
-            esc_html( $raw ) .
-            '</pre><br><br>' .
-
-            '<strong>GEFILTERTER INHALT:</strong><br><pre>' .
-            esc_html( $filtered ) .
+            '<strong>WOODMART CONTENT:</strong><br><br><pre>' .
+            esc_html( $woodmart_content ) .
             '</pre>'
         );
     }
