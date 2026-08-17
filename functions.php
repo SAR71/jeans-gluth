@@ -296,7 +296,7 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
 
 /* ===============================
-   TEST: WordPress Seiteninhalt
+   TEST: gefilterter Seiteninhalt
    =============================== */
 
 add_filter( 'template_include', function( $template ) {
@@ -304,13 +304,16 @@ add_filter( 'template_include', function( $template ) {
     if ( is_page( 'testlos' ) ) {
 
         $page_id = get_queried_object_id();
-        $content = get_post_field( 'post_content', $page_id );
+        $raw     = get_post_field( 'post_content', $page_id );
+        $filtered = apply_filters( 'the_content', $raw );
 
         wp_die(
-            '<strong>TEMPLATE:</strong><br>' . esc_html( $template ) .
-            '<br><br><strong>PAGE ID:</strong><br>' . esc_html( $page_id ) .
-            '<br><br><strong>POST CONTENT:</strong><br><pre>' .
-            esc_html( $content ) .
+            '<strong>ROHER INHALT:</strong><br><pre>' .
+            esc_html( $raw ) .
+            '</pre><br><br>' .
+
+            '<strong>GEFILTERTER INHALT:</strong><br><pre>' .
+            esc_html( $filtered ) .
             '</pre>'
         );
     }
