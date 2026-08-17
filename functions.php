@@ -294,22 +294,14 @@ function woodmart_child_additional_css() {
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
 /* ===============================
-  Test
+   ADDITIONAL CSS (Customizer)
+   Wird zuletzt geladen
    =============================== */
 
 add_filter( 'template_include', function( $template ) {
 
     if ( is_page( 'testlos' ) ) {
-        wp_die(
-            '<strong>TESTLOS erreicht</strong><br><br>' .
-            'Speicher an template_include: ' .
-            round( memory_get_usage( true ) / 1024 / 1024, 1 ) .
-            ' MB<br><br>' .
-            'Peak: ' .
-            round( memory_get_peak_usage( true ) / 1024 / 1024, 1 ) .
-            ' MB<br><br>' .
-            'Template: ' . esc_html( $template )
-        );
+        return get_stylesheet_directory() . '/testlos-debug.php';
     }
 
     return $template;
