@@ -292,20 +292,3 @@ function woodmart_child_additional_css() {
 }
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
-
-/* ===============================
-   TEST: verwendetes Template
-   =============================== */
-
-add_filter( 'template_include', function( $template ) {
-
-    if ( is_page( 'testlos' ) ) {
-        wp_die(
-            '<strong>VERWENDETES TEMPLATE:</strong><br><br>' .
-            esc_html( $template )
-        );
-    }
-
-    return $template;
-
-}, 9999 );
