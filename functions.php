@@ -292,3 +292,29 @@ function woodmart_child_additional_css() {
 }
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
+
+
+
+/* ===============================
+   TEST: WordPress Seiteninhalt
+   =============================== */
+
+add_filter( 'template_include', function( $template ) {
+
+    if ( is_page( 'testlos' ) ) {
+
+        $page_id = get_queried_object_id();
+        $content = get_post_field( 'post_content', $page_id );
+
+        wp_die(
+            '<strong>TEMPLATE:</strong><br>' . esc_html( $template ) .
+            '<br><br><strong>PAGE ID:</strong><br>' . esc_html( $page_id ) .
+            '<br><br><strong>POST CONTENT:</strong><br><pre>' .
+            esc_html( $content ) .
+            '</pre>'
+        );
+    }
+
+    return $template;
+
+}, 9999 );
