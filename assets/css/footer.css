@@ -42,3 +42,8 @@
     text-decoration: underline !important;
     text-underline-offset: 3px;
 }
+.jg-widerruf-footer a:focus-visible,
+.jg-widerruf-footer button:focus-visible {
+    outline: 3px solid #ffffff !important;
+    outline-offset: 3px !important;
+}
