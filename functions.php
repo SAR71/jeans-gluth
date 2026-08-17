@@ -292,3 +292,508 @@ function woodmart_child_additional_css() {
 }
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
+
+
+/**
+ * Jeans Glüth
+ * Zusätzliche Herstellerinformationen für WooCommerce Brands
+ *
+ * Taxonomie: product_brand
+ *
+ * Gespeicherte Felder:
+ * - Herstellername / Handelsname / Marke
+ * - vollständige Postanschrift
+ * - elektronische Adresse
+ * - Hersteller außerhalb der EU
+ * - EU-verantwortliche Person
+ * - Anschrift der verantwortlichen Person
+ * - elektronische Adresse der verantwortlichen Person
+ */
+
+
+/* ============================================================
+ * 1. FELDER BEIM ANLEGEN EINER NEUEN BRAND
+ * ============================================================ */
+
+add_action( 'product_brand_add_form_fields', 'jg_brand_manufacturer_add_fields' );
+
+function jg_brand_manufacturer_add_fields() {
+	?>
+
+	<div class="form-field">
+		<hr style="margin: 25px 0;">
+		<h2>Herstellerinformationen</h2>
+	</div>
+
+	<div class="form-field">
+		<label for="jg_manufacturer_name">
+			Name / Handelsname / Marke des Herstellers
+		</label>
+
+		<input
+			type="text"
+			name="jg_manufacturer_name"
+			id="jg_manufacturer_name"
+			value=""
+		>
+
+		<p class="description">
+			Name, eingetragener Handelsname oder eingetragene Handelsmarke des Herstellers.
+		</p>
+	</div>
+
+
+	<div class="form-field">
+		<label for="jg_manufacturer_address">
+			Vollständige Postanschrift
+		</label>
+
+		<textarea
+			name="jg_manufacturer_address"
+			id="jg_manufacturer_address"
+			rows="5"
+		></textarea>
+
+		<p class="description">
+			Vollständige postalische Anschrift des Herstellers.
+		</p>
+	</div>
+
+
+	<div class="form-field">
+		<label for="jg_manufacturer_email">
+			E-Mail / elektronische Adresse
+		</label>
+
+		<input
+			type="text"
+			name="jg_manufacturer_email"
+			id="jg_manufacturer_email"
+			value=""
+		>
+
+		<p class="description">
+			E-Mail-Adresse bzw. elektronische Adresse des Herstellers.
+		</p>
+	</div>
+
+
+	<div class="form-field">
+		<label>
+			<input
+				type="checkbox"
+				name="jg_manufacturer_outside_eu"
+				id="jg_manufacturer_outside_eu"
+				value="1"
+			>
+			Hersteller hat seinen Sitz außerhalb der EU
+		</label>
+
+		<p class="description">
+			Aktivieren, wenn für die Produkte eine in der EU ansässige verantwortliche Person angegeben werden muss.
+		</p>
+	</div>
+
+
+	<div id="jg-eu-responsible-fields">
+
+		<div class="form-field">
+			<hr style="margin: 25px 0;">
+			<h2>Verantwortliche Person in der EU</h2>
+		</div>
+
+		<div class="form-field">
+			<label for="jg_eu_responsible_name">
+				Name / Handelsname
+			</label>
+
+			<input
+				type="text"
+				name="jg_eu_responsible_name"
+				id="jg_eu_responsible_name"
+				value=""
+			>
+
+			<p class="description">
+				Name bzw. eingetragener Handelsname der in der EU ansässigen verantwortlichen Person.
+			</p>
+		</div>
+
+
+		<div class="form-field">
+			<label for="jg_eu_responsible_address">
+				Vollständige Postanschrift
+			</label>
+
+			<textarea
+				name="jg_eu_responsible_address"
+				id="jg_eu_responsible_address"
+				rows="5"
+			></textarea>
+
+			<p class="description">
+				Vollständige postalische Anschrift der verantwortlichen Person in der EU.
+			</p>
+		</div>
+
+
+		<div class="form-field">
+			<label for="jg_eu_responsible_email">
+				E-Mail / elektronische Adresse
+			</label>
+
+			<input
+				type="text"
+				name="jg_eu_responsible_email"
+				id="jg_eu_responsible_email"
+				value=""
+			>
+
+			<p class="description">
+				E-Mail-Adresse bzw. elektronische Adresse der verantwortlichen Person.
+			</p>
+		</div>
+
+	</div>
+
+	<?php
+}
+
+
+/* ============================================================
+ * 2. FELDER BEIM BEARBEITEN EINER BESTEHENDEN BRAND
+ * ============================================================ */
+
+add_action( 'product_brand_edit_form_fields', 'jg_brand_manufacturer_edit_fields' );
+
+function jg_brand_manufacturer_edit_fields( $term ) {
+
+	$manufacturer_name       = get_term_meta( $term->term_id, 'jg_manufacturer_name', true );
+	$manufacturer_address    = get_term_meta( $term->term_id, 'jg_manufacturer_address', true );
+	$manufacturer_email      = get_term_meta( $term->term_id, 'jg_manufacturer_email', true );
+	$manufacturer_outside_eu = get_term_meta( $term->term_id, 'jg_manufacturer_outside_eu', true );
+
+	$eu_responsible_name     = get_term_meta( $term->term_id, 'jg_eu_responsible_name', true );
+	$eu_responsible_address  = get_term_meta( $term->term_id, 'jg_eu_responsible_address', true );
+	$eu_responsible_email    = get_term_meta( $term->term_id, 'jg_eu_responsible_email', true );
+
+	?>
+
+	<tr class="form-field">
+		<th colspan="2">
+			<hr style="margin: 25px 0 15px;">
+			<h2 style="margin-bottom: 5px;">Herstellerinformationen</h2>
+		</th>
+	</tr>
+
+
+	<tr class="form-field">
+		<th scope="row">
+			<label for="jg_manufacturer_name">
+				Name / Handelsname / Marke des Herstellers
+			</label>
+		</th>
+
+		<td>
+			<input
+				type="text"
+				name="jg_manufacturer_name"
+				id="jg_manufacturer_name"
+				value="<?php echo esc_attr( $manufacturer_name ); ?>"
+			>
+
+			<p class="description">
+				Name, eingetragener Handelsname oder eingetragene Handelsmarke des Herstellers.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="form-field">
+		<th scope="row">
+			<label for="jg_manufacturer_address">
+				Vollständige Postanschrift
+			</label>
+		</th>
+
+		<td>
+			<textarea
+				name="jg_manufacturer_address"
+				id="jg_manufacturer_address"
+				rows="5"
+			><?php echo esc_textarea( $manufacturer_address ); ?></textarea>
+
+			<p class="description">
+				Vollständige postalische Anschrift des Herstellers.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="form-field">
+		<th scope="row">
+			<label for="jg_manufacturer_email">
+				E-Mail / elektronische Adresse
+			</label>
+		</th>
+
+		<td>
+			<input
+				type="text"
+				name="jg_manufacturer_email"
+				id="jg_manufacturer_email"
+				value="<?php echo esc_attr( $manufacturer_email ); ?>"
+			>
+
+			<p class="description">
+				E-Mail-Adresse bzw. elektronische Adresse des Herstellers.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="form-field">
+		<th scope="row">
+			Hersteller außerhalb der EU
+		</th>
+
+		<td>
+			<label>
+				<input
+					type="checkbox"
+					name="jg_manufacturer_outside_eu"
+					id="jg_manufacturer_outside_eu"
+					value="1"
+					<?php checked( $manufacturer_outside_eu, '1' ); ?>
+				>
+				Hersteller hat seinen Sitz außerhalb der EU
+			</label>
+
+			<p class="description">
+				Aktivieren, wenn für die Produkte eine in der EU ansässige verantwortliche Person angegeben werden muss.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="jg-eu-responsible-row">
+		<th colspan="2">
+			<hr style="margin: 25px 0 15px;">
+			<h2 style="margin-bottom: 5px;">Verantwortliche Person in der EU</h2>
+		</th>
+	</tr>
+
+
+	<tr class="form-field jg-eu-responsible-row">
+		<th scope="row">
+			<label for="jg_eu_responsible_name">
+				Name / Handelsname
+			</label>
+		</th>
+
+		<td>
+			<input
+				type="text"
+				name="jg_eu_responsible_name"
+				id="jg_eu_responsible_name"
+				value="<?php echo esc_attr( $eu_responsible_name ); ?>"
+			>
+
+			<p class="description">
+				Name bzw. eingetragener Handelsname der in der EU ansässigen verantwortlichen Person.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="form-field jg-eu-responsible-row">
+		<th scope="row">
+			<label for="jg_eu_responsible_address">
+				Vollständige Postanschrift
+			</label>
+		</th>
+
+		<td>
+			<textarea
+				name="jg_eu_responsible_address"
+				id="jg_eu_responsible_address"
+				rows="5"
+			><?php echo esc_textarea( $eu_responsible_address ); ?></textarea>
+
+			<p class="description">
+				Vollständige postalische Anschrift der verantwortlichen Person in der EU.
+			</p>
+		</td>
+	</tr>
+
+
+	<tr class="form-field jg-eu-responsible-row">
+		<th scope="row">
+			<label for="jg_eu_responsible_email">
+				E-Mail / elektronische Adresse
+			</label>
+		</th>
+
+		<td>
+			<input
+				type="text"
+				name="jg_eu_responsible_email"
+				id="jg_eu_responsible_email"
+				value="<?php echo esc_attr( $eu_responsible_email ); ?>"
+			>
+
+			<p class="description">
+				E-Mail-Adresse bzw. elektronische Adresse der verantwortlichen Person.
+			</p>
+		</td>
+	</tr>
+
+	<?php
+}
+
+
+/* ============================================================
+ * 3. FELDER SPEICHERN
+ * ============================================================ */
+
+add_action( 'created_product_brand', 'jg_save_brand_manufacturer_fields' );
+add_action( 'edited_product_brand',  'jg_save_brand_manufacturer_fields' );
+
+function jg_save_brand_manufacturer_fields( $term_id ) {
+
+	if ( ! current_user_can( 'manage_product_terms' ) && ! current_user_can( 'manage_woocommerce' ) ) {
+		return;
+	}
+
+
+	/* Herstellername */
+
+	if ( isset( $_POST['jg_manufacturer_name'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_manufacturer_name',
+			sanitize_text_field( wp_unslash( $_POST['jg_manufacturer_name'] ) )
+		);
+	}
+
+
+	/* Herstelleranschrift */
+
+	if ( isset( $_POST['jg_manufacturer_address'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_manufacturer_address',
+			sanitize_textarea_field( wp_unslash( $_POST['jg_manufacturer_address'] ) )
+		);
+	}
+
+
+	/* Elektronische Adresse des Herstellers */
+
+	if ( isset( $_POST['jg_manufacturer_email'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_manufacturer_email',
+			sanitize_text_field( wp_unslash( $_POST['jg_manufacturer_email'] ) )
+		);
+	}
+
+
+	/* Hersteller außerhalb EU */
+
+	$outside_eu = isset( $_POST['jg_manufacturer_outside_eu'] ) ? '1' : '0';
+
+	update_term_meta(
+		$term_id,
+		'jg_manufacturer_outside_eu',
+		$outside_eu
+	);
+
+
+	/* Verantwortliche Person */
+
+	if ( isset( $_POST['jg_eu_responsible_name'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_eu_responsible_name',
+			sanitize_text_field( wp_unslash( $_POST['jg_eu_responsible_name'] ) )
+		);
+	}
+
+
+	/* Anschrift verantwortliche Person */
+
+	if ( isset( $_POST['jg_eu_responsible_address'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_eu_responsible_address',
+			sanitize_textarea_field( wp_unslash( $_POST['jg_eu_responsible_address'] ) )
+		);
+	}
+
+
+	/* Elektronische Adresse verantwortliche Person */
+
+	if ( isset( $_POST['jg_eu_responsible_email'] ) ) {
+
+		update_term_meta(
+			$term_id,
+			'jg_eu_responsible_email',
+			sanitize_text_field( wp_unslash( $_POST['jg_eu_responsible_email'] ) )
+		);
+	}
+}
+
+
+/* ============================================================
+ * 4. EU-FELDER AUTOMATISCH EIN-/AUSBLENDEN
+ * ============================================================ */
+
+add_action( 'admin_footer', 'jg_brand_manufacturer_admin_script' );
+
+function jg_brand_manufacturer_admin_script() {
+
+	$screen = get_current_screen();
+
+	if (
+		! $screen ||
+		'taxonomy' !== $screen->base ||
+		'product_brand' !== $screen->taxonomy
+	) {
+		return;
+	}
+
+	?>
+
+	<script>
+	jQuery(function($) {
+
+		function jgToggleEuResponsibleFields() {
+
+			const outsideEU = $('#jg_manufacturer_outside_eu').is(':checked');
+
+			/* Brand neu anlegen */
+			$('#jg-eu-responsible-fields').toggle(outsideEU);
+
+			/* Brand bearbeiten */
+			$('.jg-eu-responsible-row').toggle(outsideEU);
+		}
+
+		jgToggleEuResponsibleFields();
+
+		$(document).on(
+			'change',
+			'#jg_manufacturer_outside_eu',
+			jgToggleEuResponsibleFields
+		);
+
+	});
+	</script>
+
+	<?php
+}
