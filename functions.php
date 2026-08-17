@@ -301,7 +301,7 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 add_filter( 'template_include', function( $template ) {
 
     if ( is_page( 'testlos' ) ) {
-        return get_stylesheet_directory() . '/testlos-debug.php';
+        return get_stylesheet_directory() . '/inc/testlos-debug.php';
     }
 
     return $template;
