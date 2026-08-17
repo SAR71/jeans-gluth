@@ -292,18 +292,3 @@ function woodmart_child_additional_css() {
 }
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
-
-/* ===============================
-   ADDITIONAL CSS (Customizer)
-   Wird zuletzt geladen
-   =============================== */
-
-add_filter( 'template_include', function( $template ) {
-
-    if ( is_page( 'testlos' ) ) {
-        return get_stylesheet_directory() . '/inc/testlos-debug.php';
-    }
-
-    return $template;
-
-}, 9999 );
