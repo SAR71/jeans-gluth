@@ -293,3 +293,16 @@ function woodmart_child_additional_css() {
 
 add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
+/* ===============================
+  Test
+   =============================== */
+
+add_action( 'wp', function() {
+    if ( is_page( 'testlos' ) ) {
+        wp_die(
+            'WP-HOOK erreicht. Speicher: ' .
+            round( memory_get_usage( true ) / 1024 / 1024, 1 ) .
+            ' MB'
+        );
+    }
+});
