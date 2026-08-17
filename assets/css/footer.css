@@ -1,38 +1,39 @@
+/* Germanized Widerrufsbutton im Footer */
 .jg-widerruf-footer {
-    margin: 0 !important;
+    margin: -8px 0 0 0 !important;
     padding: 0 !important;
     text-align: left !important;
     width: 100%;
 }
 
-/* mögliche Elementor-Wrapper ebenfalls links ausrichten */
 .jg-widerruf-footer .elementor-widget-container,
-.jg-widerruf-footer .woocommerce,
 .jg-widerruf-footer p {
     margin: 0 !important;
     padding: 0 !important;
     text-align: left !important;
 }
 
-/* Germanized Button */
 .jg-widerruf-footer a,
 .jg-widerruf-footer button {
     display: inline-block !important;
     width: auto !important;
     min-width: 0 !important;
 
-    margin: 8px 0 0 0 !important;
+    margin: 0 !important;
     padding: 8px 14px !important;
 
     background: #02294e !important;
     border: 1px solid #02294e !important;
 
     color: #fff !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.4 !important;
+
+    /* Schrift vom Footer übernehmen */
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
     text-transform: none !important;
 
     box-shadow: none !important;
-    float: none !important;
 }
