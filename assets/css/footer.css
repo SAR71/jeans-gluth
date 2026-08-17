@@ -1,7 +1,6 @@
-/* *****Vertrag Widerrufen im Footer***** */
-
 .jg-widerruf-footer {
-    margin-top: 12px;
+    margin-top: 8px;
+    text-align: left !important;
 }
 
 .jg-widerruf-footer a,
@@ -9,8 +8,8 @@
     display: inline-block;
     width: auto;
     min-width: 0;
+    margin: 0 !important;
     padding: 8px 14px;
-    margin: 0;
 
     background: #02294e !important;
     border: 1px solid #02294e !important;
@@ -21,11 +20,4 @@
     line-height: 1.4;
     text-transform: none;
     box-shadow: none !important;
-}
-
-.jg-widerruf-footer a:hover,
-.jg-widerruf-footer button:hover {
-    background: #02294e !important;
-    border-color: #02294e !important;
-    opacity: 0.85;
 }
