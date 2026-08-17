@@ -296,33 +296,43 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
 
 
 /* ===============================
-   TEST: WoodMart Content
+   TEST: PHP-Fehler auf Testlos
    =============================== */
 
-add_filter( 'template_include', function( $template ) {
+add_action( 'wp', function() {
 
-    if ( is_page( 'testlos' ) ) {
-
-        global $post;
-
-        $page_id = get_queried_object_id();
-        $post    = get_post( $page_id );
-
-        setup_postdata( $post );
-
-        $woodmart_content = function_exists( 'woodmart_get_the_content' )
-            ? woodmart_get_the_content()
-            : 'FUNKTION NICHT VORHANDEN';
-
-        wp_reset_postdata();
-
-        wp_die(
-            '<strong>WOODMART CONTENT:</strong><br><br><pre>' .
-            esc_html( $woodmart_content ) .
-            '</pre>'
-        );
+    if ( ! is_page( 'testlos' ) ) {
+        return;
     }
 
-    return $template;
+    register_shutdown_function( function() {
 
-}, 9999 );
+        $error = error_get_last();
+
+        echo '<div style="
+            position:fixed;
+            bottom:20px;
+            left:20px;
+            z-index:9999999;
+            background:#fff;
+            color:#000;
+            border:3px solid red;
+            padding:15px;
+            font-family:monospace;
+            max-width:90%;
+        ">';
+
+        if ( $error ) {
+            echo '<strong>LETZTER PHP-FEHLER:</strong><br>';
+            echo 'Typ: ' . esc_html( $error['type'] ) . '<br>';
+            echo 'Meldung: ' . esc_html( $error['message'] ) . '<br>';
+            echo 'Datei: ' . esc_html( $error['file'] ) . '<br>';
+            echo 'Zeile: ' . esc_html( $error['line'] );
+        } else {
+            echo '<strong>KEIN PHP-FEHLER ERKANNT</strong>';
+        }
+
+        echo '</div>';
+    } );
+
+} );
