@@ -298,11 +298,10 @@ add_action( 'wp_enqueue_scripts', 'woodmart_child_additional_css', 30 );
    =============================== */
 
 
-add_action( 'wp_footer', function () {
+add_action( 'wp_head', function () {
     if ( current_user_can( 'manage_options' ) ) {
         $output = do_shortcode( '[eu_owb_order_withdrawal_request_form]' );
 
-        echo '<!-- OWB OUTPUT LENGTH: ' . strlen( $output ) . ' -->';
-        echo '<!-- OWB OUTPUT: ' . esc_html( $output ) . ' -->';
+        echo "\n<!-- OWB OUTPUT LENGTH: " . strlen( $output ) . " -->\n";
     }
 });
