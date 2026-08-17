@@ -37,3 +37,8 @@
 
     box-shadow: none !important;
 }
+.jg-widerruf-footer a:hover,
+.jg-widerruf-footer button:hover {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+}
