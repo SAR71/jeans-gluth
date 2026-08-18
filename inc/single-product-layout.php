@@ -46,9 +46,11 @@ function jg_preselect_middle_instock_size_swatch() {
 				if (activeSwatch) return;
 
 				// Nur verfügbare Größen berücksichtigen
-				var enabledSwatches = Array.from(
-					swatchWrap.querySelectorAll('.wd-swatch.wd-enabled[data-value]')
-				);
+                var enabledSwatches = Array.from(
+                swatchWrap.querySelectorAll(
+                    '.wd-swatch.wd-enabled[data-value]:not(.jg-out-of-stock)'
+                )
+            );
 
 				if (!enabledSwatches.length) return;
 
@@ -222,4 +224,23 @@ add_action(
     'wp_enqueue_scripts',
     'jeans_gluth_enqueue_single_product_script',
     100
+);
+
+/**
+ * Variationsdaten auch bei Produkten mit vielen Varianten direkt laden.
+ *
+ * Dadurch kann das eigene JavaScript erkennen, welche Größen
+ * verfügbar beziehungsweise ausverkauft sind.
+ */
+add_filter(
+	'woocommerce_ajax_variation_threshold',
+	function ( $threshold, $product ) {
+		if ( is_product() ) {
+			return 200;
+		}
+
+		return $threshold;
+	},
+	10,
+	2
 );

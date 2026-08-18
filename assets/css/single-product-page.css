@@ -789,3 +789,52 @@ img {
     display: flex !important;
     flex-direction: column !important;
 }
+
+/* =========================================================
+   AUSVERKAUFTE GRÖSSEN – ANKLICKBAR FÜR WAITLIST
+   ========================================================= */
+
+/* Ausverkaufte Größe */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock {
+    position: relative !important;
+
+    background-color: #f2f2f2 !important;
+    color: #929292 !important;
+    border-color: #cfcfcf !important;
+
+    opacity: 1 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+
+    text-decoration: line-through !important;
+    text-decoration-thickness: 1px !important;
+}
+
+/* Hover auf ausverkaufter Größe */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock:hover {
+    background-color: #e6e6e6 !important;
+    color: #686868 !important;
+    border-color: #a9a9a9 !important;
+}
+
+/* Ausverkaufte Größe wurde ausgewählt */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock.wd-active {
+    background-color: #777777 !important;
+    color: #ffffff !important;
+    border-color: #777777 !important;
+}
+
+/* Eventuelle WoodMart-Sperre gezielt überschreiben */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock.wd-disabled {
+    opacity: 1 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}

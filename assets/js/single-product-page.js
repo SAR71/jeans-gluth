@@ -2263,3 +2263,346 @@
         startSocialLayouts();
     }
 })();
+
+/* =========================================================
+   AUSVERKAUFTE GRÖSSEN + WOODMART WAITLIST
+   ========================================================= */
+
+(function () {
+    'use strict';
+
+    const SIZE_ATTRIBUTE = 'attribute_pa_groessen';
+    const SIZE_SWATCH_SELECTOR =
+        '[data-id="pa_groessen"] .wd-swatch[data-value]';
+
+    /**
+     * Liefert die Variationsdaten eines WooCommerce-Formulars.
+     */
+    function getVariations(form) {
+        if (!form) {
+            return [];
+        }
+
+        if (window.jQuery) {
+            const jqueryVariations =
+                window.jQuery(form).data('product_variations');
+
+            if (Array.isArray(jqueryVariations)) {
+                return jqueryVariations;
+            }
+        }
+
+        const rawVariations =
+            form.getAttribute('data-product_variations');
+
+        if (!rawVariations || rawVariations === 'false') {
+            return [];
+        }
+
+        try {
+            const parsedVariations = JSON.parse(rawVariations);
+
+            return Array.isArray(parsedVariations)
+                ? parsedVariations
+                : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    /**
+     * Prüft, ob eine Variation zu den momentan ausgewählten
+     * Attributen passt. Die Größe selbst wird dabei ignoriert.
+     */
+    function variationMatchesOtherAttributes(
+        variation,
+        form
+    ) {
+        const attributes = variation.attributes || {};
+        const selects = form.querySelectorAll(
+            'select[name^="attribute_"]'
+        );
+
+        return Array.from(selects).every(function (select) {
+            const attributeName = select.name;
+            const selectedValue = select.value;
+
+            if (
+                attributeName === SIZE_ATTRIBUTE ||
+                !selectedValue
+            ) {
+                return true;
+            }
+
+            const variationValue =
+                attributes[attributeName] || '';
+
+            /*
+             * Leerer Variationswert bedeutet:
+             * Die Variation gilt für jeden Wert dieses Attributs.
+             */
+            return (
+                variationValue === '' ||
+                variationValue === selectedValue
+            );
+        });
+    }
+
+    /**
+     * Prüft, ob eine Variation zur jeweiligen Größe gehört.
+     */
+    function variationMatchesSize(
+        variation,
+        sizeValue
+    ) {
+        const attributes = variation.attributes || {};
+        const variationSize =
+            attributes[SIZE_ATTRIBUTE] || '';
+
+        return (
+            variationSize === '' ||
+            variationSize === sizeValue
+        );
+    }
+
+    /**
+     * Kennzeichnet verfügbare und ausverkaufte Größen.
+     */
+    function updateSizeStockClasses(form) {
+        const variations = getVariations(form);
+
+        if (!variations.length) {
+            return;
+        }
+
+        const swatches =
+            form.querySelectorAll(SIZE_SWATCH_SELECTOR);
+
+        swatches.forEach(function (swatch) {
+            const sizeValue =
+                swatch.getAttribute('data-value');
+
+            if (!sizeValue) {
+                return;
+            }
+
+            const matchingVariations =
+                variations.filter(function (variation) {
+                    return (
+                        variationMatchesSize(
+                            variation,
+                            sizeValue
+                        ) &&
+                        variationMatchesOtherAttributes(
+                            variation,
+                            form
+                        )
+                    );
+                });
+
+            /*
+             * Existiert überhaupt keine passende Kombination,
+             * bleibt WoodMarts normale Deaktivierung bestehen.
+             */
+            if (!matchingVariations.length) {
+                swatch.classList.remove(
+                    'jg-out-of-stock',
+                    'jg-in-stock'
+                );
+
+                swatch.removeAttribute(
+                    'data-jg-stock-status'
+                );
+
+                return;
+            }
+
+            const isInStock =
+                matchingVariations.some(function (variation) {
+                    return variation.is_in_stock === true;
+                });
+
+            swatch.classList.toggle(
+                'jg-in-stock',
+                isInStock
+            );
+
+            swatch.classList.toggle(
+                'jg-out-of-stock',
+                !isInStock
+            );
+
+            swatch.setAttribute(
+                'data-jg-stock-status',
+                isInStock ? 'in-stock' : 'out-of-stock'
+            );
+
+            if (!isInStock) {
+                /*
+                 * Die Größe muss anklickbar bleiben, damit
+                 * WoodMart ihre Waitlist anzeigen kann.
+                 */
+                swatch.classList.remove('wd-disabled');
+                swatch.classList.add('wd-enabled');
+                swatch.removeAttribute('disabled');
+                swatch.setAttribute('aria-disabled', 'false');
+            }
+        });
+    }
+
+    /**
+     * Wählt eine ausverkaufte Größe ausdrücklich aus.
+     */
+    function selectOutOfStockSize(event) {
+        const swatch =
+            event.target.closest(
+                '.wd-swatch.jg-out-of-stock[data-value]'
+            );
+
+        if (!swatch) {
+            return;
+        }
+
+        const form =
+            swatch.closest('form.variations_form');
+
+        if (!form) {
+            return;
+        }
+
+        const sizeSelect =
+            form.querySelector(
+                'select[name="' + SIZE_ATTRIBUTE + '"]'
+            );
+
+        if (!sizeSelect) {
+            return;
+        }
+
+        const sizeValue =
+            swatch.getAttribute('data-value');
+
+        const option = Array.from(
+            sizeSelect.options
+        ).find(function (currentOption) {
+            return currentOption.value === sizeValue;
+        });
+
+        if (!option) {
+            return;
+        }
+
+        /*
+         * Verhindert, dass ein eventuell vorhandener
+         * WoodMart-Disabled-Handler den Klick blockiert.
+         */
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        option.disabled = false;
+        sizeSelect.value = sizeValue;
+
+        form
+            .querySelectorAll(SIZE_SWATCH_SELECTOR)
+            .forEach(function (currentSwatch) {
+                const isActive =
+                    currentSwatch === swatch;
+
+                currentSwatch.classList.toggle(
+                    'wd-active',
+                    isActive
+                );
+
+                currentSwatch.setAttribute(
+                    'aria-checked',
+                    isActive ? 'true' : 'false'
+                );
+            });
+
+        if (window.jQuery) {
+            const $form = window.jQuery(form);
+            const $select = window.jQuery(sizeSelect);
+
+            $select.trigger('change');
+            $form.trigger(
+                'woocommerce_variation_select_change'
+            );
+            $form.trigger('check_variations');
+        } else {
+            sizeSelect.dispatchEvent(
+                new Event('change', {
+                    bubbles: true
+                })
+            );
+        }
+
+        /*
+         * WoodMart aktualisiert beim Variantenwechsel die
+         * Swatch-Klassen. Deshalb anschließend erneut markieren.
+         */
+        window.setTimeout(function () {
+            updateSizeStockClasses(form);
+        }, 50);
+
+        window.setTimeout(function () {
+            updateSizeStockClasses(form);
+        }, 250);
+    }
+
+    function initializeStockSwatches() {
+        document
+            .querySelectorAll('form.variations_form')
+            .forEach(function (form) {
+                updateSizeStockClasses(form);
+
+                if (window.jQuery) {
+                    window.jQuery(form).on(
+                        [
+                            'woocommerce_update_variation_values.jgStock',
+                            'woocommerce_variation_has_changed.jgStock',
+                            'found_variation.jgStock',
+                            'reset_data.jgStock'
+                        ].join(' '),
+                        function () {
+                            window.setTimeout(function () {
+                                updateSizeStockClasses(form);
+                            }, 0);
+                        }
+                    );
+                }
+
+                form.addEventListener(
+                    'change',
+                    function () {
+                        window.setTimeout(function () {
+                            updateSizeStockClasses(form);
+                        }, 0);
+                    }
+                );
+            });
+    }
+
+    /*
+     * Capture-Modus ist erforderlich, damit der Klick auf eine
+     * von WoodMart deaktivierte Größe zuerst verarbeitet wird.
+     */
+    document.addEventListener(
+        'click',
+        selectOutOfStockSize,
+        true
+    );
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            initializeStockSwatches
+        );
+    } else {
+        initializeStockSwatches();
+    }
+
+    window.setTimeout(
+        initializeStockSwatches,
+        500
+    );
+})();
