@@ -2450,104 +2450,59 @@
         });
     }
 
-    /**
-     * Wählt eine ausverkaufte Größe ausdrücklich aus.
-     */
-    function selectOutOfStockSize(event) {
-        const swatch =
-            event.target.closest(
-                '.wd-swatch.jg-out-of-stock[data-value]'
-            );
 
-        if (!swatch) {
-            return;
-        }
+/**
+ * Macht eine ausverkaufte Größe vor dem normalen
+ * WoodMart-Klick anklickbar.
+ *
+ * Der Klick wird nicht blockiert, damit WoodMart selbst
+ * die Variante auswählt und die Waitlist aktualisiert.
+ */
+function prepareOutOfStockSizeClick(event) {
+    const swatch = event.target.closest(
+        '.wd-swatch.jg-out-of-stock[data-value]'
+    );
 
-        const form =
-            swatch.closest('form.variations_form');
-
-        if (!form) {
-            return;
-        }
-
-        const sizeSelect =
-            form.querySelector(
-                'select[name="' + SIZE_ATTRIBUTE + '"]'
-            );
-
-        if (!sizeSelect) {
-            return;
-        }
-
-        const sizeValue =
-            swatch.getAttribute('data-value');
-
-        const option = Array.from(
-            sizeSelect.options
-        ).find(function (currentOption) {
-            return currentOption.value === sizeValue;
-        });
-
-        if (!option) {
-            return;
-        }
-
-        /*
-         * Verhindert, dass ein eventuell vorhandener
-         * WoodMart-Disabled-Handler den Klick blockiert.
-         */
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        option.disabled = false;
-        sizeSelect.value = sizeValue;
-
-        form
-            .querySelectorAll(SIZE_SWATCH_SELECTOR)
-            .forEach(function (currentSwatch) {
-                const isActive =
-                    currentSwatch === swatch;
-
-                currentSwatch.classList.toggle(
-                    'wd-active',
-                    isActive
-                );
-
-                currentSwatch.setAttribute(
-                    'aria-checked',
-                    isActive ? 'true' : 'false'
-                );
-            });
-
-        if (window.jQuery) {
-            const $form = window.jQuery(form);
-            const $select = window.jQuery(sizeSelect);
-
-            $select.trigger('change');
-            $form.trigger(
-                'woocommerce_variation_select_change'
-            );
-            $form.trigger('check_variations');
-        } else {
-            sizeSelect.dispatchEvent(
-                new Event('change', {
-                    bubbles: true
-                })
-            );
-        }
-
-        /*
-         * WoodMart aktualisiert beim Variantenwechsel die
-         * Swatch-Klassen. Deshalb anschließend erneut markieren.
-         */
-        window.setTimeout(function () {
-            updateSizeStockClasses(form);
-        }, 50);
-
-        window.setTimeout(function () {
-            updateSizeStockClasses(form);
-        }, 250);
+    if (!swatch) {
+        return;
     }
+
+    const form = swatch.closest(
+        'form.variations_form'
+    );
+
+    if (!form) {
+        return;
+    }
+
+    const sizeSelect = form.querySelector(
+        'select[name="' + SIZE_ATTRIBUTE + '"]'
+    );
+
+    if (!sizeSelect) {
+        return;
+    }
+
+    const sizeValue =
+        swatch.getAttribute('data-value');
+
+    const option = Array.from(
+        sizeSelect.options
+    ).find(function (currentOption) {
+        return currentOption.value === sizeValue;
+    });
+
+    swatch.classList.remove('wd-disabled');
+    swatch.classList.add('wd-enabled');
+    swatch.removeAttribute('disabled');
+    swatch.setAttribute('aria-disabled', 'false');
+
+    if (option) {
+        option.disabled = false;
+    }
+}
+
+
 
     function initializeStockSwatches() {
         document
@@ -2586,11 +2541,11 @@
      * Capture-Modus ist erforderlich, damit der Klick auf eine
      * von WoodMart deaktivierte Größe zuerst verarbeitet wird.
      */
-    document.addEventListener(
-        'click',
-        selectOutOfStockSize,
-        true
-    );
+  document.addEventListener(
+    'click',
+    prepareOutOfStockSizeClick,
+    true
+);
 
     if (document.readyState === 'loading') {
         document.addEventListener(
