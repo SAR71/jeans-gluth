@@ -791,14 +791,14 @@ img {
 }
 
 /* =========================================================
-   AUSVERKAUFTE GRÖSSEN – ANKLICKBAR FÜR WAITLIST
+   AUSVERKAUFTE GRÖSSEN – DIAGONAL DURCHGESTRICHEN
    ========================================================= */
 
-/* Ausverkaufte Größe */
 .single-product
 .wd-swatches-product
 .wd-swatch.jg-out-of-stock {
     position: relative !important;
+    overflow: hidden !important;
 
     background-color: #f2f2f2 !important;
     color: #929292 !important;
@@ -808,17 +808,47 @@ img {
     cursor: pointer !important;
     pointer-events: auto !important;
 
-    text-decoration: line-through !important;
-    text-decoration-thickness: 1px !important;
+    /* Horizontalen Strich entfernen */
+    text-decoration: none !important;
 }
 
-/* Hover auf ausverkaufter Größe */
+/* Diagonale Linie: links unten nach rechts oben */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock::after {
+    content: "" !important;
+
+    position: absolute !important;
+    z-index: 2 !important;
+
+    top: 50% !important;
+    left: 50% !important;
+
+    width: 145% !important;
+    height: 1px !important;
+
+    background-color: #929292 !important;
+
+    transform: translate(-50%, -50%) rotate(-45deg) !important;
+    transform-origin: center !important;
+
+    pointer-events: none !important;
+}
+
+/* Hover */
 .single-product
 .wd-swatches-product
 .wd-swatch.jg-out-of-stock:hover {
     background-color: #e6e6e6 !important;
     color: #686868 !important;
     border-color: #a9a9a9 !important;
+}
+
+/* Linie beim Hover */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock:hover::after {
+    background-color: #686868 !important;
 }
 
 /* Ausverkaufte Größe wurde ausgewählt */
@@ -830,7 +860,14 @@ img {
     border-color: #777777 !important;
 }
 
-/* Eventuelle WoodMart-Sperre gezielt überschreiben */
+/* Diagonale Linie bei ausgewählter Größe */
+.single-product
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock.wd-active::after {
+    background-color: #ffffff !important;
+}
+
+/* Eventuelle WoodMart-Sperre überschreiben */
 .single-product
 .wd-swatches-product
 .wd-swatch.jg-out-of-stock.wd-disabled {
