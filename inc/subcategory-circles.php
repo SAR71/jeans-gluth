@@ -114,7 +114,17 @@ $show_filter_circles =
     $new_active  = !empty($_GET['jg_new'])  && $_GET['jg_new'] === '1';
 
     ob_start(); ?>
-    <div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
+        <?php
+        if (
+            $current_id === $top_id &&
+            !$new_active &&
+            !$sale_active
+        ) :
+        ?>
+            <h1 class="jg-visually-hidden"><?php echo esc_html($term->name); ?></h1>
+        <?php endif; ?>
+
+        <div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
             <button type="button" class="jg-subcat-nav jg-prev" aria-label="Nach links scrollen" hidden></button>
       <div class="jg-subcat-circles">
 
@@ -136,7 +146,11 @@ $show_filter_circles =
                     aria-hidden="true"
                 >
             </span>
-              <span class="jg-subcat-title">Neu</span>
+                <?php if ($new_active): ?>
+                    <h1 class="jg-subcat-title">Neu</h1>
+                <?php else: ?>
+                    <span class="jg-subcat-title">Neu</span>
+                <?php endif; ?>
             </a>
           <?php endif; ?>
 
@@ -156,7 +170,11 @@ $show_filter_circles =
                 alt=""
                 aria-hidden="true"
             >            </span>
-              <span class="jg-subcat-title">Sale</span>
+              <?php if ($sale_active): ?>
+                <h1 class="jg-subcat-title">Sale</h1>
+            <?php else: ?>
+                <span class="jg-subcat-title">Sale</span>
+            <?php endif; ?>
             </a>
           <?php endif; ?>
         <?php endif; ?>
@@ -180,11 +198,17 @@ $show_filter_circles =
              data-term-id="<?php echo (int) $child->term_id; ?>"
              data-has-thumb="<?php echo $thumb_id ? '1' : '0'; ?>">
             <span class="jg-subcat-thumb"><?php echo $img; ?></span>
-            <span class="jg-subcat-title"><?php echo str_replace(
-                ' &amp; ',
-                '<br>&amp;&nbsp;',
-                esc_html($child->name)
-            ); ?></span>
+                    <?php
+            $title_tag = $is_active ? 'h1' : 'span';
+            ?>
+
+            <<?php echo $title_tag; ?> class="jg-subcat-title"><?php
+                echo str_replace(
+                    ' &amp; ',
+                    '<br>&amp;&nbsp;',
+                    esc_html($child->name)
+                );
+            ?></<?php echo $title_tag; ?>>
           </a>
         <?php endforeach; ?>
 
