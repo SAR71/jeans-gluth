@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_shortcode('jg_top_subcats_TEST_OFF', function($atts) {
+add_shortcode('jg_top_subcats', function($atts) {
 
     if (!function_exists('is_product_category') || !is_product_category()) {
         return '';
