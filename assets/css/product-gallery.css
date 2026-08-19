@@ -99,15 +99,20 @@ body.page-id-37307
 /**
  * GENDER LABEL auf Produktseiten anzeigen, wenn das Produkt in Damen- oder Herren-Kategorie ist.
  */
- 
+
 .jg-archive-gender-label {
     text-align: center;
     font-family: var(--wd-entities-title-font, inherit);
-    font-weight: var(--wd-entities-title-font-weight, 600);
+    font-weight: 600;
     font-size: 18px;
     line-height: 1;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #02294e;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+}
+@media (min-width: 880px) {
+    .jg-archive-gender-label {
+        display: none;
+    }
 }

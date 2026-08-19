@@ -117,18 +117,23 @@ $new_active =
     (string) get_query_var('jg_new') === '1' ||
     (!empty($_GET['jg_new']) && $_GET['jg_new'] === '1');
 
-    ob_start(); ?>
-        <?php
-        if (
-            $current_id === $top_id &&
-            !$new_active &&
-            !$sale_active
-        ) :
-        ?>
-            <h1 class="jg-visually-hidden"><?php echo esc_html($term->name); ?></h1>
-        <?php endif; ?>
+ob_start(); ?>
 
-        <div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
+<?php
+if (
+    $current_id === $top_id &&
+    !$new_active &&
+    !$sale_active
+) :
+?>
+    <h1 class="jg-visually-hidden"><?php echo esc_html($term->name); ?></h1>
+<?php endif; ?>
+
+<div class="jg-archive-gender-label">
+    <?php echo esc_html(strtoupper($top_term->name)); ?>
+</div>
+
+<div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
             <button type="button" class="jg-subcat-nav jg-prev" aria-label="Nach links scrollen" hidden></button>
       <div class="jg-subcat-circles">
 
