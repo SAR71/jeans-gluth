@@ -101,18 +101,20 @@ body.page-id-37307
  */
 
 .jg-archive-gender-label {
-    text-align: center;
-    font-family: var(--wd-entities-title-font, inherit);
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 1;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #02294e;
-    margin-bottom: 14px;
+    display: none;
 }
-@media (min-width: 880px) {
+
+@media (max-width: 879px) {
     .jg-archive-gender-label {
-        display: none;
+        display: block;
+        width: 100%;
+        text-align: left;
+        color: #02294e;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-transform: uppercase;
+        margin: 0 0 12px 0;
+        padding: 0;
     }
 }
