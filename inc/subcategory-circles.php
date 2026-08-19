@@ -570,3 +570,95 @@ add_action('template_redirect', function () {
     }
 
 }, 20);
+
+/**
+ * Sichtbarer SEO-Text für virtuelle NEU-/SALE-Seiten.
+ * Shortcode: [jg_virtual_archive_description]
+ */
+add_shortcode('jg_virtual_archive_description', function () {
+
+    if (!function_exists('is_product_category') || !is_product_category()) {
+        return '';
+    }
+
+    $term = get_queried_object();
+
+    if (
+        !$term ||
+        !($term instanceof WP_Term) ||
+        $term->taxonomy !== 'product_cat' ||
+        !in_array($term->slug, ['damen', 'herren'], true)
+    ) {
+        return '';
+    }
+
+    $new_active =
+        (string) get_query_var('jg_new') === '1' ||
+        (!empty($_GET['jg_new']) && $_GET['jg_new'] === '1');
+
+    $sale_active =
+        (string) get_query_var('jg_sale') === '1' ||
+        (!empty($_GET['jg_sale']) && $_GET['jg_sale'] === '1');
+
+    $gender = ($term->slug === 'damen') ? 'Damen' : 'Herren';
+
+    if ($new_active) {
+
+        if ($gender === 'Damen') {
+            $text = '
+                <h2>Neue Damenmode bei Jeans Gluth</h2>
+                <p>
+                    Entdecke unsere neu eingetroffene Damenmode bei Jeans Gluth.
+                    In unserem Sortiment findest du regelmäßig neue Styles,
+                    aktuelle Lieblingsstücke und ausgewählte Mode für verschiedene
+                    Größen und Anlässe. Da wir als Familienunternehmen nur über
+                    begrenzte Lagerflächen verfügen, sind viele Artikel nur in
+                    kleinen Stückzahlen verfügbar.
+                </p>
+            ';
+        } else {
+            $text = '
+                <h2>Neue Herrenmode bei Jeans Gluth</h2>
+                <p>
+                    Entdecke unsere neu eingetroffene Herrenmode bei Jeans Gluth.
+                    Wir erweitern unser Sortiment regelmäßig um neue Shirts,
+                    Hemden, Hosen, Jeans und weitere aktuelle Styles.
+                    Viele Artikel sind aufgrund unserer begrenzten Lagerfläche
+                    nur in kleinen Stückzahlen verfügbar.
+                </p>
+            ';
+        }
+
+        return '<div class="jg-virtual-archive-description">' . $text . '</div>';
+    }
+
+    if ($sale_active) {
+
+        if ($gender === 'Damen') {
+            $text = '
+                <h2>Damenmode im Sale</h2>
+                <p>
+                    Entdecke reduzierte Damenmode im Sale bei Jeans Gluth.
+                    Hier findest du ausgewählte Kleidung und Accessoires zu
+                    reduzierten Preisen. Die verfügbaren Größen und Stückzahlen
+                    können begrenzt sein – es lohnt sich daher, regelmäßig
+                    vorbeizuschauen.
+                </p>
+            ';
+        } else {
+            $text = '
+                <h2>Herrenmode im Sale</h2>
+                <p>
+                    Entdecke reduzierte Herrenmode im Sale bei Jeans Gluth.
+                    Hier findest du ausgewählte Shirts, Hemden, Hosen, Jeans
+                    und weitere Herrenmode zu reduzierten Preisen.
+                    Die verfügbaren Stückzahlen und Größen können begrenzt sein.
+                </p>
+            ';
+        }
+
+        return '<div class="jg-virtual-archive-description">' . $text . '</div>';
+    }
+
+    return '';
+});
