@@ -486,3 +486,87 @@ add_action('wp_head', function () {
         '">' . "\n";
 
 }, 5);
+
+/**
+ * Alte Parameter-URLs auf die neuen SEO-URLs weiterleiten.
+ *
+ * Wichtig:
+ * Nur echte URL-Parameter werden umgeleitet.
+ * Die intern durch die Rewrite-Regeln gesetzten Werte
+ * jg_new / jg_sale lösen KEINE Weiterleitung aus.
+ */
+add_action('template_redirect', function () {
+
+    if (!function_exists('is_product_category') || !is_product_category()) {
+        return;
+    }
+
+    $term = get_queried_object();
+
+    if (
+        !$term ||
+        !($term instanceof WP_Term) ||
+        $term->taxonomy !== 'product_cat'
+    ) {
+        return;
+    }
+
+    /*
+     * Nur Damen/Herren Hauptkategorien.
+     */
+    if (!in_array($term->slug, ['damen', 'herren'], true)) {
+        return;
+    }
+
+    $base_link = get_term_link($term);
+
+    if (is_wp_error($base_link)) {
+        return;
+    }
+
+    /*
+     * Tatsächliche Query-Parameter aus der aufgerufenen URL lesen.
+     *
+     * Das ist wichtig, weil $_GET durch unseren parse_request-Hook
+     * auch bei /neu/ und /sale/ künstlich gefüllt wird.
+     */
+    $query_args = [];
+
+    if (!empty($_SERVER['QUERY_STRING'])) {
+        parse_str(
+            wp_unslash($_SERVER['QUERY_STRING']),
+            $query_args
+        );
+    }
+
+    /*
+     * Alte NEU-URL:
+     * /product-category/damen/?jg_new=1
+     */
+    if (
+        isset($query_args['jg_new']) &&
+        (string) $query_args['jg_new'] === '1'
+    ) {
+        wp_safe_redirect(
+            trailingslashit($base_link) . 'neu/',
+            301
+        );
+        exit;
+    }
+
+    /*
+     * Alte SALE-URL:
+     * /product-category/damen/?jg_sale=1
+     */
+    if (
+        isset($query_args['jg_sale']) &&
+        (string) $query_args['jg_sale'] === '1'
+    ) {
+        wp_safe_redirect(
+            trailingslashit($base_link) . 'sale/',
+            301
+        );
+        exit;
+    }
+
+}, 20);
