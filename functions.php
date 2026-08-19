@@ -797,3 +797,35 @@ function jg_brand_manufacturer_admin_script() {
 
 	<?php
 }
+
+/**
+ * Jeans Gluth – SEO-URLs für NEU und SALE
+ *
+ * /product-category/damen/neu/
+ * /product-category/damen/sale/
+ * /product-category/herren/neu/
+ * /product-category/herren/sale/
+ */
+add_action('init', function () {
+
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/neu/?$',
+        'index.php?product_cat=$matches[1]&jg_new=1',
+        'top'
+    );
+
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/sale/?$',
+        'index.php?product_cat=$matches[1]&jg_sale=1',
+        'top'
+    );
+
+});
+
+add_filter('query_vars', function ($vars) {
+
+    $vars[] = 'jg_new';
+    $vars[] = 'jg_sale';
+
+    return $vars;
+});
