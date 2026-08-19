@@ -90,28 +90,32 @@ $show_filter_circles =
         }
     }
 
-    $build_filter_link = function($key) use ($top_term) {
+$build_filter_link = function($key) use ($top_term) {
 
-        $args = [];
+            $base_link = get_term_link($top_term);
 
-        if ($key === 'jg_sale') {
-            $args['jg_sale'] = '1';
-        } elseif ($key === 'jg_new') {
-            $args['jg_new'] = '1';
-        }
+            if (is_wp_error($base_link)) {
+                return '';
+            }
 
-        // Immer auf die Hauptkategorie Damen bzw. Herren verlinken
-        $base_link = get_term_link($top_term);
+            if ($key === 'jg_new') {
+                return trailingslashit($base_link) . 'neu/';
+            }
 
-        if (is_wp_error($base_link)) {
-            return '';
-        }
+            if ($key === 'jg_sale') {
+                return trailingslashit($base_link) . 'sale/';
+            }
 
-        return !empty($args) ? add_query_arg($args, $base_link) : $base_link;
-    };
+            return $base_link;
+        };
 
-    $sale_active = !empty($_GET['jg_sale']) && $_GET['jg_sale'] === '1';
-    $new_active  = !empty($_GET['jg_new'])  && $_GET['jg_new'] === '1';
+    $sale_active =
+    (string) get_query_var('jg_sale') === '1' ||
+    (!empty($_GET['jg_sale']) && $_GET['jg_sale'] === '1');
+
+$new_active =
+    (string) get_query_var('jg_new') === '1' ||
+    (!empty($_GET['jg_new']) && $_GET['jg_new'] === '1');
 
     ob_start(); ?>
         <?php
@@ -255,3 +259,27 @@ add_filter('nav_menu_css_class', function($classes, $item) {
     return array_unique($classes);
 
 }, 10, 2);
+
+add_action('init', function () {
+
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/neu/?$',
+        'index.php?product_cat=$matches[1]&jg_new=1',
+        'top'
+    );
+
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/sale/?$',
+        'index.php?product_cat=$matches[1]&jg_sale=1',
+        'top'
+    );
+
+});
+
+add_filter('query_vars', function ($vars) {
+
+    $vars[] = 'jg_new';
+    $vars[] = 'jg_sale';
+
+    return $vars;
+});
