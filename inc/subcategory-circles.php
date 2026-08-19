@@ -335,3 +335,139 @@ add_action('parse_request', function ($wp) {
     }
 
 }, 1);
+
+/**
+ * =========================================================
+ * SEO für virtuelle NEU-/SALE-Seiten
+ * =========================================================
+ */
+
+function jg_get_virtual_archive_seo_data() {
+
+    if (!function_exists('is_product_category') || !is_product_category()) {
+        return null;
+    }
+
+    $term = get_queried_object();
+
+    if (
+        !$term ||
+        !($term instanceof WP_Term) ||
+        $term->taxonomy !== 'product_cat'
+    ) {
+        return null;
+    }
+
+    if (!in_array($term->slug, ['damen', 'herren'], true)) {
+        return null;
+    }
+
+    $new_active =
+        (string) get_query_var('jg_new') === '1' ||
+        (!empty($_GET['jg_new']) && $_GET['jg_new'] === '1');
+
+    $sale_active =
+        (string) get_query_var('jg_sale') === '1' ||
+        (!empty($_GET['jg_sale']) && $_GET['jg_sale'] === '1');
+
+    if (!$new_active && !$sale_active) {
+        return null;
+    }
+
+    $gender = ($term->slug === 'damen') ? 'Damen' : 'Herren';
+
+    $base_link = get_term_link($term);
+
+    if (is_wp_error($base_link)) {
+        return null;
+    }
+
+    /*
+     * Aktuelle Pagination bestimmen
+     */
+    $paged = max(
+        1,
+        (int) get_query_var('paged')
+    );
+
+    if ($new_active) {
+
+        $canonical = trailingslashit($base_link) . 'neu/';
+
+        if ($paged > 1) {
+            $canonical .= 'page/' . $paged . '/';
+        }
+
+        return [
+            'title'       => 'Neue ' . $gender . 'mode | Neu eingetroffen | Jeans Gluth',
+            'description' => 'Entdecke neu eingetroffene ' . $gender . 'mode bei Jeans Gluth. Aktuelle Styles, neue Lieblingsstücke und regelmäßig neue Ware.',
+            'canonical'   => $canonical,
+        ];
+    }
+
+    if ($sale_active) {
+
+        $canonical = trailingslashit($base_link) . 'sale/';
+
+        if ($paged > 1) {
+            $canonical .= 'page/' . $paged . '/';
+        }
+
+        return [
+            'title'       => $gender . ' Sale | Reduzierte ' . $gender . 'mode | Jeans Gluth',
+            'description' => 'Entdecke reduzierte ' . $gender . 'mode im Sale bei Jeans Gluth. Ausgewählte Kleidung und Accessoires zu attraktiven Preisen.',
+            'canonical'   => $canonical,
+        ];
+    }
+
+    return null;
+}
+
+
+/**
+ * SEO-Titel im Browser / Google setzen
+ */
+add_filter('document_title_parts', function ($title_parts) {
+
+    $seo = jg_get_virtual_archive_seo_data();
+
+    if (!$seo) {
+        return $title_parts;
+    }
+
+    $title_parts['title'] = $seo['title'];
+
+    /*
+     * Site-Name entfernen, weil "Jeans Gluth"
+     * bereits im eigenen Title enthalten ist.
+     */
+    unset($title_parts['site']);
+    unset($title_parts['tagline']);
+
+    return $title_parts;
+
+}, 20);
+
+
+/**
+ * Meta Description + Canonical in <head> ausgeben
+ */
+add_action('wp_head', function () {
+
+    $seo = jg_get_virtual_archive_seo_data();
+
+    if (!$seo) {
+        return;
+    }
+
+    echo "\n";
+
+    echo '<meta name="description" content="' .
+        esc_attr($seo['description']) .
+        '">' . "\n";
+
+    echo '<link rel="canonical" href="' .
+        esc_url($seo['canonical']) .
+        '">' . "\n";
+
+}, 5);
