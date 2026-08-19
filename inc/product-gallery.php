@@ -13,7 +13,7 @@
  * Greift nur auf den Archiven Damen und Herren.
  */
 
-add_filter( 'posts_clauses', 'jg_custom_product_archive_order', 999, 2 );
+// add_filter( 'posts_clauses', 'jg_custom_product_archive_order', 999, 2 );
 
 function jg_custom_product_archive_order( $clauses, $query ) {
 	global $wpdb;
