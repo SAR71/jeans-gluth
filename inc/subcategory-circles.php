@@ -283,3 +283,29 @@ add_filter('query_vars', function ($vars) {
 
     return $vars;
 });
+
+/*
+ * SEO-Rewrite-Variablen wieder in $_GET / $_REQUEST spiegeln.
+ *
+ * Dadurch funktioniert die bestehende JG-Filterlogik weiterhin,
+ * auch wenn die URL statt ?jg_new=1 jetzt /neu/ lautet.
+ */
+add_action('parse_request', function ($wp) {
+
+    if (
+        isset($wp->query_vars['jg_new']) &&
+        (string) $wp->query_vars['jg_new'] === '1'
+    ) {
+        $_GET['jg_new']     = '1';
+        $_REQUEST['jg_new'] = '1';
+    }
+
+    if (
+        isset($wp->query_vars['jg_sale']) &&
+        (string) $wp->query_vars['jg_sale'] === '1'
+    ) {
+        $_GET['jg_sale']     = '1';
+        $_REQUEST['jg_sale'] = '1';
+    }
+
+}, 1);
