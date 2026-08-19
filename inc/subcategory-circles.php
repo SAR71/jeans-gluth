@@ -382,45 +382,34 @@ function jg_get_virtual_archive_seo_data() {
         return null;
     }
 
-    /*
-     * Aktuelle Pagination bestimmen
-     */
-    $paged = max(
-        1,
-        (int) get_query_var('paged')
-    );
+/*
+ * Aktuelle Pagination bestimmen.
+ *
+ * Normalerweise liefert WordPress die Seitennummer über "paged".
+ * Als Fallback prüfen wir "page" und anschließend direkt die URL,
+ * damit auch die WoodMart/WooCommerce-Pagination zuverlässig
+ * erkannt wird.
+ */
+$paged = max(
+    1,
+    (int) get_query_var('paged'),
+    (int) get_query_var('page')
+);
 
-    if ($new_active) {
-
-        $canonical = trailingslashit($base_link) . 'neu/';
-
-        if ($paged > 1) {
-            $canonical .= 'page/' . $paged . '/';
-        }
-
-        return [
-            'title'       => 'Neue ' . $gender . 'mode | Neu eingetroffen | Jeans Gluth',
-            'description' => 'Entdecke neu eingetroffene ' . $gender . 'mode bei Jeans Gluth. Aktuelle Styles, neue Lieblingsstücke und regelmäßig neue Ware.',
-            'canonical'   => $canonical,
-        ];
-    }
-
-    if ($sale_active) {
-
-        $canonical = trailingslashit($base_link) . 'sale/';
-
-        if ($paged > 1) {
-            $canonical .= 'page/' . $paged . '/';
-        }
-
-        return [
-            'title'       => $gender . ' Sale | Reduzierte ' . $gender . 'mode | Jeans Gluth',
-            'description' => 'Entdecke reduzierte ' . $gender . 'mode im Sale bei Jeans Gluth. Ausgewählte Kleidung und Accessoires zu attraktiven Preisen.',
-            'canonical'   => $canonical,
-        ];
-    }
-
-    return null;
+/*
+ * Fallback für virtuelle NEU-/SALE-Archive:
+ * /page/2/, /page/3/ usw. direkt aus der URL erkennen.
+ */
+if (
+    $paged <= 1 &&
+    !empty($_SERVER['REQUEST_URI']) &&
+    preg_match(
+        '~/page/([0-9]+)/?(?:\?.*)?$~',
+        wp_unslash($_SERVER['REQUEST_URI']),
+        $matches
+    )
+) {
+    $paged = max(1, (int) $matches[1]);
 }
 
 
