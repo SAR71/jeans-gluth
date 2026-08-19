@@ -662,3 +662,67 @@ add_shortcode('jg_virtual_archive_description', function () {
 
     return '';
 });
+
+/**
+TEST
+ */
+
+
+add_action('wp_footer', function () {
+
+    if (!is_product_category()) {
+        return;
+    }
+
+    $term = get_queried_object();
+
+    if (!$term instanceof WP_Term) {
+        return;
+    }
+
+    $parent = null;
+
+    if ($term->parent) {
+        $parent = get_term($term->parent, 'product_cat');
+    }
+
+    echo '<pre style="
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        max-height:40vh;
+        overflow:auto;
+        z-index:999999;
+        background:#fff;
+        color:#000;
+        padding:15px;
+        border-top:3px solid red;
+        white-space:pre-wrap;
+    ">';
+
+    echo "AKTUELLER TERM\n";
+    echo "Name: " . esc_html($term->name) . "\n";
+    echo "ID: " . (int) $term->term_id . "\n";
+    echo "Parent-ID: " . (int) $term->parent . "\n\n";
+
+    echo "AKTUELLE DESCRIPTION\n";
+    echo wp_strip_all_tags(
+        term_description($term->term_id, 'product_cat')
+    );
+
+    echo "\n\n============================\n\n";
+
+    if ($parent && !is_wp_error($parent)) {
+        echo "PARENT TERM\n";
+        echo "Name: " . esc_html($parent->name) . "\n";
+        echo "ID: " . (int) $parent->term_id . "\n\n";
+
+        echo "PARENT DESCRIPTION\n";
+        echo wp_strip_all_tags(
+            term_description($parent->term_id, 'product_cat')
+        );
+    }
+
+    echo '</pre>';
+});
