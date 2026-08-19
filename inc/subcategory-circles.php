@@ -411,6 +411,38 @@ if (
 ) {
     $paged = max(1, (int) $matches[1]);
 }
+if ($new_active) {
+
+    $canonical = trailingslashit($base_link) . 'neu/';
+
+    if ($paged > 1) {
+        $canonical .= 'page/' . $paged . '/';
+    }
+
+    return [
+        'title'       => 'Neue ' . $gender . 'mode | Neu eingetroffen | Jeans Gluth',
+        'description' => 'Entdecke neu eingetroffene ' . $gender . 'mode bei Jeans Gluth. Aktuelle Styles, neue Lieblingsstücke und regelmäßig neue Ware.',
+        'canonical'   => $canonical,
+    ];
+}
+
+if ($sale_active) {
+
+    $canonical = trailingslashit($base_link) . 'sale/';
+
+    if ($paged > 1) {
+        $canonical .= 'page/' . $paged . '/';
+    }
+
+    return [
+        'title'       => $gender . ' Sale | Reduzierte ' . $gender . 'mode | Jeans Gluth',
+        'description' => 'Entdecke reduzierte ' . $gender . 'mode im Sale bei Jeans Gluth. Ausgewählte Kleidung und Accessoires zu attraktiven Preisen.',
+        'canonical'   => $canonical,
+    ];
+}
+
+return null;
+}
 
 
 /**
