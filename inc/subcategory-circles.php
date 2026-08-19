@@ -262,12 +262,38 @@ add_filter('nav_menu_css_class', function($classes, $item) {
 
 add_action('init', function () {
 
+    /*
+     * NEU – Folgeseiten
+     * z.B. /product-category/damen/neu/page/2/
+     */
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/neu/page/([0-9]+)/?$',
+        'index.php?product_cat=$matches[1]&jg_new=1&paged=$matches[2]',
+        'top'
+    );
+
+    /*
+     * SALE – Folgeseiten
+     * z.B. /product-category/damen/sale/page/2/
+     */
+    add_rewrite_rule(
+        '^product-category/(damen|herren)/sale/page/([0-9]+)/?$',
+        'index.php?product_cat=$matches[1]&jg_sale=1&paged=$matches[2]',
+        'top'
+    );
+
+    /*
+     * NEU – erste Seite
+     */
     add_rewrite_rule(
         '^product-category/(damen|herren)/neu/?$',
         'index.php?product_cat=$matches[1]&jg_new=1',
         'top'
     );
 
+    /*
+     * SALE – erste Seite
+     */
     add_rewrite_rule(
         '^product-category/(damen|herren)/sale/?$',
         'index.php?product_cat=$matches[1]&jg_sale=1',
