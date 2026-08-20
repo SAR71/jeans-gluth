@@ -150,7 +150,7 @@ function woodmart_child_styles() {
 		'woodmart-child-header' => true,
 		'woodmart-child-product-gallery' => true,
 		'woodmart-child-single-product-page' => function_exists( 'is_product' ) && is_product(),
-		'woodmart-child-startseite' => is_front_page(),
+		'woodmart-child-startseite' => true,
 );
 
 	foreach ( $styles as $handle => $path ) {
