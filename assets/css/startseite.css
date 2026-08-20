@@ -69,7 +69,7 @@
 }
 
 /* =========================================
-   Stern-Glitzer für NEU-Blatt
+   Stärkerer Stern-Glitzer für NEU-Blatt
    ========================================= */
 
 .jg-leaf-sparkle {
@@ -77,24 +77,25 @@
     isolation: isolate;
 }
 
-/* Zwei Stern-Ebenen */
+.jg-leaf-sparkle .elementor-widget-container {
+    position: relative;
+}
+
+/* Alle Glitzer-Ebenen */
 .jg-leaf-sparkle::before,
-.jg-leaf-sparkle::after {
+.jg-leaf-sparkle::after,
+.jg-leaf-sparkle .elementor-widget-container::before,
+.jg-leaf-sparkle .elementor-widget-container::after {
     content: "";
     position: absolute;
-
-    width: 10px;
-    height: 10px;
-
-    top: 20%;
-    left: 25%;
-
+    width: 12px;
+    height: 12px;
     pointer-events: none;
     z-index: 5;
+    opacity: 0;
 
     /* vierzackiger Stern */
-    background: white;
-
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 45%, rgba(255,255,255,0) 70%);
     clip-path: polygon(
         50% 0%,
         58% 42%,
@@ -106,57 +107,105 @@
         42% 42%
     );
 
-    opacity: 0;
-
-    animation: jg-star-sparkle 3.2s ease-in-out infinite;
-
-    /* weitere Sterne */
-    box-shadow:
-        90px 35px 0 -2px rgba(255,255,255,.95),
-        180px 80px 0 -3px rgba(255,255,255,.9),
-        55px 150px 0 -2px rgba(255,255,255,.95);
+    transform: scale(0.3) rotate(0deg);
 }
 
+/* Ebene 1 */
+.jg-leaf-sparkle::before {
+    top: 10%;
+    left: 12%;
+    animation: jg-sparkle-1 2.6s ease-in-out infinite;
+    box-shadow:
+        60px 18px 0 0 rgba(255,255,255,.95),
+        130px 42px 0 -2px rgba(255,255,255,.95),
+        185px 85px 0 -3px rgba(255,255,255,.95),
+        95px 120px 0 -2px rgba(255,255,255,.9),
+        210px 145px 0 -3px rgba(255,255,255,.95),
+        25px 165px 0 -2px rgba(255,255,255,.9);
+}
+
+/* Ebene 2 */
 .jg-leaf-sparkle::after {
-    top: 35%;
-    left: 38%;
-
-    width: 7px;
-    height: 7px;
-
-    animation-delay: 1.55s;
-
+    top: 22%;
+    left: 28%;
+    animation: jg-sparkle-2 2.1s ease-in-out infinite;
+    animation-delay: 0.5s;
     box-shadow:
-        110px -15px 0 -1px rgba(255,255,255,.9),
-        150px 105px 0 -2px rgba(255,255,255,.9),
-        -35px 120px 0 -2px rgba(255,255,255,.85);
+        55px -10px 0 -2px rgba(255,255,255,.95),
+        140px 20px 0 -3px rgba(255,255,255,.9),
+        190px 60px 0 -2px rgba(255,255,255,.95),
+        105px 110px 0 -3px rgba(255,255,255,.95),
+        0px 135px 0 -2px rgba(255,255,255,.9),
+        165px 155px 0 -3px rgba(255,255,255,.95);
 }
 
-@keyframes jg-star-sparkle {
-
-    0%,
-    35%,
-    65%,
-    100% {
-        opacity: 0;
-        transform: scale(0.4) rotate(0deg);
-    }
-
-    48% {
-        opacity: 1;
-        transform: scale(1.25) rotate(20deg);
-    }
-
-    55% {
-        opacity: 0.75;
-        transform: scale(0.85) rotate(40deg);
-    }
+/* Ebene 3 */
+.jg-leaf-sparkle .elementor-widget-container::before {
+    top: 14%;
+    left: 20%;
+    animation: jg-sparkle-3 3s ease-in-out infinite;
+    animation-delay: 1s;
+    box-shadow:
+        80px 10px 0 -3px rgba(255,255,255,.95),
+        155px 35px 0 -2px rgba(255,255,255,.95),
+        220px 90px 0 -3px rgba(255,255,255,.9),
+        45px 105px 0 -2px rgba(255,255,255,.95),
+        125px 150px 0 -3px rgba(255,255,255,.95),
+        235px 155px 0 -2px rgba(255,255,255,.9);
 }
 
-/* Barrierefreiheit / weniger Bewegung */
+/* Ebene 4 */
+.jg-leaf-sparkle .elementor-widget-container::after {
+    top: 30%;
+    left: 10%;
+    animation: jg-sparkle-4 2.4s ease-in-out infinite;
+    animation-delay: 1.4s;
+    box-shadow:
+        70px 0px 0 -2px rgba(255,255,255,.95),
+        150px 28px 0 -3px rgba(255,255,255,.95),
+        210px 70px 0 -2px rgba(255,255,255,.95),
+        85px 100px 0 -3px rgba(255,255,255,.9),
+        175px 130px 0 -2px rgba(255,255,255,.95),
+        35px 150px 0 -3px rgba(255,255,255,.95);
+}
+
+@keyframes jg-sparkle-1 {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); filter: brightness(1); }
+    20% { opacity: 0; }
+    35% { opacity: 1; transform: scale(1.35) rotate(18deg); filter: brightness(1.6); }
+    45% { opacity: 0.8; transform: scale(0.8) rotate(35deg); }
+    55% { opacity: 0; }
+}
+
+@keyframes jg-sparkle-2 {
+    0%, 100% { opacity: 0; transform: scale(0.25) rotate(0deg); filter: brightness(1); }
+    25% { opacity: 0; }
+    40% { opacity: 1; transform: scale(1.45) rotate(-12deg); filter: brightness(1.8); }
+    50% { opacity: 0.75; transform: scale(0.9) rotate(20deg); }
+    60% { opacity: 0; }
+}
+
+@keyframes jg-sparkle-3 {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); filter: brightness(1); }
+    30% { opacity: 0; }
+    44% { opacity: 1; transform: scale(1.25) rotate(15deg); filter: brightness(1.7); }
+    54% { opacity: 0.7; transform: scale(0.85) rotate(28deg); }
+    64% { opacity: 0; }
+}
+
+@keyframes jg-sparkle-4 {
+    0%, 100% { opacity: 0; transform: scale(0.25) rotate(0deg); filter: brightness(1); }
+    18% { opacity: 0; }
+    33% { opacity: 1; transform: scale(1.5) rotate(-18deg); filter: brightness(1.9); }
+    43% { opacity: 0.8; transform: scale(0.95) rotate(10deg); }
+    53% { opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .jg-leaf-sparkle::before,
-    .jg-leaf-sparkle::after {
+    .jg-leaf-sparkle::after,
+    .jg-leaf-sparkle .elementor-widget-container::before,
+    .jg-leaf-sparkle .elementor-widget-container::after {
         animation: none;
         opacity: 0;
     }
