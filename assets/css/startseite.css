@@ -72,6 +72,31 @@
    Einzelne, unabhängig funkelnde Sterne
    ========================================= */
 
+
+.jg-sparkle-tile {
+    position: relative;
+}
+
+.jg-sparkle-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.jg-sparkle-overlay .elementor-widget-container,
+.jg-sparkles {
+    width: 100%;
+    height: 100%;
+}
+
+.jg-sparkles {
+    position: relative;
+}
+
+
 .jg-sparkle-tile {
     position: relative;
 }
