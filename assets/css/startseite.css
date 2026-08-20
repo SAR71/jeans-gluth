@@ -69,7 +69,7 @@
 }
 
 /* =========================================
-   Stärkerer Stern-Glitzer für NEU-Blatt
+   STARKER GLITZER ÜBER DIE GESAMTE BILDFLÄCHE
    ========================================= */
 
 .jg-leaf-sparkle {
@@ -79,128 +79,165 @@
 
 .jg-leaf-sparkle .elementor-widget-container {
     position: relative;
+    overflow: hidden;
 }
 
-/* Alle Glitzer-Ebenen */
+.jg-leaf-sparkle img {
+    display: block;
+}
+
+/* Alle 4 Glitzer-Ebenen */
 .jg-leaf-sparkle::before,
 .jg-leaf-sparkle::after,
 .jg-leaf-sparkle .elementor-widget-container::before,
 .jg-leaf-sparkle .elementor-widget-container::after {
     content: "";
     position: absolute;
-    width: 12px;
-    height: 12px;
+    inset: 0;
     pointer-events: none;
     z-index: 5;
     opacity: 0;
-
-    /* vierzackiger Stern */
-    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 45%, rgba(255,255,255,0) 70%);
-    clip-path: polygon(
-        50% 0%,
-        58% 42%,
-        100% 50%,
-        58% 58%,
-        50% 100%,
-        42% 58%,
-        0% 50%,
-        42% 42%
-    );
-
-    transform: scale(0.3) rotate(0deg);
+    transform: scale(1);
+    mix-blend-mode: screen;
+    background-repeat: no-repeat;
 }
 
 /* Ebene 1 */
 .jg-leaf-sparkle::before {
-    top: 10%;
-    left: 12%;
-    animation: jg-sparkle-1 2.6s ease-in-out infinite;
-    box-shadow:
-        60px 18px 0 0 rgba(255,255,255,.95),
-        130px 42px 0 -2px rgba(255,255,255,.95),
-        185px 85px 0 -3px rgba(255,255,255,.95),
-        95px 120px 0 -2px rgba(255,255,255,.9),
-        210px 145px 0 -3px rgba(255,255,255,.95),
-        25px 165px 0 -2px rgba(255,255,255,.9);
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.7px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px);
+    background-position:
+        6% 10%, 18% 22%, 30% 12%, 42% 28%, 56% 16%, 68% 30%,
+        80% 14%, 90% 24%, 14% 54%, 38% 46%, 64% 52%, 84% 60%;
+    background-size:
+        14px 14px, 16px 16px, 12px 12px, 18px 18px, 12px 12px, 16px 16px,
+        14px 14px, 16px 16px, 12px 12px, 18px 18px, 14px 14px, 16px 16px;
+    animation: jg-sparkle-a 1.9s ease-in-out infinite;
 }
 
 /* Ebene 2 */
 .jg-leaf-sparkle::after {
-    top: 22%;
-    left: 28%;
-    animation: jg-sparkle-2 2.1s ease-in-out infinite;
-    animation-delay: 0.5s;
-    box-shadow:
-        55px -10px 0 -2px rgba(255,255,255,.95),
-        140px 20px 0 -3px rgba(255,255,255,.9),
-        190px 60px 0 -2px rgba(255,255,255,.95),
-        105px 110px 0 -3px rgba(255,255,255,.95),
-        0px 135px 0 -2px rgba(255,255,255,.9),
-        165px 155px 0 -3px rgba(255,255,255,.95);
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2.3px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.6px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2.2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.6px, transparent 3px);
+    background-position:
+        10% 34%, 24% 40%, 36% 32%, 48% 44%, 60% 36%, 74% 42%,
+        88% 34%, 8% 74%, 22% 84%, 50% 72%, 70% 82%, 88% 76%;
+    background-size:
+        16px 16px, 12px 12px, 18px 18px, 12px 12px, 16px 16px, 14px 14px,
+        16px 16px, 12px 12px, 14px 14px, 18px 18px, 16px 16px, 12px 12px;
+    animation: jg-sparkle-b 1.6s ease-in-out infinite;
+    animation-delay: .35s;
 }
 
 /* Ebene 3 */
 .jg-leaf-sparkle .elementor-widget-container::before {
-    top: 14%;
-    left: 20%;
-    animation: jg-sparkle-3 3s ease-in-out infinite;
-    animation-delay: 1s;
-    box-shadow:
-        80px 10px 0 -3px rgba(255,255,255,.95),
-        155px 35px 0 -2px rgba(255,255,255,.95),
-        220px 90px 0 -3px rgba(255,255,255,.9),
-        45px 105px 0 -2px rgba(255,255,255,.95),
-        125px 150px 0 -3px rgba(255,255,255,.95),
-        235px 155px 0 -2px rgba(255,255,255,.9);
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2.4px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.7px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px);
+    background-position:
+        4% 22%, 16% 62%, 28% 72%, 40% 58%, 52% 68%, 64% 60%,
+        76% 74%, 90% 56%, 12% 90%, 34% 88%, 58% 92%, 82% 90%;
+    background-size:
+        16px 16px, 14px 14px, 12px 12px, 18px 18px, 16px 16px, 14px 14px,
+        12px 12px, 16px 16px, 12px 12px, 14px 14px, 18px 18px, 12px 12px;
+    animation: jg-sparkle-c 2.1s ease-in-out infinite;
+    animation-delay: .7s;
 }
 
 /* Ebene 4 */
 .jg-leaf-sparkle .elementor-widget-container::after {
-    top: 30%;
-    left: 10%;
-    animation: jg-sparkle-4 2.4s ease-in-out infinite;
-    animation-delay: 1.4s;
-    box-shadow:
-        70px 0px 0 -2px rgba(255,255,255,.95),
-        150px 28px 0 -3px rgba(255,255,255,.95),
-        210px 70px 0 -2px rgba(255,255,255,.95),
-        85px 100px 0 -3px rgba(255,255,255,.9),
-        175px 130px 0 -2px rgba(255,255,255,.95),
-        35px 150px 0 -3px rgba(255,255,255,.95);
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 2.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,1) 0 1.7px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.95) 0 2.2px, transparent 3px),
+        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px);
+    background-position:
+        8% 6%, 22% 18%, 34% 8%, 48% 20%, 62% 10%, 76% 22%,
+        92% 8%, 18% 34%, 44% 36%, 68% 40%, 86% 42%, 58% 84%;
+    background-size:
+        14px 14px, 14px 14px, 18px 18px, 12px 12px, 16px 16px, 14px 14px,
+        16px 16px, 12px 12px, 16px 16px, 14px 14px, 18px 18px, 12px 12px;
+    animation: jg-sparkle-d 1.7s ease-in-out infinite;
+    animation-delay: 1s;
 }
 
-@keyframes jg-sparkle-1 {
-    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); filter: brightness(1); }
-    20% { opacity: 0; }
-    35% { opacity: 1; transform: scale(1.35) rotate(18deg); filter: brightness(1.6); }
-    45% { opacity: 0.8; transform: scale(0.8) rotate(35deg); }
-    55% { opacity: 0; }
+@keyframes jg-sparkle-a {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    20% { opacity: .15; }
+    35% { opacity: .95; transform: scale(1.03); }
+    50% { opacity: .35; }
+    65% { opacity: .85; }
+    80% { opacity: 0; }
 }
 
-@keyframes jg-sparkle-2 {
-    0%, 100% { opacity: 0; transform: scale(0.25) rotate(0deg); filter: brightness(1); }
-    25% { opacity: 0; }
-    40% { opacity: 1; transform: scale(1.45) rotate(-12deg); filter: brightness(1.8); }
-    50% { opacity: 0.75; transform: scale(0.9) rotate(20deg); }
-    60% { opacity: 0; }
-}
-
-@keyframes jg-sparkle-3 {
-    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); filter: brightness(1); }
-    30% { opacity: 0; }
-    44% { opacity: 1; transform: scale(1.25) rotate(15deg); filter: brightness(1.7); }
-    54% { opacity: 0.7; transform: scale(0.85) rotate(28deg); }
-    64% { opacity: 0; }
-}
-
-@keyframes jg-sparkle-4 {
-    0%, 100% { opacity: 0; transform: scale(0.25) rotate(0deg); filter: brightness(1); }
+@keyframes jg-sparkle-b {
+    0%, 100% { opacity: 0; transform: scale(1); }
     18% { opacity: 0; }
-    33% { opacity: 1; transform: scale(1.5) rotate(-18deg); filter: brightness(1.9); }
-    43% { opacity: 0.8; transform: scale(0.95) rotate(10deg); }
-    53% { opacity: 0; }
+    30% { opacity: .9; transform: scale(1.05); }
+    45% { opacity: .4; }
+    58% { opacity: .95; }
+    74% { opacity: 0; }
 }
 
+@keyframes jg-sparkle-c {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    22% { opacity: .2; }
+    38% { opacity: 1; transform: scale(1.04); }
+    52% { opacity: .35; }
+    66% { opacity: .9; }
+    82% { opacity: 0; }
+}
+
+@keyframes jg-sparkle-d {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    16% { opacity: 0; }
+    28% { opacity: .85; transform: scale(1.06); }
+    42% { opacity: .3; }
+    54% { opacity: 1; }
+    72% { opacity: 0; }
+}
+
+/* Weniger Bewegung bei OS-Einstellung */
 @media (prefers-reduced-motion: reduce) {
     .jg-leaf-sparkle::before,
     .jg-leaf-sparkle::after,
