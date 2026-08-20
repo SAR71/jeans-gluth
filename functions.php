@@ -138,6 +138,7 @@ function woodmart_child_styles() {
 		'woodmart-child-header' => 'assets/css/header.css',
 		'woodmart-child-product-gallery' => 'assets/css/product-gallery.css',
 		'woodmart-child-single-product-page' => 'assets/css/single-product-page.css',
+		'woodmart-child-startseite' => 'assets/css/startseite.css',
 	);
 
 	$should_load = array(
@@ -149,6 +150,7 @@ function woodmart_child_styles() {
 		'woodmart-child-header' => true,
 		'woodmart-child-product-gallery' => true,
 		'woodmart-child-single-product-page' => function_exists( 'is_product' ) && is_product(),
+		'woodmart-child-startseite' => is_front_page(),
 );
 
 	foreach ( $styles as $handle => $path ) {
