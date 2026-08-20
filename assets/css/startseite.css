@@ -69,7 +69,7 @@
 }
 
 /* =========================================
-   STARKER GLITZER ÜBER DIE GESAMTE BILDFLÄCHE
+   Stern-Glitzer: verteilt, stärker, asynchron
    ========================================= */
 
 .jg-leaf-sparkle {
@@ -82,162 +82,201 @@
     overflow: hidden;
 }
 
-.jg-leaf-sparkle img {
-    display: block;
-}
-
-/* Alle 4 Glitzer-Ebenen */
+/* Grundform Stern */
 .jg-leaf-sparkle::before,
 .jg-leaf-sparkle::after,
 .jg-leaf-sparkle .elementor-widget-container::before,
 .jg-leaf-sparkle .elementor-widget-container::after {
     content: "";
     position: absolute;
-    inset: 0;
-    pointer-events: none;
+    width: 12px;
+    height: 12px;
     z-index: 5;
+    pointer-events: none;
     opacity: 0;
-    transform: scale(1);
-    mix-blend-mode: screen;
-    background-repeat: no-repeat;
+
+    background: #ffffff;
+    clip-path: polygon(
+        50% 0%,
+        58% 42%,
+        100% 50%,
+        58% 58%,
+        50% 100%,
+        42% 58%,
+        0% 50%,
+        42% 42%
+    );
+
+    transform: scale(0.35) rotate(0deg);
 }
 
-/* Ebene 1 */
+/* Gruppe 1 */
 .jg-leaf-sparkle::before {
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.7px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px);
-    background-position:
-        6% 10%, 18% 22%, 30% 12%, 42% 28%, 56% 16%, 68% 30%,
-        80% 14%, 90% 24%, 14% 54%, 38% 46%, 64% 52%, 84% 60%;
-    background-size:
-        14px 14px, 16px 16px, 12px 12px, 18px 18px, 12px 12px, 16px 16px,
-        14px 14px, 16px 16px, 12px 12px, 18px 18px, 14px 14px, 16px 16px;
-    animation: jg-sparkle-a 1.9s ease-in-out infinite;
+    top: 8%;
+    left: 8%;
+    filter:
+        drop-shadow(55px 18px 0 rgba(255,255,255,0.95))
+        drop-shadow(125px 42px 0 rgba(255,255,255,0.95))
+        drop-shadow(205px 26px 0 rgba(255,255,255,0.9))
+        drop-shadow(88px 120px 0 rgba(255,255,255,0.95))
+        drop-shadow(195px 135px 0 rgba(255,255,255,0.9))
+        drop-shadow(28px 175px 0 rgba(255,255,255,0.95));
+    animation: jg-star-twinkle-1 2.8s ease-in-out infinite;
 }
 
-/* Ebene 2 */
+/* Gruppe 2 */
 .jg-leaf-sparkle::after {
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2.3px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 1.6px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2.2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.6px, transparent 3px);
-    background-position:
-        10% 34%, 24% 40%, 36% 32%, 48% 44%, 60% 36%, 74% 42%,
-        88% 34%, 8% 74%, 22% 84%, 50% 72%, 70% 82%, 88% 76%;
-    background-size:
-        16px 16px, 12px 12px, 18px 18px, 12px 12px, 16px 16px, 14px 14px,
-        16px 16px, 12px 12px, 14px 14px, 18px 18px, 16px 16px, 12px 12px;
-    animation: jg-sparkle-b 1.6s ease-in-out infinite;
-    animation-delay: .35s;
+    top: 18%;
+    left: 24%;
+    width: 10px;
+    height: 10px;
+    filter:
+        drop-shadow(38px 10px 0 rgba(255,255,255,0.95))
+        drop-shadow(120px -8px 0 rgba(255,255,255,0.9))
+        drop-shadow(185px 55px 0 rgba(255,255,255,0.95))
+        drop-shadow(75px 95px 0 rgba(255,255,255,0.95))
+        drop-shadow(158px 140px 0 rgba(255,255,255,0.9))
+        drop-shadow(-10px 145px 0 rgba(255,255,255,0.95));
+    animation: jg-star-twinkle-2 2.2s ease-in-out infinite;
+    animation-delay: .45s;
 }
 
-/* Ebene 3 */
+/* Gruppe 3 */
 .jg-leaf-sparkle .elementor-widget-container::before {
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2.4px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.7px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px);
-    background-position:
-        4% 22%, 16% 62%, 28% 72%, 40% 58%, 52% 68%, 64% 60%,
-        76% 74%, 90% 56%, 12% 90%, 34% 88%, 58% 92%, 82% 90%;
-    background-size:
-        16px 16px, 14px 14px, 12px 12px, 18px 18px, 16px 16px, 14px 14px,
-        12px 12px, 16px 16px, 12px 12px, 14px 14px, 18px 18px, 12px 12px;
-    animation: jg-sparkle-c 2.1s ease-in-out infinite;
-    animation-delay: .7s;
+    top: 6%;
+    left: 44%;
+    width: 9px;
+    height: 9px;
+    filter:
+        drop-shadow(42px 26px 0 rgba(255,255,255,0.95))
+        drop-shadow(108px 8px 0 rgba(255,255,255,0.9))
+        drop-shadow(-105px 88px 0 rgba(255,255,255,0.95))
+        drop-shadow(-18px 130px 0 rgba(255,255,255,0.95))
+        drop-shadow(92px 150px 0 rgba(255,255,255,0.9))
+        drop-shadow(-145px 180px 0 rgba(255,255,255,0.95));
+    animation: jg-star-twinkle-3 3.1s ease-in-out infinite;
+    animation-delay: .95s;
 }
 
-/* Ebene 4 */
+/* Gruppe 4 */
 .jg-leaf-sparkle .elementor-widget-container::after {
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 2.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.8px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.5px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,1) 0 1.7px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.95) 0 2.2px, transparent 3px),
-        radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 3px);
-    background-position:
-        8% 6%, 22% 18%, 34% 8%, 48% 20%, 62% 10%, 76% 22%,
-        92% 8%, 18% 34%, 44% 36%, 68% 40%, 86% 42%, 58% 84%;
-    background-size:
-        14px 14px, 14px 14px, 18px 18px, 12px 12px, 16px 16px, 14px 14px,
-        16px 16px, 12px 12px, 16px 16px, 14px 14px, 18px 18px, 12px 12px;
-    animation: jg-sparkle-d 1.7s ease-in-out infinite;
-    animation-delay: 1s;
+    top: 36%;
+    left: 12%;
+    width: 11px;
+    height: 11px;
+    filter:
+        drop-shadow(72px -16px 0 rgba(255,255,255,0.95))
+        drop-shadow(158px 18px 0 rgba(255,255,255,0.95))
+        drop-shadow(228px -6px 0 rgba(255,255,255,0.9))
+        drop-shadow(44px 82px 0 rgba(255,255,255,0.95))
+        drop-shadow(148px 112px 0 rgba(255,255,255,0.9))
+        drop-shadow(214px 148px 0 rgba(255,255,255,0.95));
+    animation: jg-star-twinkle-4 2.5s ease-in-out infinite;
+    animation-delay: 1.35s;
 }
 
-@keyframes jg-sparkle-a {
-    0%, 100% { opacity: 0; transform: scale(1); }
-    20% { opacity: .15; }
-    35% { opacity: .95; transform: scale(1.03); }
-    50% { opacity: .35; }
-    65% { opacity: .85; }
-    80% { opacity: 0; }
+/* Animationen bewusst unterschiedlich */
+@keyframes jg-star-twinkle-1 {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.35) rotate(0deg);
+    }
+    18% {
+        opacity: 0;
+    }
+    28% {
+        opacity: .95;
+        transform: scale(1.35) rotate(18deg);
+    }
+    36% {
+        opacity: .55;
+        transform: scale(0.75) rotate(34deg);
+    }
+    44% {
+        opacity: .9;
+        transform: scale(1.05) rotate(45deg);
+    }
+    56% {
+        opacity: 0;
+    }
 }
 
-@keyframes jg-sparkle-b {
-    0%, 100% { opacity: 0; transform: scale(1); }
-    18% { opacity: 0; }
-    30% { opacity: .9; transform: scale(1.05); }
-    45% { opacity: .4; }
-    58% { opacity: .95; }
-    74% { opacity: 0; }
+@keyframes jg-star-twinkle-2 {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(0deg);
+    }
+    22% {
+        opacity: 0;
+    }
+    34% {
+        opacity: 1;
+        transform: scale(1.45) rotate(-14deg);
+    }
+    42% {
+        opacity: .5;
+        transform: scale(0.7) rotate(12deg);
+    }
+    50% {
+        opacity: .85;
+        transform: scale(1.1) rotate(28deg);
+    }
+    62% {
+        opacity: 0;
+    }
 }
 
-@keyframes jg-sparkle-c {
-    0%, 100% { opacity: 0; transform: scale(1); }
-    22% { opacity: .2; }
-    38% { opacity: 1; transform: scale(1.04); }
-    52% { opacity: .35; }
-    66% { opacity: .9; }
-    82% { opacity: 0; }
+@keyframes jg-star-twinkle-3 {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(0deg);
+    }
+    26% {
+        opacity: 0;
+    }
+    40% {
+        opacity: .95;
+        transform: scale(1.25) rotate(12deg);
+    }
+    48% {
+        opacity: .45;
+        transform: scale(0.78) rotate(22deg);
+    }
+    58% {
+        opacity: .88;
+        transform: scale(1.08) rotate(36deg);
+    }
+    70% {
+        opacity: 0;
+    }
 }
 
-@keyframes jg-sparkle-d {
-    0%, 100% { opacity: 0; transform: scale(1); }
-    16% { opacity: 0; }
-    28% { opacity: .85; transform: scale(1.06); }
-    42% { opacity: .3; }
-    54% { opacity: 1; }
-    72% { opacity: 0; }
+@keyframes jg-star-twinkle-4 {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(0deg);
+    }
+    16% {
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.5) rotate(-18deg);
+    }
+    38% {
+        opacity: .5;
+        transform: scale(0.72) rotate(8deg);
+    }
+    46% {
+        opacity: .92;
+        transform: scale(1.12) rotate(24deg);
+    }
+    58% {
+        opacity: 0;
+    }
 }
 
-/* Weniger Bewegung bei OS-Einstellung */
+/* Weniger Bewegung bei Systemeinstellung */
 @media (prefers-reduced-motion: reduce) {
     .jg-leaf-sparkle::before,
     .jg-leaf-sparkle::after,
