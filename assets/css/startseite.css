@@ -69,265 +69,318 @@
 }
 
 /* =========================================================
-   NEU-Kachel – Sternenglitzer über der GESAMTEN Bildfläche
+   NEU-Bild – Sternglitzer auf der KOMPLETTEN Fläche
    ========================================================= */
 
-.jg-leaf-sparkle {
-    position: relative;
-    isolation: isolate;
+.jg-leaf-sparkle,
+.jg-leaf-sparkle > .elementor-widget-container,
+.jg-leaf-sparkle > .elementor-widget-container > a {
+    position: relative !important;
 }
 
-.jg-leaf-sparkle .elementor-widget-container {
-    position: relative;
+.jg-leaf-sparkle > .elementor-widget-container {
     overflow: hidden;
 }
 
-/* Gemeinsame Sternform */
+.jg-leaf-sparkle > .elementor-widget-container > a {
+    display: block;
+}
+
+/* ---------------------------------------------------------
+   Gemeinsame Eigenschaften aller 6 Glitzergruppen
+   --------------------------------------------------------- */
+
 .jg-leaf-sparkle::before,
 .jg-leaf-sparkle::after,
-.jg-leaf-sparkle .elementor-widget-container::before,
-.jg-leaf-sparkle .elementor-widget-container::after {
-    content: "";
+.jg-leaf-sparkle > .elementor-widget-container::before,
+.jg-leaf-sparkle > .elementor-widget-container::after,
+.jg-leaf-sparkle > .elementor-widget-container > a::before,
+.jg-leaf-sparkle > .elementor-widget-container > a::after {
+    content: "✦";
     position: absolute;
 
-    width: 13px;
-    height: 13px;
+    color: rgba(255,255,255,.98);
+    font-size: 17px;
+    line-height: 1;
 
     z-index: 10;
     pointer-events: none;
 
-    background: #fff;
-
-    /* echter 4-zackiger Glitzerstern */
-    clip-path: polygon(
-        50% 0%,
-        58% 42%,
-        100% 50%,
-        58% 58%,
-        50% 100%,
-        42% 58%,
-        0% 50%,
-        42% 42%
-    );
-
     opacity: 0;
+
+    text-shadow:
+        0 0 5px rgba(255,255,255,.9),
+        0 0 10px rgba(255,255,255,.45);
 }
 
 
 /* =========================================================
-   GRUPPE 1 – oben links + Mitte
+   1 – oben links
    ========================================================= */
 
 .jg-leaf-sparkle::before {
-    top: 24%;
-    left: 24%;
+    top: 12%;
+    left: 15%;
 
-    filter:
-        drop-shadow(-55px -40px 0 #fff)
-        drop-shadow(35px -55px 0 #fff)
-        drop-shadow(100px -30px 0 #fff)
-        drop-shadow(-75px 35px 0 #fff)
-        drop-shadow(65px 45px 0 #fff)
-        drop-shadow(130px 70px 0 #fff)
-        drop-shadow(-25px 105px 0 #fff);
+    text-shadow:
+        55px 20px 0 rgba(255,255,255,.95),
+        130px -5px 0 rgba(255,255,255,.8),
+        25px 65px 0 rgba(255,255,255,.9),
+        100px 90px 0 rgba(255,255,255,.95),
+        180px 60px 0 rgba(255,255,255,.8);
 
-    animation: jg-star-1 2.7s ease-in-out infinite;
+    animation: jg-glitter-a 2.3s ease-in-out infinite;
 }
 
 
 /* =========================================================
-   GRUPPE 2 – oben rechts + rechte Mitte
+   2 – oben rechts
    ========================================================= */
 
 .jg-leaf-sparkle::after {
-    top: 25%;
-    left: 72%;
+    top: 16%;
+    right: 15%;
 
-    width: 10px;
-    height: 10px;
+    text-shadow:
+        -55px 30px 0 rgba(255,255,255,.95),
+        -125px 0 0 rgba(255,255,255,.8),
+        20px 70px 0 rgba(255,255,255,.9),
+        -95px 100px 0 rgba(255,255,255,.95),
+        -180px 65px 0 rgba(255,255,255,.8);
 
-    filter:
-        drop-shadow(-130px -55px 0 #fff)
-        drop-shadow(-60px -35px 0 #fff)
-        drop-shadow(45px -40px 0 #fff)
-        drop-shadow(-155px 30px 0 #fff)
-        drop-shadow(-80px 65px 0 #fff)
-        drop-shadow(35px 80px 0 #fff)
-        drop-shadow(-25px 125px 0 #fff);
-
-    animation: jg-star-2 2.15s ease-in-out infinite;
-    animation-delay: .45s;
+    animation: jg-glitter-b 2.8s ease-in-out infinite;
 }
 
 
 /* =========================================================
-   GRUPPE 3 – unten links + untere Mitte
+   3 – Mitte links
    ========================================================= */
 
-.jg-leaf-sparkle .elementor-widget-container::before {
-    top: 70%;
-    left: 28%;
+.jg-leaf-sparkle > .elementor-widget-container::before {
+    top: 46%;
+    left: 10%;
 
-    width: 9px;
-    height: 9px;
+    font-size: 13px;
 
-    filter:
-        drop-shadow(-65px -125px 0 #fff)
-        drop-shadow(20px -100px 0 #fff)
-        drop-shadow(105px -130px 0 #fff)
-        drop-shadow(-90px -45px 0 #fff)
-        drop-shadow(65px -35px 0 #fff)
-        drop-shadow(135px 15px 0 #fff)
-        drop-shadow(-20px 55px 0 #fff);
+    text-shadow:
+        60px -45px 0 rgba(255,255,255,.9),
+        140px -15px 0 rgba(255,255,255,.95),
+        35px 45px 0 rgba(255,255,255,.8),
+        110px 75px 0 rgba(255,255,255,.95),
+        190px 35px 0 rgba(255,255,255,.85);
 
-    animation: jg-star-3 3.05s ease-in-out infinite;
-    animation-delay: 1.05s;
+    animation: jg-glitter-c 1.9s ease-in-out infinite;
 }
 
 
 /* =========================================================
-   GRUPPE 4 – unten rechts + Mitte
+   4 – Mitte rechts
    ========================================================= */
 
-.jg-leaf-sparkle .elementor-widget-container::after {
-    top: 72%;
-    left: 74%;
+.jg-leaf-sparkle > .elementor-widget-container::after {
+    top: 48%;
+    right: 11%;
 
-    width: 12px;
-    height: 12px;
+    font-size: 20px;
 
-    filter:
-        drop-shadow(-150px -120px 0 #fff)
-        drop-shadow(-75px -100px 0 #fff)
-        drop-shadow(25px -125px 0 #fff)
-        drop-shadow(-125px -35px 0 #fff)
-        drop-shadow(-45px -15px 0 #fff)
-        drop-shadow(35px 20px 0 #fff)
-        drop-shadow(-85px 55px 0 #fff);
+    text-shadow:
+        -55px -55px 0 rgba(255,255,255,.9),
+        -135px -15px 0 rgba(255,255,255,.95),
+        15px 45px 0 rgba(255,255,255,.85),
+        -95px 80px 0 rgba(255,255,255,.95),
+        -185px 40px 0 rgba(255,255,255,.8);
 
-    animation: jg-star-4 2.4s ease-in-out infinite;
-    animation-delay: 1.55s;
+    animation: jg-glitter-d 2.55s ease-in-out infinite;
 }
 
 
 /* =========================================================
-   Asynchrones Funkeln
+   5 – unten links
    ========================================================= */
 
-@keyframes jg-star-1 {
-    0%, 12%, 100% {
+.jg-leaf-sparkle > .elementor-widget-container > a::before {
+    bottom: 12%;
+    left: 16%;
+
+    font-size: 15px;
+
+    text-shadow:
+        45px -25px 0 rgba(255,255,255,.95),
+        115px -70px 0 rgba(255,255,255,.8),
+        25px 20px 0 rgba(255,255,255,.9),
+        100px 5px 0 rgba(255,255,255,.95),
+        180px -35px 0 rgba(255,255,255,.85);
+
+    animation: jg-glitter-e 2.05s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   6 – unten rechts
+   ========================================================= */
+
+.jg-leaf-sparkle > .elementor-widget-container > a::after {
+    bottom: 10%;
+    right: 14%;
+
+    font-size: 12px;
+
+    text-shadow:
+        -50px -30px 0 rgba(255,255,255,.95),
+        -120px -65px 0 rgba(255,255,255,.8),
+        15px 15px 0 rgba(255,255,255,.9),
+        -90px 5px 0 rgba(255,255,255,.95),
+        -175px -30px 0 rgba(255,255,255,.85);
+
+    animation: jg-glitter-f 2.7s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   Unterschiedliche Funkelrhythmen
+   ========================================================= */
+
+@keyframes jg-glitter-a {
+    0%, 100% {
         opacity: 0;
         transform: scale(.25) rotate(0deg);
     }
-
-    22% {
+    12% {
         opacity: 1;
-        transform: scale(1.45) rotate(20deg);
+        transform: scale(1.25) rotate(15deg);
     }
-
-    29% {
-        opacity: .3;
-        transform: scale(.65) rotate(35deg);
+    21% {
+        opacity: .15;
+        transform: scale(.55) rotate(25deg);
     }
-
-    35% {
+    30% {
         opacity: .9;
-        transform: scale(1.05) rotate(45deg);
+        transform: scale(1) rotate(38deg);
     }
-
-    45% {
+    42% {
         opacity: 0;
     }
 }
 
+@keyframes jg-glitter-b {
+    0%, 20%, 100% {
+        opacity: 0;
+        transform: scale(.2) rotate(0deg);
+    }
+    33% {
+        opacity: 1;
+        transform: scale(1.4) rotate(-18deg);
+    }
+    43% {
+        opacity: .2;
+        transform: scale(.55) rotate(10deg);
+    }
+    52% {
+        opacity: .9;
+        transform: scale(1.05) rotate(26deg);
+    }
+    64% {
+        opacity: 0;
+    }
+}
 
-@keyframes jg-star-2 {
+@keyframes jg-glitter-c {
+    0%, 35%, 100% {
+        opacity: 0;
+        transform: scale(.2);
+    }
+    45% {
+        opacity: 1;
+        transform: scale(1.3);
+    }
+    55% {
+        opacity: .15;
+        transform: scale(.5);
+    }
+    64% {
+        opacity: .95;
+        transform: scale(1);
+    }
+    74% {
+        opacity: 0;
+    }
+}
+
+@keyframes jg-glitter-d {
+    0%, 48%, 100% {
+        opacity: 0;
+        transform: scale(.25) rotate(0);
+    }
+    59% {
+        opacity: 1;
+        transform: scale(1.4) rotate(18deg);
+    }
+    67% {
+        opacity: .2;
+        transform: scale(.6) rotate(30deg);
+    }
+    76% {
+        opacity: .9;
+        transform: scale(1.05) rotate(42deg);
+    }
+    87% {
+        opacity: 0;
+    }
+}
+
+@keyframes jg-glitter-e {
+    0%, 10%, 100% {
+        opacity: 0;
+        transform: scale(.2);
+    }
+    24% {
+        opacity: .95;
+        transform: scale(1.35);
+    }
+    34% {
+        opacity: .1;
+        transform: scale(.5);
+    }
+    44% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    56% {
+        opacity: 0;
+    }
+}
+
+@keyframes jg-glitter-f {
     0%, 28%, 100% {
         opacity: 0;
-        transform: scale(.2) rotate(0deg);
+        transform: scale(.2) rotate(0);
     }
-
-    38% {
+    40% {
         opacity: 1;
-        transform: scale(1.6) rotate(-20deg);
+        transform: scale(1.5) rotate(-15deg);
     }
-
-    45% {
-        opacity: .25;
-        transform: scale(.6) rotate(10deg);
+    49% {
+        opacity: .15;
+        transform: scale(.55) rotate(10deg);
     }
-
-    51% {
-        opacity: .85;
-        transform: scale(1.1) rotate(30deg);
-    }
-
-    60% {
-        opacity: 0;
-    }
-}
-
-
-@keyframes jg-star-3 {
-    0%, 42%, 100% {
-        opacity: 0;
-        transform: scale(.25) rotate(0deg);
-    }
-
-    52% {
-        opacity: .95;
-        transform: scale(1.35) rotate(15deg);
-    }
-
     59% {
-        opacity: .2;
-        transform: scale(.7) rotate(25deg);
-    }
-
-    66% {
         opacity: .9;
-        transform: scale(1.15) rotate(40deg);
+        transform: scale(1) rotate(30deg);
     }
-
-    76% {
+    70% {
         opacity: 0;
     }
 }
 
 
-@keyframes jg-star-4 {
-    0%, 55%, 100% {
-        opacity: 0;
-        transform: scale(.2) rotate(0deg);
-    }
-
-    65% {
-        opacity: 1;
-        transform: scale(1.55) rotate(-15deg);
-    }
-
-    72% {
-        opacity: .3;
-        transform: scale(.65) rotate(5deg);
-    }
-
-    78% {
-        opacity: .9;
-        transform: scale(1.05) rotate(25deg);
-    }
-
-    88% {
-        opacity: 0;
-    }
-}
-
-
-/* Barrierefreiheit */
+/* Bewegung reduzieren */
 @media (prefers-reduced-motion: reduce) {
     .jg-leaf-sparkle::before,
     .jg-leaf-sparkle::after,
-    .jg-leaf-sparkle .elementor-widget-container::before,
-    .jg-leaf-sparkle .elementor-widget-container::after {
+    .jg-leaf-sparkle > .elementor-widget-container::before,
+    .jg-leaf-sparkle > .elementor-widget-container::after,
+    .jg-leaf-sparkle > .elementor-widget-container > a::before,
+    .jg-leaf-sparkle > .elementor-widget-container > a::after {
         animation: none !important;
         opacity: 0 !important;
     }
