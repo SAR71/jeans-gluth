@@ -67,3 +67,97 @@
         transition: none;
     }
 }
+
+/* =========================================
+   Stern-Glitzer für NEU-Blatt
+   ========================================= */
+
+.jg-leaf-sparkle {
+    position: relative;
+    isolation: isolate;
+}
+
+/* Zwei Stern-Ebenen */
+.jg-leaf-sparkle::before,
+.jg-leaf-sparkle::after {
+    content: "";
+    position: absolute;
+
+    width: 10px;
+    height: 10px;
+
+    top: 20%;
+    left: 25%;
+
+    pointer-events: none;
+    z-index: 5;
+
+    /* vierzackiger Stern */
+    background: white;
+
+    clip-path: polygon(
+        50% 0%,
+        58% 42%,
+        100% 50%,
+        58% 58%,
+        50% 100%,
+        42% 58%,
+        0% 50%,
+        42% 42%
+    );
+
+    opacity: 0;
+
+    animation: jg-star-sparkle 3.2s ease-in-out infinite;
+
+    /* weitere Sterne */
+    box-shadow:
+        90px 35px 0 -2px rgba(255,255,255,.95),
+        180px 80px 0 -3px rgba(255,255,255,.9),
+        55px 150px 0 -2px rgba(255,255,255,.95);
+}
+
+.jg-leaf-sparkle::after {
+    top: 35%;
+    left: 38%;
+
+    width: 7px;
+    height: 7px;
+
+    animation-delay: 1.55s;
+
+    box-shadow:
+        110px -15px 0 -1px rgba(255,255,255,.9),
+        150px 105px 0 -2px rgba(255,255,255,.9),
+        -35px 120px 0 -2px rgba(255,255,255,.85);
+}
+
+@keyframes jg-star-sparkle {
+
+    0%,
+    35%,
+    65%,
+    100% {
+        opacity: 0;
+        transform: scale(0.4) rotate(0deg);
+    }
+
+    48% {
+        opacity: 1;
+        transform: scale(1.25) rotate(20deg);
+    }
+
+    55% {
+        opacity: 0.75;
+        transform: scale(0.85) rotate(40deg);
+    }
+}
+
+/* Barrierefreiheit / weniger Bewegung */
+@media (prefers-reduced-motion: reduce) {
+    .jg-leaf-sparkle::before,
+    .jg-leaf-sparkle::after {
+        animation: none;
+        opacity: 0;
+    }
+}
