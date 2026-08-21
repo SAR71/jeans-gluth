@@ -547,3 +547,14 @@
 .jg-subcat-thumb .jg-sparkles i {
     z-index: 22 !important;
 }
+
+.jg-subcat-thumb .jg-sparkles i:first-child {
+    display: block !important;
+    opacity: 1 !important;
+    animation: none !important;
+    left: 45% !important;
+    top: 40% !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: #ff00ff !important;
+}
