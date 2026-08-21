@@ -503,3 +503,47 @@
     width: 12px !important;
     height: 12px !important;
 }
+
+/* Glitzer im NEU-Kreis sicher über dem Bild */
+.jg-subcat-thumb {
+    position: relative !important;
+    display: block !important;
+    overflow: hidden !important;
+    border-radius: 50% !important;
+    isolation: isolate;
+}
+
+/* Bild: unterste Ebene */
+.jg-subcat-thumb > img {
+    position: relative !important;
+    display: block !important;
+    z-index: 1 !important;
+}
+
+/* Glitzerfläche: über dem Bild */
+.jg-subcat-thumb > .jg-sparkle-overlay {
+    position: absolute !important;
+    display: block !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 20 !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Innerer Glitzer-Container */
+.jg-subcat-thumb .jg-sparkles {
+    position: absolute !important;
+    display: block !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 21 !important;
+}
+
+/* Einzelne Sterne ebenfalls nach vorne */
+.jg-subcat-thumb .jg-sparkles i {
+    z-index: 22 !important;
+}
