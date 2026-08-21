@@ -148,8 +148,8 @@
   object-fit: cover !important;
   border-radius: 50% !important;
   display: block !important;
-  position: relative;
-  z-index: 1;
+  position: relative !important;
+  z-index: 1 !important;
 
   /* Default: kein Ring */
   box-shadow: inset 0 0 0 0 rgba(0,0,0,0) !important;
@@ -171,27 +171,29 @@
 
 /* NEU-Kreis: Glitzer-Overlay wie auf der Startseite */
 .jg-subcat-item--filter .jg-sparkle-overlay{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 30 !important;
+  pointer-events: none !important;
 }
 
 .jg-subcat-item--filter .jg-sparkles{
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 .jg-subcat-item--filter .jg-sparkles i{
-  position: absolute;
+  position: absolute !important;
+  z-index: 31 !important;
   width: 12px;
   height: 12px;
   background: #ffffff;
+  display: block !important;
   clip-path: polygon(
     50% 0%,
     58% 42%,
@@ -206,6 +208,7 @@
   animation-name: jg-twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.95));
 }
 
 .jg-subcat-item--filter .jg-sparkles i:nth-child(1) {
@@ -712,4 +715,9 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
   clip-path: inset(50%) !important;
   white-space: nowrap !important;
   border: 0 !important;
+}
+
+.jg-subcat-item--filter .jg-subcat-filter-img{
+  position: relative !important;
+  z-index: 1 !important;
 }
