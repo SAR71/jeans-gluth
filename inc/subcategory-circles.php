@@ -138,8 +138,13 @@ if (
       <div class="jg-subcat-circles">
 
         <?php if ($show_filter_circles): ?>
-     <?php
+        <?php
         $new_link = $build_filter_link('jg_new');
+
+        $new_image_url = $top_term->slug === 'herren'
+            ? 'https://jeans-gluth.de/wp-content/uploads/2026/08/20260804-NEU-Herren.png'
+            : 'https://jeans-gluth.de/wp-content/uploads/2026/08/20260804-NEU.png';
+
         if ($new_link):
         ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $new_active ? ' is-active' : ''; ?>"
@@ -150,7 +155,7 @@ if (
               <span class="jg-subcat-thumb">
                 <img
                     class="jg-subcat-img jg-subcat-filter-img"
-                    src="https://jeans-gluth.de/wp-content/uploads/2026/08/20260804-NEU.png"
+                    src="<?php echo esc_url($new_image_url); ?>"
                     alt=""
                     aria-hidden="true"
                 >
