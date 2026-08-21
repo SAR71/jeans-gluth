@@ -404,11 +404,27 @@
     pointer-events: none;
 }
 
-.jg-subcat-thumb .jg-sparkles {
-    width: 100%;
-    height: 100%;
+.jg-subcat-thumb > .jg-sparkle-overlay {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 5;
     border-radius: 50%;
     overflow: hidden;
+    pointer-events: none;
+}
+
+.jg-subcat-thumb .jg-sparkles {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 /* Standardgröße im 88-px-Kreis */
@@ -462,4 +478,28 @@
         width: 6px;
         height: 6px;
     }
+}
+
+.jg-subcat-thumb {
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate;
+}
+
+.jg-subcat-thumb > img {
+    position: relative;
+    z-index: 1;
+}
+
+.jg-subcat-thumb > .jg-sparkle-overlay {
+    z-index: 5;
+}
+
+.jg-subcat-thumb .jg-sparkles i:first-child {
+    opacity: 1 !important;
+    animation: none !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 12px !important;
+    height: 12px !important;
 }
