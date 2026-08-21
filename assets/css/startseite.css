@@ -378,3 +378,88 @@
         display: none;
     }
 }
+
+/* =========================================================
+   Glitzern im kleinen NEU-Kreis
+   ========================================================= */
+
+.jg-subcat-thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.jg-subcat-thumb > img {
+    position: relative;
+    z-index: 1;
+}
+
+.jg-subcat-thumb > .jg-sparkle-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 5;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.jg-subcat-thumb .jg-sparkles {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Standardgröße im 88-px-Kreis */
+.jg-subcat-thumb .jg-sparkles i {
+    width: 6px;
+    height: 6px;
+}
+
+.jg-subcat-thumb .jg-sparkles i:nth-child(3n) {
+    width: 4px;
+    height: 4px;
+}
+
+.jg-subcat-thumb .jg-sparkles i:nth-child(4n) {
+    width: 8px;
+    height: 8px;
+}
+
+.jg-subcat-thumb .jg-sparkles i:nth-child(7n) {
+    width: 10px;
+    height: 10px;
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+    .jg-subcat-thumb .jg-sparkles i {
+        width: 5px;
+        height: 5px;
+    }
+
+    .jg-subcat-thumb .jg-sparkles i:nth-child(4n) {
+        width: 7px;
+        height: 7px;
+    }
+
+    .jg-subcat-thumb .jg-sparkles i:nth-child(7n) {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Smartphone */
+@media (max-width: 576px) {
+    .jg-subcat-thumb .jg-sparkles i {
+        width: 4px;
+        height: 4px;
+    }
+
+    .jg-subcat-thumb .jg-sparkles i:nth-child(4n),
+    .jg-subcat-thumb .jg-sparkles i:nth-child(7n) {
+        width: 6px;
+        height: 6px;
+    }
+}

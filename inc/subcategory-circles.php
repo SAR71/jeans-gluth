@@ -159,6 +159,14 @@ if (
                     alt=""
                     aria-hidden="true"
                 >
+
+                <span class="jg-sparkle-overlay" aria-hidden="true">
+                    <span class="jg-sparkles">
+                        <?php for ($i = 0; $i < 25; $i++): ?>
+                            <i></i>
+                        <?php endfor; ?>
+                    </span>
+                </span>
             </span>
                 <?php if ($new_active): ?>
                     <h1 class="jg-subcat-title">Neu</h1>
