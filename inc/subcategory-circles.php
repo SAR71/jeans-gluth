@@ -145,6 +145,34 @@ if (
             ? 'https://jeans-gluth.de/wp-content/uploads/2026/08/20260804-NEU-Herren.png'
             : 'https://jeans-gluth.de/wp-content/uploads/2026/08/20260804-NEU.png';
 
+        $new_sparkles = [
+            ['left' => '8%',  'top' => '12%', 'duration' => '3.7s', 'delay' => '-0.2s'],
+            ['left' => '22%', 'top' => '8%',  'duration' => '4.9s', 'delay' => '-1.8s'],
+            ['left' => '39%', 'top' => '17%', 'duration' => '3.2s', 'delay' => '-2.5s'],
+            ['left' => '57%', 'top' => '10%', 'duration' => '5.1s', 'delay' => '-0.9s'],
+            ['left' => '81%', 'top' => '15%', 'duration' => '4.2s', 'delay' => '-3.1s'],
+            ['left' => '13%', 'top' => '31%', 'duration' => '5.3s', 'delay' => '-2.2s'],
+            ['left' => '29%', 'top' => '27%', 'duration' => '3.9s', 'delay' => '-0.6s'],
+            ['left' => '48%', 'top' => '35%', 'duration' => '4.7s', 'delay' => '-3.5s'],
+            ['left' => '69%', 'top' => '29%', 'duration' => '3.4s', 'delay' => '-1.3s'],
+            ['left' => '89%', 'top' => '37%', 'duration' => '5.5s', 'delay' => '-2.8s'],
+            ['left' => '7%',  'top' => '51%', 'duration' => '4.4s', 'delay' => '-3.6s'],
+            ['left' => '25%', 'top' => '46%', 'duration' => '3.5s', 'delay' => '-1.1s'],
+            ['left' => '43%', 'top' => '54%', 'duration' => '5.2s', 'delay' => '-2.7s'],
+            ['left' => '62%', 'top' => '48%', 'duration' => '4.0s', 'delay' => '-0.3s'],
+            ['left' => '83%', 'top' => '57%', 'duration' => '4.8s', 'delay' => '-1.9s'],
+            ['left' => '16%', 'top' => '70%', 'duration' => '5.0s', 'delay' => '-2.1s'],
+            ['left' => '34%', 'top' => '64%', 'duration' => '3.6s', 'delay' => '-3.2s'],
+            ['left' => '52%', 'top' => '73%', 'duration' => '4.6s', 'delay' => '-0.8s'],
+            ['left' => '72%', 'top' => '67%', 'duration' => '5.4s', 'delay' => '-2.4s'],
+            ['left' => '91%', 'top' => '72%', 'duration' => '3.8s', 'delay' => '-1.5s'],
+            ['left' => '9%',  'top' => '88%', 'duration' => '4.5s', 'delay' => '-2.9s'],
+            ['left' => '27%', 'top' => '82%', 'duration' => '5.6s', 'delay' => '-0.4s'],
+            ['left' => '47%', 'top' => '91%', 'duration' => '3.3s', 'delay' => '-3.4s'],
+            ['left' => '67%', 'top' => '84%', 'duration' => '4.3s', 'delay' => '-1.7s'],
+            ['left' => '86%', 'top' => '90%', 'duration' => '5.0s', 'delay' => '-2.6s'],
+        ];
+
         if ($new_link):
         ?>
             <a class="jg-subcat-item jg-subcat-item--filter<?php echo $new_active ? ' is-active' : ''; ?>"
@@ -162,9 +190,9 @@ if (
 
                 <span class="jg-sparkle-overlay" aria-hidden="true">
                     <span class="jg-sparkles">
-                        <?php for ($i = 0; $i < 25; $i++): ?>
-                            <i></i>
-                        <?php endfor; ?>
+                        <?php foreach ($new_sparkles as $sparkle): ?>
+                            <i style="left: <?php echo esc_attr($sparkle['left']); ?>; top: <?php echo esc_attr($sparkle['top']); ?>; animation-duration: <?php echo esc_attr($sparkle['duration']); ?>; animation-delay: <?php echo esc_attr($sparkle['delay']); ?>;"></i>
+                        <?php endforeach; ?>
                     </span>
                 </span>
             </span>
