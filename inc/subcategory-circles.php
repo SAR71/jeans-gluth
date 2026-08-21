@@ -188,13 +188,13 @@ if (
                     aria-hidden="true"
                 >
 
-                <span class="jg-sparkle-overlay" aria-hidden="true">
-                    <span class="jg-sparkles">
+                <div class="jg-sparkle-overlay" aria-hidden="true">
+                    <div class="jg-sparkles">
                         <?php foreach ($new_sparkles as $sparkle): ?>
                             <i style="left: <?php echo esc_attr($sparkle['left']); ?>; top: <?php echo esc_attr($sparkle['top']); ?>; animation-duration: <?php echo esc_attr($sparkle['duration']); ?>; animation-delay: <?php echo esc_attr($sparkle['delay']); ?>;"></i>
                         <?php endforeach; ?>
-                    </span>
-                </span>
+                    </div>
+                </div>
             </span>
                 <?php if ($new_active): ?>
                     <h1 class="jg-subcat-title">Neu</h1>
