@@ -412,27 +412,40 @@
 /* =========================================================
    Größe Bilder Hero
    ========================================================= */
-/* Äußerer Container, der links + rechts enthält */
+/* Gesamter Bereich bestimmt die Höhe */
 .jg-hero-row {
-    display: flex;
-    align-items: stretch;
+    aspect-ratio: 16 / 7;
+    align-items: stretch !important;
 }
 
-/* Beide Bildbereiche gleich hoch */
+/* Beide 40/60-Container müssen die volle Höhe einnehmen */
+.jg-hero-row > .e-con-inner,
 .jg-hero-tile {
-    overflow: hidden;
+    height: 100% !important;
 }
 
-/* Bild-Widget komplett ausfüllen */
-.jg-hero-tile-image,
-.jg-hero-tile-image .elementor-widget-container {
-    width: 100%;
-    height: 100%;
+.jg-hero-tile {
+    overflow: hidden !important;
+    align-self: stretch !important;
 }
 
-.jg-hero-tile-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+/* Elementor Bild-Widget über komplette Containerhöhe */
+.jg-hero-image {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.jg-hero-image > .elementor-widget-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Eigentliches Bild */
+.jg-hero-image img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+
+    object-fit: cover !important;
+    display: block !important;
 }
