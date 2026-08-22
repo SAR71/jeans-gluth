@@ -382,8 +382,10 @@
 
 /* ***** ANORNUNG MENÜFÜHGUNG TABLET PORTRAIT ******** */
 @media (max-width: 879px) {
-    .jg-herren-kachel-mobile {
-        margin-left: auto !important;
-        margin-right: 0 !important;
+    .jg-mobile-category-square {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        aspect-ratio: 1 / 1 !important;
     }
 }
