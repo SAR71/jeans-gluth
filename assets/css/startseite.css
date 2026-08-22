@@ -408,3 +408,31 @@
     background-image: none !important;
     box-shadow: none !important;
 }
+
+/* =========================================================
+   Größe Bilder Hero
+   ========================================================= */
+/* Äußerer Container, der links + rechts enthält */
+.jg-hero-row {
+    display: flex;
+    align-items: stretch;
+}
+
+/* Beide Bildbereiche gleich hoch */
+.jg-hero-tile {
+    overflow: hidden;
+}
+
+/* Bild-Widget komplett ausfüllen */
+.jg-hero-tile-image,
+.jg-hero-tile-image .elementor-widget-container {
+    width: 100%;
+    height: 100%;
+}
+
+.jg-hero-tile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
