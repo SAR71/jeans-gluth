@@ -389,3 +389,22 @@
         aspect-ratio: 1 / 1 !important;
     }
 }
+
+.jg-mobile-category-grid,
+.jg-category-no-hover {
+    text-decoration: none !important;
+}
+
+.jg-mobile-category-grid a,
+.jg-mobile-category-grid a:hover,
+.jg-mobile-category-grid .e-con:hover .elementor-heading-title,
+.jg-category-no-hover a,
+.jg-category-no-hover a:hover,
+.jg-category-no-hover .e-con:hover .elementor-heading-title {
+    color: inherit;
+    text-decoration: none !important;
+    text-decoration-line: none !important;
+    border-bottom: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
