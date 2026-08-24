@@ -410,29 +410,10 @@
 }
 
 /* =========================================================
-   Größe Bilder Hero
+  Kategiruen Kreise - Automatische Ratio 1:1
    ========================================================= */
-.jg-hero-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 20px !important;
-    align-items: stretch !important;
-}
-
-.jg-hero-tile {
-    height: 700px;
-    overflow: hidden;
-}
-
-.jg-hero-image,
-.jg-hero-image .elementor-widget-container {
-    width: 100%;
-    height: 100%;
-}
-
-.jg-hero-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
+.jg-sale-circle {
+    aspect-ratio: 1 / 1;
+    border-radius: 50% !important;
+    flex: 0 0 auto;
 }
