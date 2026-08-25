@@ -2570,6 +2570,12 @@ function prepareOutOfStockSizeClick(event) {
    nur die Werte der ersten gefundenen Variation. Sobald der
    Kunde eine andere Größe wählt, werden Artikelnummer und EAN
    hier auf die tatsächlich gewählte Variation aktualisiert.
+
+   Woodmart aktualisiert die Swatches unabhängig vom
+   WooCommerce-Kernevent "found_variation", daher wird die
+   passende Variante zusätzlich selbst anhand der aktuell
+   gewählten Attribute in den Variationsdaten des Formulars
+   gesucht (data-product_variations).
    ========================================================= */
 
 (function () {
@@ -2593,6 +2599,85 @@ function prepareOutOfStockSizeClick(event) {
         if (eanElement && variation.jg_ean) {
             eanElement.textContent = variation.jg_ean;
         }
+    }
+
+    function getFormVariations(form) {
+        if (form.jgVariationsCache) {
+            return form.jgVariationsCache;
+        }
+
+        var raw =
+            form.getAttribute('data-product_variations');
+
+        if (!raw || raw === 'false') {
+            return null;
+        }
+
+        try {
+            form.jgVariationsCache = JSON.parse(raw);
+        } catch (e) {
+            form.jgVariationsCache = null;
+        }
+
+        return form.jgVariationsCache;
+    }
+
+    function getSelectedAttributes(form) {
+        var selected = {};
+
+        form
+            .querySelectorAll(
+                'select[name^="attribute_"], input[name^="attribute_"]:checked'
+            )
+            .forEach(function (input) {
+                if (input.value) {
+                    selected[input.name] = input.value;
+                }
+            });
+
+        return selected;
+    }
+
+    function findMatchingVariation(variations, selectedAttributes) {
+        if (!variations || !variations.length) {
+            return null;
+        }
+
+        var selectedKeys = Object.keys(selectedAttributes);
+
+        if (!selectedKeys.length) {
+            return null;
+        }
+
+        return (
+            variations.find(function (variation) {
+                return selectedKeys.every(function (key) {
+                    var required =
+                        variation.attributes[key];
+
+                    return (
+                        !required ||
+                        required === selectedAttributes[key]
+                    );
+                });
+            }) || null
+        );
+    }
+
+    function syncSkuEanFromForm(form) {
+        var variations =
+            getFormVariations(form);
+
+        var selectedAttributes =
+            getSelectedAttributes(form);
+
+        var matchedVariation =
+            findMatchingVariation(
+                variations,
+                selectedAttributes
+            );
+
+        updateSkuEanDisplay(matchedVariation);
     }
 
     function initializeSkuEanSync() {
@@ -2626,13 +2711,44 @@ function prepareOutOfStockSizeClick(event) {
                 );
             }
 
+            /*
+             * Zusätzlicher, von Woodmart unabhängiger Abgleich:
+             * greift auch, wenn die Swatches selbst nur den
+             * versteckten Select ändern, ohne found_variation
+             * auszulösen.
+             */
             form.addEventListener(
-                'found_variation',
+                'change',
                 function (event) {
-                    updateSkuEanDisplay(
-                        event.detail
-                    );
-                }
+                    if (
+                        event.target &&
+                        event.target.name &&
+                        event.target.name.indexOf(
+                            'attribute_'
+                        ) === 0
+                    ) {
+                        syncSkuEanFromForm(form);
+                    }
+                },
+                true
+            );
+
+            form.addEventListener(
+                'click',
+                function (event) {
+                    if (
+                        !event.target ||
+                        !event.target.closest ||
+                        !event.target.closest('.wd-swatch')
+                    ) {
+                        return;
+                    }
+
+                    window.setTimeout(function () {
+                        syncSkuEanFromForm(form);
+                    }, 100);
+                },
+                true
             );
         });
     }
