@@ -1,4 +1,4 @@
-/* LastChanged: 2026-04-23 22:52:00 */
+/* LastChanged: 2026-08-25 00:00:00 */
 /* ******* HINTERGRUND DER AUSGEWÄHLTE GRÖSSE ************* */
 
 /* Aktive Größe (Swatch) */
@@ -23,6 +23,13 @@
 /******* Ausgewählten Wert hinter "Größen:" auf Mobilgeräten ausblenden */
 @media (max-width: 767px) {
     .single-product .wd-attr-selected {
+        display: none !important;
+    }
+}
+
+/* Artikelnummer in "Zusätzliche Informationen" nur unterhalb des Mobile-Breakpoints anzeigen */
+@media (min-width: 768px) {
+    .woocommerce-product-attributes-item--artikelnummer {
         display: none !important;
     }
 }

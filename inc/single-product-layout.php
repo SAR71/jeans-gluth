@@ -135,37 +135,26 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
 
     $new_attributes = array();
 
-    // Wert wird bei Variationsauswahl per JS aktualisiert (siehe single-product-page.js)
-    if (wp_is_mobile()) {
+    /*
+     * wp_is_mobile() erkennt das Gerät anhand des User-Agents und
+     * stimmt nicht mit dem CSS-Breakpoint überein, nach dem die
+     * Seite tatsächlich responsive umschaltet. Beide Werte werden
+     * daher immer ausgegeben; welche Zeile sichtbar ist, steuert
+     * ausschließlich CSS (siehe single-product-page.css).
+     * Werte werden bei Variationsauswahl per JS aktualisiert (siehe single-product-page.js)
+     */
+    if (!empty($sku)) {
+        $new_attributes['artikelnummer'] = array(
+            'label' => 'Artikelnummer',
+            'value' => '<span id="jg-sku-value">' . esc_html($sku) . '</span>',
+        );
+    }
 
-        // Mobile:
-        // 1. Artikelnummer
-        if (!empty($sku)) {
-            $new_attributes['artikelnummer'] = array(
-                'label' => 'Artikelnummer',
-                'value' => '<span id="jg-sku-value">' . esc_html($sku) . '</span>',
-            );
-        }
-
-        // 2. EAN
-        if (!empty($ean)) {
-            $new_attributes['ean'] = array(
-                'label' => 'EAN',
-                'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
-            );
-        }
-
-    } else {
-
-        // Desktop:
-        // 1. EAN
-        if (!empty($ean)) {
-            $new_attributes['ean'] = array(
-                'label' => 'EAN',
-                'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
-            );
-        }
-
+    if (!empty($ean)) {
+        $new_attributes['ean'] = array(
+            'label' => 'EAN',
+            'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
+        );
     }
 
     return $new_attributes + $attributes;
