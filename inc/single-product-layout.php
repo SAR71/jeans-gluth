@@ -1,5 +1,5 @@
 <?php
-// LastChanged: 2026-04-23 22:52:00
+// LastChanged: 2026-08-25 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -135,6 +135,7 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
 
     $new_attributes = array();
 
+    // Wert wird bei Variationsauswahl per JS aktualisiert (siehe single-product-page.js)
     if (wp_is_mobile()) {
 
         // Mobile:
@@ -142,7 +143,7 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
         if (!empty($sku)) {
             $new_attributes['artikelnummer'] = array(
                 'label' => 'Artikelnummer',
-                'value' => esc_html($sku),
+                'value' => '<span id="jg-sku-value">' . esc_html($sku) . '</span>',
             );
         }
 
@@ -150,7 +151,7 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
         if (!empty($ean)) {
             $new_attributes['ean'] = array(
                 'label' => 'EAN',
-                'value' => esc_html($ean),
+                'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
             );
         }
 
@@ -161,7 +162,7 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
         if (!empty($ean)) {
             $new_attributes['ean'] = array(
                 'label' => 'EAN',
-                'value' => esc_html($ean),
+                'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
             );
         }
 
@@ -170,6 +171,17 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
     return $new_attributes + $attributes;
 
 }, 20, 2);
+
+/**
+ * SKU und EAN der Variation in die Variationsdaten aufnehmen,
+ * damit JavaScript die Anzeige an die gewählte Größe anpassen kann.
+ */
+add_filter('woocommerce_available_variation', function ($variation_data, $product, $variation) {
+    $variation_data['jg_sku'] = $variation->get_sku();
+    $variation_data['jg_ean'] = $variation->get_global_unique_id();
+
+    return $variation_data;
+}, 10, 3);
 
 
 /**

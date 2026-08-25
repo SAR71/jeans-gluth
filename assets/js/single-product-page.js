@@ -2561,3 +2561,93 @@ function prepareOutOfStockSizeClick(event) {
         500
     );
 })();
+
+
+/* =========================================================
+   ARTIKELNUMMER / EAN AN GEWÄHLTE VARIATION ANPASSEN
+
+   Die "Zusätzliche Informationen"-Tabelle zeigt serverseitig
+   nur die Werte der ersten gefundenen Variation. Sobald der
+   Kunde eine andere Größe wählt, werden Artikelnummer und EAN
+   hier auf die tatsächlich gewählte Variation aktualisiert.
+   ========================================================= */
+
+(function () {
+    'use strict';
+
+    function updateSkuEanDisplay(variation) {
+        if (!variation) {
+            return;
+        }
+
+        var skuElement =
+            document.getElementById('jg-sku-value');
+
+        if (skuElement && variation.jg_sku) {
+            skuElement.textContent = variation.jg_sku;
+        }
+
+        var eanElement =
+            document.getElementById('jg-ean-value');
+
+        if (eanElement && variation.jg_ean) {
+            eanElement.textContent = variation.jg_ean;
+        }
+    }
+
+    function initializeSkuEanSync() {
+        var forms =
+            document.querySelectorAll('form.variations_form');
+
+        if (!forms.length) {
+            return;
+        }
+
+        forms.forEach(function (form) {
+            if (
+                form.getAttribute(
+                    'data-jg-sku-ean-sync'
+                ) === 'true'
+            ) {
+                return;
+            }
+
+            form.setAttribute(
+                'data-jg-sku-ean-sync',
+                'true'
+            );
+
+            if (window.jQuery) {
+                window.jQuery(form).on(
+                    'found_variation',
+                    function (event, variation) {
+                        updateSkuEanDisplay(variation);
+                    }
+                );
+            }
+
+            form.addEventListener(
+                'found_variation',
+                function (event) {
+                    updateSkuEanDisplay(
+                        event.detail
+                    );
+                }
+            );
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            initializeSkuEanSync
+        );
+    } else {
+        initializeSkuEanSync();
+    }
+
+    window.setTimeout(
+        initializeSkuEanSync,
+        500
+    );
+})();
