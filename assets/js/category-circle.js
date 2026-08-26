@@ -59,24 +59,17 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
       .forEach(el => el.classList.remove('is-clicked'));
   }
 
-function restoreScroller() {
-  const scroller = getScroller();
-  if (!scroller) return;
+  function restoreScroller() {
+    const scroller = getScroller();
+    if (!scroller) return;
 
-  const activeItem = scroller.querySelector('.jg-subcat-item.is-active');
+    const savedScrollLeft = Number.parseInt(sessionStorage.getItem(KEY) || '', 10);
+    const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
 
-  if (activeItem) {
-    const targetLeft =
-      activeItem.offsetLeft -
-      (scroller.clientWidth / 2) +
-      (activeItem.offsetWidth / 2);
-
-    scroller.scrollLeft = Math.max(0, targetLeft);
-    return;
+    scroller.scrollLeft = Number.isFinite(savedScrollLeft)
+      ? Math.min(Math.max(0, savedScrollLeft), maxScrollLeft)
+      : 0;
   }
-
-  scroller.scrollLeft = 0;
-}
 
   function bindClicks() {
     const scroller = getScroller();
