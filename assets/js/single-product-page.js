@@ -2597,12 +2597,12 @@ function prepareOutOfStockSizeClick(event) {
         }
 
         updateAllMatchingFields(
-            '#jg-sku-value, .jg-sku-value, [data-jg-field="sku"]',
+            '#jg-sku-value',
             variation.jg_sku
         );
 
         updateAllMatchingFields(
-            '#jg-ean-value, .jg-ean-value, [data-jg-field="ean"]',
+            '#jg-ean-value',
             variation.jg_ean
         );
     }
