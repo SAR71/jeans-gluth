@@ -146,14 +146,14 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
     if (!empty($sku)) {
         $new_attributes['artikelnummer'] = array(
             'label' => 'Artikelnummer',
-            'value' => '<span id="jg-sku-value">' . esc_html($sku) . '</span>',
+            'value' => '<span id="jg-sku-value" class="jg-sku-value" data-jg-field="sku">' . esc_html($sku) . '</span>',
         );
     }
 
     if (!empty($ean)) {
         $new_attributes['ean'] = array(
             'label' => 'EAN',
-            'value' => '<span id="jg-ean-value">' . esc_html($ean) . '</span>',
+            'value' => '<span id="jg-ean-value" class="jg-ean-value" data-jg-field="ean">' . esc_html($ean) . '</span>',
         );
     }
 
