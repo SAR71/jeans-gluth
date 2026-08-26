@@ -2581,24 +2581,30 @@ function prepareOutOfStockSizeClick(event) {
 (function () {
     'use strict';
 
+    function updateAllMatchingFields(selector, value) {
+        if (!value) {
+            return;
+        }
+
+        document.querySelectorAll(selector).forEach(function (element) {
+            element.textContent = value;
+        });
+    }
+
     function updateSkuEanDisplay(variation) {
         if (!variation) {
             return;
         }
 
-        var skuElement =
-            document.getElementById('jg-sku-value');
+        updateAllMatchingFields(
+            '#jg-sku-value',
+            variation.jg_sku
+        );
 
-        if (skuElement && variation.jg_sku) {
-            skuElement.textContent = variation.jg_sku;
-        }
-
-        var eanElement =
-            document.getElementById('jg-ean-value');
-
-        if (eanElement && variation.jg_ean) {
-            eanElement.textContent = variation.jg_ean;
-        }
+        updateAllMatchingFields(
+            '#jg-ean-value',
+            variation.jg_ean
+        );
     }
 
     function getFormVariations(form) {
