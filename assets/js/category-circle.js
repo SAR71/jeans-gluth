@@ -1,4 +1,4 @@
-// LastChanged: 2026-06-24 00:00:03
+// LastChanged: 2026-08-26 00:00:00
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -100,6 +100,15 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     }
 
     let lastPointerdownItem = null;
+
+    // Verhindert, dass der Browser beim Klick (Mausfokus) den Kreis
+    // automatisch mittig ins Bild scrollt (natives Fokus-Scrollverhalten).
+    scroller.addEventListener('mousedown', (e) => {
+      const item = e.target.closest('.jg-subcat-item');
+      if (!item) return;
+
+      e.preventDefault();
+    });
 
     scroller.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.jg-subcat-item');
