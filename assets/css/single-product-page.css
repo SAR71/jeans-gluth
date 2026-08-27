@@ -894,3 +894,10 @@ img {
 .single-product #jg-waitlist-popup-content .wd-wtl-form {
     display: block !important;
 }
+
+/* Außenrahmen der Waitingliste entfernen */
+
+#jg-waitlist-popup-content .wd-wtl-form {
+    border: none !important;
+    box-shadow: none !important;
+}
