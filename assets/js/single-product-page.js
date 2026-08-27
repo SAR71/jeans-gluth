@@ -2778,28 +2778,3 @@ function prepareOutOfStockSizeClick(event) {
 /* =========================================================
 Pop-UP Waitlinglist
    ========================================================= */
-
-document.addEventListener('click', function (e) {
-    const swatch = e.target.closest(
-        '.wd-swatch[data-jg-stock-status="out-of-stock"], .wd-swatch.jg-out-of-stock'
-    );
-
-    if (!swatch) {
-        return;
-    }
-
-    e.preventDefault();
-
-    // WoodMart Popup mit der ID 60044 öffnen
-    if (typeof woodmartThemeModule !== 'undefined' && woodmartThemeModule.popup) {
-        woodmartThemeModule.popup(60044);
-        return;
-    }
-
-    // Fallback über einen möglichen WoodMart-Popup-Link
-    const popupTrigger = document.querySelector('[data-id="60044"], [data-popup-id="60044"]');
-
-    if (popupTrigger) {
-        popupTrigger.click();
-    }
-});   
