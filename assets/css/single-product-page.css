@@ -883,7 +883,14 @@ img {
     pointer-events: auto !important;
 }
 
-/* WoodMart Waitlist auf der Produktseite nicht kurz anzeigen */
-.single-product .wd-wtl-form:not(#jg-waitlist-popup-content .wd-wtl-form) {
-    visibility: hidden;
+/*********** POP Up ************/
+
+/* WoodMart Waitlist niemals direkt auf der Produktseite anzeigen */
+.single-product .wd-wtl-form {
+    display: none !important;
+}
+
+/* Im Waitlist-Popup wieder anzeigen */
+.single-product #jg-waitlist-popup-content .wd-wtl-form {
+    display: block !important;
 }
