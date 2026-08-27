@@ -1,4 +1,4 @@
-// LastChanged: 2026-08-26 00:00:00
+// LastChanged: 2026-08-27 00:00:00
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -59,6 +59,47 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
       .forEach(el => el.classList.remove('is-clicked'));
   }
 
+  function waitForCircleImages() {
+    const scroller = getScroller();
+    if (!scroller) return Promise.resolve();
+
+    const images = Array.from(scroller.querySelectorAll('img'));
+
+    return Promise.all(images.map((image) => {
+      if (image.complete) return Promise.resolve();
+
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    }));
+  }
+
+  function scrollToInitialPosition(scroller, scrollLeft) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      scroller.scrollLeft = scrollLeft;
+      return;
+    }
+
+    const startScrollLeft = scroller.scrollLeft;
+    const distance = scrollLeft - startScrollLeft;
+    const duration = 720;
+    const startTime = performance.now();
+
+    function animate(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const easedProgress = 0.5 - (Math.cos(Math.PI * progress) / 2);
+
+      scroller.scrollLeft = startScrollLeft + (distance * easedProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
   function restoreScroller(animate = false) {
     const scroller = getScroller();
     if (!scroller) return;
@@ -71,10 +112,11 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
         Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
         maxScrollLeft
       );
-      scroller.scrollTo({
-        left: scrollLeft,
-        behavior: animate ? 'smooth' : 'auto'
-      });
+      if (animate) {
+        scrollToInitialPosition(scroller, scrollLeft);
+      } else {
+        scroller.scrollLeft = scrollLeft;
+      }
       return;
     }
 
@@ -115,15 +157,6 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     }
 
     let lastPointerdownItem = null;
-
-    // Verhindert, dass der Browser beim Klick (Mausfokus) den Kreis
-    // automatisch mittig ins Bild scrollt (natives Fokus-Scrollverhalten).
-    scroller.addEventListener('mousedown', (e) => {
-      const item = e.target.closest('.jg-subcat-item');
-      if (!item) return;
-
-      e.preventDefault();
-    });
 
     scroller.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.jg-subcat-item');
@@ -229,9 +262,12 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
 
   document.addEventListener('DOMContentLoaded', () => {
     bindClicks();
-    restoreScroller(true);
-
-    syncOverflowAlignment();
+    waitForCircleImages().then(() => {
+      requestAnimationFrame(() => {
+        restoreScroller(true);
+        syncOverflowAlignment();
+      });
+    });
 
     window.addEventListener('resize', () => {
       syncOverflowAlignment();
