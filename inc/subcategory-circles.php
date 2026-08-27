@@ -133,7 +133,7 @@ if (
     <?php echo esc_html(strtoupper($top_term->name)); ?>
 </div>
 
-<div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
+<div class="jg-subcat-carousel jg-subcat-carousel--initializing" role="navigation" aria-label="Unterkategorien">
             <button type="button" class="jg-subcat-nav jg-prev" aria-label="Nach links scrollen" hidden></button>
       <div class="jg-subcat-circles">
 
@@ -272,6 +272,7 @@ if (
         var activeItem = scroller && scroller.querySelector('.jg-subcat-item.is-active');
 
         if (!activeItem) {
+            carousel.classList.remove('jg-subcat-carousel--initializing');
             return;
         }
 
@@ -281,8 +282,13 @@ if (
             Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
             maxScrollLeft
         );
+
+        requestAnimationFrame(function() {
+            carousel.classList.remove('jg-subcat-carousel--initializing');
+        });
     })();
     </script>
+    <noscript><style>.jg-subcat-carousel--initializing .jg-subcat-circles{opacity:1}</style></noscript>
     <?php
     return ob_get_clean();
 });
