@@ -2777,7 +2777,7 @@ function prepareOutOfStockSizeClick(event) {
 
 
 /* ============================================================
-   WoodMart Waitlist im Popup anzeigen
+   WoodMart Waitlist – aktiven Inhalt im Popup anzeigen
    ============================================================ */
 
 document.addEventListener('click', function (event) {
@@ -2789,39 +2789,48 @@ document.addEventListener('click', function (event) {
         return;
     }
 
-    window.setTimeout(function () {
-        const target = document.querySelector('#jg-waitlist-popup-content');
+    let attempts = 0;
+    const maxAttempts = 20;
 
-        if (!target) {
-            return;
-        }
+    const waitForActiveWaitlist = window.setInterval(function () {
+        attempts++;
 
-        // Erst versuchen, ein echtes sichtbares Waitlist-Formular zu finden
-        let waitlistForm = document.querySelector(
-            '.wd-wtl-form:not(.wd-wtl-is-template)'
+        const target = document.querySelector(
+            '#jg-waitlist-popup-content'
         );
 
-        // Falls WoodMart nur Templates bereitstellt
-        if (!waitlistForm) {
-            const state = document.body.classList.contains('logged-in')
-                ? 'signed'
-                : 'not-signed';
-
-            waitlistForm = document.querySelector(
-                '.wd-wtl-form.wd-wtl-is-template[data-state="' + state + '"]'
+        /*
+         * Wichtig:
+         * Nicht das signed/not-signed Template nehmen,
+         * sondern das von WoodMart tatsächlich erzeugte
+         * aktive Formular der ausgewählten Variante.
+         */
+        const activeWaitlist = Array.from(
+            document.querySelectorAll('.wd-wtl-form')
+        ).find(function (form) {
+            return (
+                !form.classList.contains('wd-wtl-is-template') &&
+                !form.classList.contains('wd-hide') &&
+                !form.closest('#jg-waitlist-popup-content')
             );
-        }
+        });
 
-        if (!waitlistForm) {
+        if (target && activeWaitlist) {
+            window.clearInterval(waitForActiveWaitlist);
+
+            const clone = activeWaitlist.cloneNode(true);
+
+            clone.classList.remove('wd-hide');
+
+            target.innerHTML = '';
+            target.appendChild(clone);
+
             return;
         }
 
-        const clone = waitlistForm.cloneNode(true);
+        if (attempts >= maxAttempts) {
+            window.clearInterval(waitForActiveWaitlist);
+        }
 
-        clone.classList.remove('wd-wtl-is-template', 'wd-hide');
-
-        target.innerHTML = '';
-        target.appendChild(clone);
-
-    }, 150);
+    }, 50);
 });
