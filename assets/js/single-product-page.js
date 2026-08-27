@@ -2810,15 +2810,18 @@ document.addEventListener('click', function (event) {
         });
 
         if (target && activeWaitlist) {
-            window.clearInterval(waitForActiveWaitlist);
+    window.clearInterval(waitForActiveWaitlist);
 
-            target.innerHTML = '';
+    target.innerHTML = '';
 
-            // Wichtig: NICHT klonen, sondern das echte Formular verschieben.
-            target.appendChild(activeWaitlist);
+    // Wichtig: NICHT klonen, sondern das echte Formular verschieben.
+    target.appendChild(activeWaitlist);
 
-            return;
-        }
+    // Erst im Popup sichtbar machen.
+    activeWaitlist.style.visibility = 'visible';
+
+    return;
+}
 
         if (attempts >= maxAttempts) {
             window.clearInterval(waitForActiveWaitlist);
