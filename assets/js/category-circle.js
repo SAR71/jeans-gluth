@@ -59,7 +59,7 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
       .forEach(el => el.classList.remove('is-clicked'));
   }
 
-  function restoreScroller() {
+  function restoreScroller(animate = false) {
     const scroller = getScroller();
     if (!scroller) return;
 
@@ -67,10 +67,14 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     if (activeItem) {
       const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
       const activeItemCenter = activeItem.offsetLeft + (activeItem.offsetWidth / 2);
-      scroller.scrollLeft = Math.min(
+      const scrollLeft = Math.min(
         Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
         maxScrollLeft
       );
+      scroller.scrollTo({
+        left: scrollLeft,
+        behavior: animate ? 'smooth' : 'auto'
+      });
       return;
     }
 
@@ -225,7 +229,7 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
 
   document.addEventListener('DOMContentLoaded', () => {
     bindClicks();
-    restoreScroller();
+    restoreScroller(true);
 
     syncOverflowAlignment();
 

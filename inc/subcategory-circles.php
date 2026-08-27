@@ -133,7 +133,7 @@ if (
     <?php echo esc_html(strtoupper($top_term->name)); ?>
 </div>
 
-<div class="jg-subcat-carousel jg-subcat-carousel--initializing" role="navigation" aria-label="Unterkategorien">
+<div class="jg-subcat-carousel" role="navigation" aria-label="Unterkategorien">
             <button type="button" class="jg-subcat-nav jg-prev" aria-label="Nach links scrollen" hidden></button>
       <div class="jg-subcat-circles">
 
@@ -265,30 +265,6 @@ if (
       </div>
             <button type="button" class="jg-subcat-nav jg-next" aria-label="Nach rechts scrollen" hidden></button>
     </div>
-    <script>
-    (function() {
-        var carousel = document.currentScript.previousElementSibling;
-        var scroller = carousel && carousel.querySelector('.jg-subcat-circles');
-        var activeItem = scroller && scroller.querySelector('.jg-subcat-item.is-active');
-
-        if (!activeItem) {
-            carousel.classList.remove('jg-subcat-carousel--initializing');
-            return;
-        }
-
-        var maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-        var activeItemCenter = activeItem.offsetLeft + (activeItem.offsetWidth / 2);
-        scroller.scrollLeft = Math.min(
-            Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
-            maxScrollLeft
-        );
-
-        requestAnimationFrame(function() {
-            carousel.classList.remove('jg-subcat-carousel--initializing');
-        });
-    })();
-    </script>
-    <noscript><style>.jg-subcat-carousel--initializing .jg-subcat-circles{opacity:1}</style></noscript>
     <?php
     return ob_get_clean();
 });

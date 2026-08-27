@@ -41,14 +41,6 @@
   padding: 8px 0;             /* Platz für Hover-Skalierung */
 }
 
-.jg-subcat-carousel--initializing .jg-subcat-circles{
-  opacity: 0;
-}
-
-.jg-subcat-circles{
-  transition: opacity 120ms ease-out;
-}
-
 /* Handy: Kreise links ausrichten */
 @media (max-width: 576px){
   .jg-subcat-circles{
