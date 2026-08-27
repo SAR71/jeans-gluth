@@ -265,6 +265,24 @@ if (
       </div>
             <button type="button" class="jg-subcat-nav jg-next" aria-label="Nach rechts scrollen" hidden></button>
     </div>
+    <script>
+    (function() {
+        var carousel = document.currentScript.previousElementSibling;
+        var scroller = carousel && carousel.querySelector('.jg-subcat-circles');
+        var activeItem = scroller && scroller.querySelector('.jg-subcat-item.is-active');
+
+        if (!activeItem) {
+            return;
+        }
+
+        var maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+        var activeItemCenter = activeItem.offsetLeft + (activeItem.offsetWidth / 2);
+        scroller.scrollLeft = Math.min(
+            Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
+            maxScrollLeft
+        );
+    })();
+    </script>
     <?php
     return ob_get_clean();
 });

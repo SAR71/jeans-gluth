@@ -63,6 +63,17 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     const scroller = getScroller();
     if (!scroller) return;
 
+    const activeItem = scroller.querySelector('.jg-subcat-item.is-active');
+    if (activeItem) {
+      const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+      const activeItemCenter = activeItem.offsetLeft + (activeItem.offsetWidth / 2);
+      scroller.scrollLeft = Math.min(
+        Math.max(0, activeItemCenter - (scroller.clientWidth / 2)),
+        maxScrollLeft
+      );
+      return;
+    }
+
     const savedScrollLeft = Number.parseInt(sessionStorage.getItem(KEY) || '', 10);
     const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
 
