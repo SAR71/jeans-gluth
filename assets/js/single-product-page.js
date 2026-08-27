@@ -2776,3 +2776,53 @@ function prepareOutOfStockSizeClick(event) {
 
 
 
+/* ============================================================
+   WoodMart Waitlist – echtes Formular ins Popup verschieben
+   ============================================================ */
+
+document.addEventListener('click', function (event) {
+    const swatch = event.target.closest(
+        '.wd-swatch[data-jg-stock-status="out-of-stock"]'
+    );
+
+    if (!swatch) {
+        return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const waitForActiveWaitlist = window.setInterval(function () {
+        attempts++;
+
+        const target = document.querySelector(
+            '#jg-waitlist-popup-content'
+        );
+
+        const activeWaitlist = Array.from(
+            document.querySelectorAll('.wd-wtl-form')
+        ).find(function (form) {
+            return (
+                !form.classList.contains('wd-wtl-is-template') &&
+                !form.classList.contains('wd-hide') &&
+                !form.closest('#jg-waitlist-popup-content')
+            );
+        });
+
+        if (target && activeWaitlist) {
+            window.clearInterval(waitForActiveWaitlist);
+
+            target.innerHTML = '';
+
+            // Wichtig: NICHT klonen, sondern das echte Formular verschieben.
+            target.appendChild(activeWaitlist);
+
+            return;
+        }
+
+        if (attempts >= maxAttempts) {
+            window.clearInterval(waitForActiveWaitlist);
+        }
+
+    }, 50);
+});
