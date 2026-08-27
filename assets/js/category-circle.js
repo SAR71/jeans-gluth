@@ -264,6 +264,11 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     bindClicks();
     waitForCircleImages().then(() => {
       requestAnimationFrame(() => {
+        const scroller = getScroller();
+        if (scroller?.querySelector('.jg-subcat-item.is-active')) {
+          scroller.scrollLeft = 0;
+        }
+
         restoreScroller(true);
         syncOverflowAlignment();
       });
