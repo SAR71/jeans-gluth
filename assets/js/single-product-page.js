@@ -2777,7 +2777,7 @@ function prepareOutOfStockSizeClick(event) {
 
 
 /* ============================================================
-   WoodMart Waitlist – aktiven Inhalt im Popup anzeigen
+   WoodMart Waitlist – echtes Formular ins Popup verschieben
    ============================================================ */
 
 document.addEventListener('click', function (event) {
@@ -2799,12 +2799,6 @@ document.addEventListener('click', function (event) {
             '#jg-waitlist-popup-content'
         );
 
-        /*
-         * Wichtig:
-         * Nicht das signed/not-signed Template nehmen,
-         * sondern das von WoodMart tatsächlich erzeugte
-         * aktive Formular der ausgewählten Variante.
-         */
         const activeWaitlist = Array.from(
             document.querySelectorAll('.wd-wtl-form')
         ).find(function (form) {
@@ -2818,12 +2812,10 @@ document.addEventListener('click', function (event) {
         if (target && activeWaitlist) {
             window.clearInterval(waitForActiveWaitlist);
 
-            const clone = activeWaitlist.cloneNode(true);
-
-            clone.classList.remove('wd-hide');
-
             target.innerHTML = '';
-            target.appendChild(clone);
+
+            // Wichtig: NICHT klonen, sondern das echte Formular verschieben.
+            target.appendChild(activeWaitlist);
 
             return;
         }
