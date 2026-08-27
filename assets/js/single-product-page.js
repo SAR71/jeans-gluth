@@ -2778,3 +2778,70 @@ function prepareOutOfStockSizeClick(event) {
 /* =========================================================
 Pop-UP Waitlinglist
    ========================================================= */
+/* ============================================================
+   Waitlist-Inhalt für WoodMart Popup
+   ============================================================ */
+
+document.addEventListener('click', function (event) {
+    const swatch = event.target.closest(
+        '.wd-swatch[data-jg-stock-status="out-of-stock"]'
+    );
+
+    if (!swatch) {
+        return;
+    }
+
+    // Kurz warten, bis WoodMart das Popup geöffnet hat
+    window.setTimeout(function () {
+
+        const target = document.querySelector(
+            '#jg-waitlist-popup-content'
+        );
+
+        if (!target) {
+            return;
+        }
+
+        /*
+         * WoodMart stellt zwei Templates bereit:
+         * - signed
+         * - not-signed
+         *
+         * Wir erkennen anhand der vorhandenen Templates,
+         * welches verwendet werden soll.
+         */
+
+        let template = null;
+
+        // Angemeldeter Benutzer
+        if (
+            document.body.classList.contains('logged-in')
+        ) {
+            template = document.querySelector(
+                '.wd-wtl-form.wd-wtl-is-template[data-state="signed"]'
+            );
+        }
+
+        // Gast / Fallback
+        if (!template) {
+            template = document.querySelector(
+                '.wd-wtl-form.wd-wtl-is-template[data-state="not-signed"]'
+            );
+        }
+
+        if (!template) {
+            return;
+        }
+
+        const clone = template.cloneNode(true);
+
+        clone.classList.remove(
+            'wd-wtl-is-template',
+            'wd-hide'
+        );
+
+        target.innerHTML = '';
+        target.appendChild(clone);
+
+    }, 100);
+});
