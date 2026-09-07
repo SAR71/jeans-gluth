@@ -418,13 +418,3 @@
     flex: 0 0 auto;
 }
 
-/* =========================================================
-  Salebox höher ziehen als Textbereich
-   ========================================================= */
-
-.sale-box {
-    align-self: stretch;
-    height: auto;
-    margin-top: -24px;
-    margin-bottom: -24px;
-}

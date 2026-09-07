@@ -1383,3 +1383,74 @@ add_filter(
     20,
     3
 );
+
+/**
+ * =========================================================
+ * ZAHLUNGSARTEN ABHÄNGIG VON DER VERSANDART
+ * =========================================================
+ *
+ * Abholung vor Ort:
+ * → ausschließlich "Reservieren & vor Ort bezahlen" (cod)
+ *
+ * Versand:
+ * → alle normalen Zahlungsarten
+ * → "Reservieren & vor Ort bezahlen" wird ausgeblendet
+ */
+add_filter(
+    'woocommerce_available_payment_gateways',
+    function ( $gateways ) {
+
+        /*
+         * Im Backend nichts verändern.
+         * AJAX im Checkout muss jedoch verarbeitet werden.
+         */
+        if (
+            is_admin() &&
+            ! defined( 'DOING_AJAX' )
+        ) {
+            return $gateways;
+        }
+
+        if (
+            ! function_exists( 'WC' ) ||
+            ! WC()->session
+        ) {
+            return $gateways;
+        }
+
+        $is_pickup = jg_is_pickup_shipping_selected();
+
+
+        /* =====================================================
+         * ABHOLUNG VOR ORT
+         * ===================================================== */
+        if ( $is_pickup ) {
+
+            /*
+             * Nur "Reservieren & vor Ort bezahlen" zulassen.
+             */
+            foreach ( array_keys( $gateways ) as $gateway_id ) {
+
+                if ( 'cod' !== $gateway_id ) {
+                    unset( $gateways[ $gateway_id ] );
+                }
+            }
+
+            return $gateways;
+        }
+
+
+        /* =====================================================
+         * VERSAND
+         * ===================================================== */
+
+        /*
+         * "Reservieren & vor Ort bezahlen"
+         * bei Versand nicht anbieten.
+         */
+        unset( $gateways['cod'] );
+
+        return $gateways;
+    },
+    100
+);
