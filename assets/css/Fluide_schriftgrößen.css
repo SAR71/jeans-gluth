@@ -1,24 +1,26 @@
 :root {
-  /* Überschrift, z. B. DAMEN NEU */
-  --jg-tile-title: clamp(22px, 1.2vw + 14px, 30px);
-
-  /* Beschreibung / Text Editor */
-  --jg-tile-text: clamp(18px, 0.9vw + 12px, 24px);
-
-  /* MEHR → */
-  --jg-tile-link: clamp(16px, 0.6vw + 12px, 20px);
+  --jg-tile-title: clamp(20px, 1.05vw + 10px, 30px);
+  --jg-tile-text: clamp(16px, 0.85vw + 8px, 24px);
+  --jg-tile-link: clamp(15px, 0.55vw + 9px, 20px);
 }
 
-.jg-tile-title {
+/* Kachel-Überschrift */
+.jg-tile-title,
+.jg-tile-title .elementor-heading-title {
   font-size: var(--jg-tile-title) !important;
 }
 
-.jg-tile-text {
+/* Beschreibung */
+.jg-tile-text,
+.jg-tile-text p {
   font-size: var(--jg-tile-text) !important;
   line-height: 1.35 !important;
 }
 
-.jg-tile-link {
+/* MEHR → */
+.jg-tile-link,
+.jg-tile-link .elementor-heading-title {
   font-size: var(--jg-tile-link) !important;
+  line-height: 1.2 !important;
   white-space: nowrap;
 }
