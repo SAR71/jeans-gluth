@@ -418,3 +418,174 @@
     flex: 0 0 auto;
 }
 
+/* ==========================================================
+   JEANS GLUTH Startseite Menüfühung
+   Fluid zwischen 1020px und 1932px
+   ========================================================== */
+
+@media (min-width: 1020px) and (max-width: 1932px) {
+
+    /* ------------------------------------------------------
+       1. ÄUSSERE KACHELN
+       24px → 8px rechter Innenabstand
+       ------------------------------------------------------ */
+
+    [data-id="d6ac921"] > [data-id="2e09a00"],
+    [data-id="d6ac921"] > [data-id="927b463"],
+    [data-id="d6ac921"] > [data-id="d70673e"],
+    [data-id="d6ac921"] > [data-id="07a238f"] {
+        padding-right: clamp(
+            8px,
+            calc(-9.9px + 1.754vw),
+            24px
+        ) !important;
+    }
+
+
+    /* ------------------------------------------------------
+       2. INNERER ABSTAND BILD ↔ TEXT
+       30px → 10px
+       ------------------------------------------------------ */
+
+    [data-id="4f8a961"],
+    [data-id="b949910"],
+    [data-id="19a2b77"],
+    [data-id="78ae216"] {
+        gap: clamp(
+            10px,
+            calc(-12.37px + 2.193vw),
+            30px
+        ) !important;
+    }
+
+
+    /* ------------------------------------------------------
+       3. BILD- / PROZENTBEREICH
+       180px → 100px
+       ------------------------------------------------------ */
+
+    [data-id="22913af"],
+    [data-id="fd12f1c"],
+    [data-id="3d68c0d"],
+    [data-id="e55ab8a"] {
+        width: clamp(
+            100px,
+            calc(10.53px + 8.772vw),
+            180px
+        ) !important;
+
+        min-width: clamp(
+            100px,
+            calc(10.53px + 8.772vw),
+            180px
+        ) !important;
+
+        flex: 0 0 auto !important;
+    }
+
+
+    /* ------------------------------------------------------
+       4. BILD-/PROZENT-MINDESTHÖHE
+       160px → 90px
+       ------------------------------------------------------ */
+
+    [data-id="22913af"],
+    [data-id="fd12f1c"],
+    [data-id="3d68c0d"],
+    [data-id="e55ab8a"] {
+        min-height: clamp(
+            90px,
+            calc(11.71px + 7.675vw),
+            160px
+        ) !important;
+    }
+
+
+    /* ------------------------------------------------------
+       5. TEXTBEREICHE
+       vertikales Padding 24px → 10px
+       ------------------------------------------------------ */
+
+    [data-id="244f866"],
+    [data-id="9541db5"],
+    [data-id="fdcd796"],
+    [data-id="ad703f4"] {
+        min-width: 0 !important;
+
+        padding-top: clamp(
+            10px,
+            calc(-5.66px + 1.535vw),
+            24px
+        ) !important;
+
+        padding-bottom: clamp(
+            10px,
+            calc(-5.66px + 1.535vw),
+            24px
+        ) !important;
+
+        gap: clamp(6px, 0.8vw, 15px) !important;
+    }
+
+
+    /* ------------------------------------------------------
+       6. ÜBERSCHRIFTEN
+       30px → 20px
+       ------------------------------------------------------ */
+
+    [data-id="264070a"] .elementor-heading-title,
+    [data-id="cde7f81"] .elementor-heading-title,
+    [data-id="cfcda6e"] .elementor-heading-title,
+    [data-id="30e2ea3"] .elementor-heading-title {
+        font-size: clamp(
+            20px,
+            calc(8.82px + 1.096vw),
+            30px
+        ) !important;
+
+        line-height: 1.2 !important;
+    }
+
+
+    /* ------------------------------------------------------
+       7. BESCHREIBUNG
+       24px → 15px
+       ------------------------------------------------------ */
+
+    [data-id="1558cfb"],
+    [data-id="1558cfb"] p,
+    [data-id="4f9c7cc"],
+    [data-id="4f9c7cc"] p,
+    [data-id="7e3bb11"],
+    [data-id="7e3bb11"] p,
+    [data-id="0194bdf"],
+    [data-id="0194bdf"] p {
+        font-size: clamp(
+            15px,
+            calc(4.93px + 0.987vw),
+            24px
+        ) !important;
+
+        line-height: 1.35 !important;
+    }
+
+
+    /* ------------------------------------------------------
+       8. MEHR →
+       18px → 14px
+       ------------------------------------------------------ */
+
+    [data-id="c13608b"] .elementor-heading-title,
+    [data-id="12a8743"] .elementor-heading-title,
+    [data-id="3ff5276"] .elementor-heading-title,
+    [data-id="b62b1d2"] .elementor-heading-title {
+        font-size: clamp(
+            14px,
+            calc(9.53px + 0.439vw),
+            18px
+        ) !important;
+
+        line-height: 1.2 !important;
+        white-space: nowrap;
+    }
+}
