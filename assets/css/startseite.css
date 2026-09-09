@@ -529,13 +529,38 @@
        MEHR →
        ====================================================== */
 
-    [data-id="c13608b"] .elementor-heading-title,
-    [data-id="531c63c"] .elementor-heading-title,
-    [data-id="b10d84e"] .elementor-heading-title,
-    [data-id="79e3499"] .elementor-heading-title {
-        font-size: clamp(14px, 1vw, 18px) !important;
-        line-height: 1.2 !important;
-        white-space: nowrap !important;
+[data-id="c13608b"] .elementor-heading-title,
+[data-id="531c63c"] .elementor-heading-title,
+[data-id="b10d84e"] .elementor-heading-title,
+[data-id="79e3499"] .elementor-heading-title {
+    font-size: clamp(16px, 1.15vw, 18px) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+}
+
+/* ======================================================
+       Breite Bildbereich Laptop und Tablet Landscape
+       ====================================================== */
+@media (min-width: 1281px) and (max-width: 1439px) {
+
+    [data-id="22913af"],
+    [data-id="8f39c4f"],
+    [data-id="1a29191"],
+    [data-id="a9e096a"] {
+        width: 110px !important;
+        min-width: 110px !important;
+    }
+
+}
+@media (min-width: 1025px) and (max-width: 1280px) {
+
+    [data-id="22913af"],
+    [data-id="8f39c4f"],
+    [data-id="1a29191"],
+    [data-id="a9e096a"] {
+        width: 95px !important;
+        min-width: 95px !important;
     }
 
 }
