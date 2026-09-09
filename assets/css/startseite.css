@@ -524,7 +524,7 @@
    Alle Kacheln inkl. Innencontainer immer gleich hoch
    ====================================================== */
 
-@media (min-width: 1025px) and (max-width: 2399px) {
+@media (min-width: 881px) and (max-width: 2399px) {
 
     /* Grid-Zeile auf Höhe der höchsten Kachel */
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="d6ac921"] {
