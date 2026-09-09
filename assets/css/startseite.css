@@ -475,21 +475,23 @@
        TEXTBEREICHE
        ====================================================== */
 
-    [data-id="244f866"],
-    [data-id="e038582"],
-    [data-id="444c781"],
-    [data-id="985c07b"] {
-        width: auto !important;
-        min-width: 0 !important;
+  [data-id="244f866"],
+[data-id="e038582"],
+[data-id="444c781"],
+[data-id="985c07b"] {
+    width: auto !important;
+    min-width: 0 !important;
 
-        flex-grow: 1 !important;
-        flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
 
-        padding-top: clamp(12px, 1.2vw, 24px) !important;
-        padding-bottom: clamp(12px, 1.2vw, 24px) !important;
+    justify-content: flex-start !important;
 
-        gap: clamp(8px, 0.8vw, 15px) !important;
-    }
+    padding-top: clamp(12px, 1.2vw, 24px) !important;
+    padding-bottom: clamp(12px, 1.2vw, 24px) !important;
+
+    gap: clamp(10px, 0.8vw, 15px) !important;
+}
 
 
     /* ======================================================
