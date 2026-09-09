@@ -533,7 +533,7 @@
 [data-id="531c63c"] .elementor-heading-title,
 [data-id="b10d84e"] .elementor-heading-title,
 [data-id="79e3499"] .elementor-heading-title {
-    font-size: clamp(16px, 1.15vw, 18px) !important;
+    font-size: clamp(20px, 1.55vw, 30px) !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
 }
