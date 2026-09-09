@@ -559,3 +559,26 @@
     }
 
 }
+
+/* ======================================================
+       Alle Kacheln im Menü immer gleich hoch
+       ====================================================== */
+
+@media (min-width: 1025px) and (max-width: 2399px) {
+
+    /* Grid-Zeile immer auf Höhe der höchsten Kachel */
+    [data-id="d6ac921"] {
+        align-items: stretch !important;
+        grid-auto-rows: 1fr !important;
+    }
+
+    /* Alle vier äußeren Kacheln auf volle Zeilenhöhe */
+    [data-id="2e09a00"],
+    [data-id="5cee61d"],
+    [data-id="2fd2b91"],
+    [data-id="48a5fd3"] {
+        height: 100% !important;
+        align-self: stretch !important;
+    }
+
+}
