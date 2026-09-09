@@ -704,3 +704,16 @@
         -10px
     ) !important;
 }
+/* ==========================================================
+   SERVICES – FLUIDES SEITEN-PADDING
+   Widescreen / Desktop / Laptop
+   ========================================================== */
+
+@media (min-width: 1281px) {
+
+    .services-section {
+        padding-left: clamp(20px, 2vw, 50px) !important;
+        padding-right: clamp(20px, 2vw, 50px) !important;
+    }
+
+}
