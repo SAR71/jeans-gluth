@@ -420,172 +420,122 @@
 
 /* ==========================================================
    JEANS GLUTH Startseite Menüfühung
-   Fluid zwischen 1020px und 1932px
+   Fluid zwischen 1025px und 2399px
    ========================================================== */
 
-@media (min-width: 1020px) and (max-width: 1932px) {
+@media (min-width: 1025px) and (max-width: 2399px) {
 
-    /* ------------------------------------------------------
-       1. ÄUSSERE KACHELN
-       24px → 8px rechter Innenabstand
-       ------------------------------------------------------ */
+    /* ======================================================
+       ÄUSSERE KACHELN
+       ====================================================== */
 
-    [data-id="d6ac921"] > [data-id="2e09a00"],
-    [data-id="d6ac921"] > [data-id="927b463"],
-    [data-id="d6ac921"] > [data-id="d70673e"],
-    [data-id="d6ac921"] > [data-id="07a238f"] {
-        padding-right: clamp(
-            8px,
-            calc(-9.9px + 1.754vw),
-            24px
-        ) !important;
+    [data-id="2e09a00"],
+    [data-id="5cee61d"],
+    [data-id="2fd2b91"],
+    [data-id="48a5fd3"] {
+        padding-right: clamp(10px, 1.2vw, 24px) !important;
     }
 
 
-    /* ------------------------------------------------------
-       2. INNERER ABSTAND BILD ↔ TEXT
-       30px → 10px
-       ------------------------------------------------------ */
+    /* ======================================================
+       INNERER CONTAINER
+       ====================================================== */
 
     [data-id="4f8a961"],
-    [data-id="b949910"],
-    [data-id="19a2b77"],
-    [data-id="78ae216"] {
-        gap: clamp(
-            10px,
-            calc(-12.37px + 2.193vw),
-            30px
-        ) !important;
+    [data-id="d9c12d8"],
+    [data-id="fe44fb8"],
+    [data-id="556c794"] {
+        width: 100% !important;
+        min-width: 0 !important;
+
+        gap: clamp(10px, 1.4vw, 30px) !important;
+
+        flex-shrink: 0 !important;
     }
 
 
-    /* ------------------------------------------------------
-       3. BILD- / PROZENTBEREICH
-       180px → 100px
-       ------------------------------------------------------ */
+    /* ======================================================
+       BILD- / PROZENTBEREICH
+       ====================================================== */
 
     [data-id="22913af"],
-    [data-id="fd12f1c"],
-    [data-id="3d68c0d"],
-    [data-id="e55ab8a"] {
-        width: clamp(
-            100px,
-            calc(10.53px + 8.772vw),
-            180px
-        ) !important;
+    [data-id="8f39c4f"],
+    [data-id="1a29191"],
+    [data-id="a9e096a"] {
+        width: clamp(110px, 9.43vw, 180px) !important;
+        min-width: clamp(110px, 9.43vw, 180px) !important;
 
-        min-width: clamp(
-            100px,
-            calc(10.53px + 8.772vw),
-            180px
-        ) !important;
+        min-height: clamp(110px, 8.4vw, 160px) !important;
 
         flex: 0 0 auto !important;
     }
 
 
-    /* ------------------------------------------------------
-       4. BILD-/PROZENT-MINDESTHÖHE
-       160px → 90px
-       ------------------------------------------------------ */
-
-    [data-id="22913af"],
-    [data-id="fd12f1c"],
-    [data-id="3d68c0d"],
-    [data-id="e55ab8a"] {
-        min-height: clamp(
-            90px,
-            calc(11.71px + 7.675vw),
-            160px
-        ) !important;
-    }
-
-
-    /* ------------------------------------------------------
-       5. TEXTBEREICHE
-       vertikales Padding 24px → 10px
-       ------------------------------------------------------ */
+    /* ======================================================
+       TEXTBEREICHE
+       ====================================================== */
 
     [data-id="244f866"],
-    [data-id="9541db5"],
-    [data-id="fdcd796"],
-    [data-id="ad703f4"] {
+    [data-id="e038582"],
+    [data-id="444c781"],
+    [data-id="985c07b"] {
+        width: auto !important;
         min-width: 0 !important;
 
-        padding-top: clamp(
-            10px,
-            calc(-5.66px + 1.535vw),
-            24px
-        ) !important;
+        flex-grow: 1 !important;
+        flex-shrink: 1 !important;
 
-        padding-bottom: clamp(
-            10px,
-            calc(-5.66px + 1.535vw),
-            24px
-        ) !important;
+        padding-top: clamp(12px, 1.2vw, 24px) !important;
+        padding-bottom: clamp(12px, 1.2vw, 24px) !important;
 
-        gap: clamp(6px, 0.8vw, 15px) !important;
+        gap: clamp(8px, 0.8vw, 15px) !important;
     }
 
 
-    /* ------------------------------------------------------
-       6. ÜBERSCHRIFTEN
-       30px → 20px
-       ------------------------------------------------------ */
+    /* ======================================================
+       ÜBERSCHRIFTEN
+       ====================================================== */
 
     [data-id="264070a"] .elementor-heading-title,
-    [data-id="cde7f81"] .elementor-heading-title,
-    [data-id="cfcda6e"] .elementor-heading-title,
-    [data-id="30e2ea3"] .elementor-heading-title {
-        font-size: clamp(
-            20px,
-            calc(8.82px + 1.096vw),
-            30px
-        ) !important;
-
+    [data-id="20c7ddf"] .elementor-heading-title,
+    [data-id="775811f"] .elementor-heading-title,
+    [data-id="80befdf"] .elementor-heading-title {
+        font-size: clamp(20px, 1.55vw, 30px) !important;
         line-height: 1.2 !important;
     }
 
 
-    /* ------------------------------------------------------
-       7. BESCHREIBUNG
-       24px → 15px
-       ------------------------------------------------------ */
+    /* ======================================================
+       BESCHREIBUNG
+       ====================================================== */
 
     [data-id="1558cfb"],
     [data-id="1558cfb"] p,
-    [data-id="4f9c7cc"],
-    [data-id="4f9c7cc"] p,
-    [data-id="7e3bb11"],
-    [data-id="7e3bb11"] p,
-    [data-id="0194bdf"],
-    [data-id="0194bdf"] p {
-        font-size: clamp(
-            15px,
-            calc(4.93px + 0.987vw),
-            24px
-        ) !important;
 
+    [data-id="6cd70c3"],
+    [data-id="6cd70c3"] p,
+
+    [data-id="28f5be1"],
+    [data-id="28f5be1"] p,
+
+    [data-id="0e86ac7"],
+    [data-id="0e86ac7"] p {
+        font-size: clamp(15px, 1.2vw, 24px) !important;
         line-height: 1.35 !important;
     }
 
 
-    /* ------------------------------------------------------
-       8. MEHR →
-       18px → 14px
-       ------------------------------------------------------ */
+    /* ======================================================
+       MEHR →
+       ====================================================== */
 
     [data-id="c13608b"] .elementor-heading-title,
-    [data-id="12a8743"] .elementor-heading-title,
-    [data-id="3ff5276"] .elementor-heading-title,
-    [data-id="b62b1d2"] .elementor-heading-title {
-        font-size: clamp(
-            14px,
-            calc(9.53px + 0.439vw),
-            18px
-        ) !important;
-
+    [data-id="531c63c"] .elementor-heading-title,
+    [data-id="b10d84e"] .elementor-heading-title,
+    [data-id="79e3499"] .elementor-heading-title {
+        font-size: clamp(14px, 1vw, 18px) !important;
         line-height: 1.2 !important;
-        white-space: nowrap;
+        white-space: nowrap !important;
     }
+
 }
