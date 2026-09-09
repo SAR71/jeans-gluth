@@ -548,8 +548,8 @@
     [data-id="8f39c4f"],
     [data-id="1a29191"],
     [data-id="a9e096a"] {
-        width: 110px !important;
-        min-width: 110px !important;
+        width: clamp(100px, 7.5vw, 108px) !important;
+        min-width: clamp(100px, 7.5vw, 108px) !important;
     }
 
 }
