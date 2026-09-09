@@ -646,3 +646,23 @@
     gap: clamp(8px, 1.2vw, 12px) !important;
 }
 }
+
+/* ==========================================================
+   Service Cards gleiche Höhe bei Zeilenumbruch
+   ========================================================== */
+
+/* Service-Karten */
+.services-cards {
+    align-items: stretch;
+}
+
+/* Jede Karte */
+.services-cards .service-card {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Checklisten immer nach unten drücken */
+.services-cards .service-checks {
+    margin-top: auto;
+}
