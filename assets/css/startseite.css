@@ -632,18 +632,17 @@
     }
 
     /* Obere + untere breite Kachel */
-    [data-id="43494ad"] [data-id="270ad3a"],
-    [data-id="43494ad"] [data-id="bdbf5dc"] {
-        gap: clamp(5px, 0.8vw, 7px) !important;
-    }
-
-    /* Damen Sale Prozentbereich */
-[data-id="43494ad"] [data-id="9b48f59"] {
-    height: clamp(100px, 15vw, 120px) !important;
-}
-
-/* Herren Neu Bildbereich – mehr Abstand zum Text */
+[data-id="43494ad"] [data-id="9b48f59"],
 [data-id="43494ad"] [data-id="f16dddf"] {
     height: clamp(118px, 17.5vw, 140px) !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+}
+[data-id="43494ad"] [data-id="b8540ca"],
+[data-id="43494ad"] [data-id="9a79bf2"] {
+    height: auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start !important;
+    gap: clamp(8px, 1.2vw, 12px) !important;
 }
 }
