@@ -668,42 +668,47 @@
 }
 
 /* ==========================================================
+   Service Cards gleiche Höhe bei Zeilenumbruch
+   ========================================================== */
+
+.services-cards {
+    align-items: stretch;
+}
+
+.services-cards .service-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.services-cards .service-checks {
+    margin-top: auto;
+}
+
+
+/* ==========================================================
    SERVICES – FLUIDE TYPOGRAFIE
    ========================================================== */
 
 /* Titel der Image Box */
 .services-section .service-imagebox .elementor-image-box-title {
-    font-size: clamp(15px, 1.05vw, 25px) !important;
-    line-height: 1.15 !important;
+    font-size: clamp(20px, 1.55vw, 30px) !important;
+    line-height: 1.2 !important;
 }
 
 /* Beschreibung der Image Box */
 .services-section .service-imagebox .elementor-image-box-description {
-    font-size: clamp(13px, 0.8vw, 19px) !important;
+    font-size: clamp(15px, 1.2vw, 24px) !important;
     line-height: 1.35 !important;
 }
 
 /* Icon List */
 .services-section .service-iconlist,
 .services-section .service-iconlist .elementor-icon-list-text {
-    font-size: clamp(13px, 0.78vw, 18px) !important;
+    font-size: clamp(15px, 1.2vw, 24px) !important;
     line-height: 1.35 !important;
 }
 
 
-/* ==========================================================
-   IMAGE BOX – FLUIDES NEGATIVES SPACING
-   groß: ca. -25px
-   klein: ca. -10px
-   ========================================================== */
-
-.services-section .service-imagebox .elementor-image-box-content {
-    margin-top: clamp(
-        -25px,
-        calc(-4.13px - 1.63vw),
-        -10px
-    ) !important;
-}
 /* ==========================================================
    SERVICES – FLUIDES SEITEN-PADDING
    Widescreen / Desktop / Laptop
