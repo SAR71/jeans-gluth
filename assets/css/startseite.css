@@ -563,6 +563,7 @@
     [data-id="a9e096a"] {
         width: 95px !important;
         min-width: 95px !important;
+        min-height: 0 !important;
     }
 
 }
