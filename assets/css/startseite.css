@@ -642,8 +642,8 @@
     height: clamp(100px, 15vw, 120px) !important;
 }
 
-/* Herren Neu Bildbereich etwas höher */
+/* Herren Neu Bildbereich – mehr Abstand zum Text */
 [data-id="43494ad"] [data-id="f16dddf"] {
-    height: clamp(108px, 16vw, 130px) !important;
-}S
+    height: clamp(118px, 17.5vw, 140px) !important;
+}
 }
