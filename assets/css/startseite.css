@@ -590,7 +590,7 @@
     [data-id="43494ad"] [data-id="dbf1750"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="c2f488e"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="dbfcef1"] .elementor-heading-title {
-        font-size: clamp(20px, 3.4vw, 26px) !important;
+        font-size: clamp(20px, 4.2w, 26px) !important;
         line-height: 1 !important;
     }
 
@@ -603,7 +603,7 @@
     [data-id="43494ad"] [data-id="ebc7a4e"] p,
     [data-id="43494ad"] [data-id="25e1aa1"],
     [data-id="43494ad"] [data-id="25e1aa1"] p {
-        font-size: clamp(15px, 2.25vw, 17px) !important;
+        font-size: clamp(15px, 2.7vw, 17px) !important;
         line-height: 1.35 !important;
     }
 
