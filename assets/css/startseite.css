@@ -521,21 +521,55 @@
 
 
 /* ======================================================
-   Alle Kacheln immer gleich hoch
+   Alle Kacheln inkl. Innencontainer immer gleich hoch
    ====================================================== */
 
 @media (min-width: 1025px) and (max-width: 2399px) {
 
+    /* Grid-Zeile auf Höhe der höchsten Kachel */
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="d6ac921"] {
         align-items: stretch !important;
         grid-auto-rows: 1fr !important;
     }
 
+    /* Äußere Kacheln */
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2e09a00"],
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="5cee61d"],
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2fd2b91"],
     body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="48a5fd3"] {
         height: 100% !important;
         align-self: stretch !important;
+    }
+
+    /* Innere Container ebenfalls volle Kachelhöhe */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="4f8a961"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="d9c12d8"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="fe44fb8"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="556c794"] {
+        height: 100% !important;
+        min-height: 100% !important;
+        align-self: stretch !important;
+        align-items: stretch !important;
+    }
+
+    /* Bild- / Prozentbereiche volle Höhe */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="22913af"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="8f39c4f"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1a29191"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="a9e096a"] {
+        height: 100% !important;
+        align-self: stretch !important;
+    }
+
+    /* Textbereiche ebenfalls volle Höhe */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="244f866"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="e038582"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="444c781"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="985c07b"] {
+        height: 100% !important;
+        align-self: stretch !important;
+
+        /* Überschrift oben, MEHR unten */
+        justify-content: space-between !important;
     }
 }
