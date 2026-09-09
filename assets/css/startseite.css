@@ -754,7 +754,7 @@
 
     .services-heading .services-eyebrow,
     .services-heading .services-eyebrow p {
-        font-size: clamp(18px, 1.5vw, 20px) !important;
+        font-size: clamp(16px, 1.5vw, 18px) !important;
     }
 
     .services-heading .services-main-heading .elementor-heading-title {
@@ -777,7 +777,7 @@
 
     .services-heading .services-eyebrow,
     .services-heading .services-eyebrow p {
-        font-size: clamp(15px, 2.8vw, 20px) !important;
+        font-size: clamp(15px, 2.8vw, 18px) !important;
     }
 
     .services-heading .services-main-heading .elementor-heading-title {
