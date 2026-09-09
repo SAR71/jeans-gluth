@@ -343,174 +343,154 @@
 
 
 /* ==========================================================
-   JEANS GLUTH Startseite Menüfühung
+   JEANS GLUTH Startseite Menüführung
+   NUR FRONTEND
    Fluid zwischen 1025px und 2399px
    ========================================================== */
 
 @media (min-width: 1025px) and (max-width: 2399px) {
 
-    /* ======================================================
-       ÄUSSERE KACHELN
-       ====================================================== */
-
-    [data-id="2e09a00"],
-    [data-id="5cee61d"],
-    [data-id="2fd2b91"],
-    [data-id="48a5fd3"] {
+    /* ÄUSSERE KACHELN */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2e09a00"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="5cee61d"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2fd2b91"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="48a5fd3"] {
         padding-right: clamp(10px, 1.2vw, 24px) !important;
     }
 
 
-    /* ======================================================
-       INNERER CONTAINER
-       ====================================================== */
-
-    [data-id="4f8a961"],
-    [data-id="d9c12d8"],
-    [data-id="fe44fb8"],
-    [data-id="556c794"] {
+    /* INNERER CONTAINER */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="4f8a961"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="d9c12d8"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="fe44fb8"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="556c794"] {
         width: 100% !important;
         min-width: 0 !important;
-
         gap: clamp(10px, 1.4vw, 30px) !important;
-
         flex-shrink: 0 !important;
     }
 
 
-    /* ======================================================
-       BILD- / PROZENTBEREICH
-       ====================================================== */
-
-    [data-id="22913af"],
-    [data-id="8f39c4f"],
-    [data-id="1a29191"],
-    [data-id="a9e096a"] {
+    /* BILD- / PROZENTBEREICH */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="22913af"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="8f39c4f"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1a29191"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="a9e096a"] {
         width: clamp(110px, 9.43vw, 180px) !important;
         min-width: clamp(110px, 9.43vw, 180px) !important;
-
         min-height: clamp(110px, 8.4vw, 160px) !important;
-
         flex: 0 0 auto !important;
     }
 
 
-    /* ======================================================
-       TEXTBEREICHE
-       ====================================================== */
+    /* TEXTBEREICHE */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="244f866"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="e038582"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="444c781"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="985c07b"] {
+        width: auto !important;
+        min-width: 0 !important;
 
-  [data-id="244f866"],
-[data-id="e038582"],
-[data-id="444c781"],
-[data-id="985c07b"] {
-    width: auto !important;
-    min-width: 0 !important;
+        flex-grow: 1 !important;
+        flex-shrink: 1 !important;
 
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
+        justify-content: flex-start !important;
 
-    justify-content: flex-start !important;
+        padding-top: clamp(12px, 1.2vw, 24px) !important;
+        padding-bottom: clamp(12px, 1.2vw, 24px) !important;
 
-    padding-top: clamp(12px, 1.2vw, 24px) !important;
-    padding-bottom: clamp(12px, 1.2vw, 24px) !important;
-
-    gap: clamp(10px, 0.8vw, 15px) !important;
-}
+        gap: clamp(10px, 0.8vw, 15px) !important;
+    }
 
 
-    /* ======================================================
-       ÜBERSCHRIFTEN
-       ====================================================== */
-
-    [data-id="264070a"] .elementor-heading-title,
-    [data-id="20c7ddf"] .elementor-heading-title,
-    [data-id="775811f"] .elementor-heading-title,
-    [data-id="80befdf"] .elementor-heading-title {
+    /* ÜBERSCHRIFTEN */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="264070a"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="20c7ddf"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="775811f"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="80befdf"] .elementor-heading-title {
         font-size: clamp(20px, 1.55vw, 30px) !important;
         line-height: 1.2 !important;
     }
 
 
-    /* ======================================================
-       BESCHREIBUNG
-       ====================================================== */
+    /* BESCHREIBUNG */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1558cfb"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1558cfb"] p,
 
-    [data-id="1558cfb"],
-    [data-id="1558cfb"] p,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="6cd70c3"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="6cd70c3"] p,
 
-    [data-id="6cd70c3"],
-    [data-id="6cd70c3"] p,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="28f5be1"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="28f5be1"] p,
 
-    [data-id="28f5be1"],
-    [data-id="28f5be1"] p,
-
-    [data-id="0e86ac7"],
-    [data-id="0e86ac7"] p {
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="0e86ac7"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="0e86ac7"] p {
         font-size: clamp(15px, 1.2vw, 24px) !important;
         line-height: 1.35 !important;
     }
 
 
-    /* ======================================================
-       MEHR →
-       ====================================================== */
+    /* MEHR → */
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="c13608b"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="531c63c"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="b10d84e"] .elementor-heading-title,
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="79e3499"] .elementor-heading-title {
+        font-size: clamp(20px, 1.55vw, 30px) !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+    }
+}
 
-[data-id="c13608b"] .elementor-heading-title,
-[data-id="531c63c"] .elementor-heading-title,
-[data-id="b10d84e"] .elementor-heading-title,
-[data-id="79e3499"] .elementor-heading-title {
-    font-size: clamp(20px, 1.55vw, 30px) !important;
-    line-height: 1.2 !important;
-    white-space: nowrap !important;
-}
-}
 
 /* ======================================================
-       Breite Bildbereich Laptop und Tablet Landscape
-       ====================================================== */
+   Breite Bildbereich Laptop
+   ====================================================== */
+
 @media (min-width: 1281px) and (max-width: 1439px) {
 
-    [data-id="22913af"],
-    [data-id="8f39c4f"],
-    [data-id="1a29191"],
-    [data-id="a9e096a"] {
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="22913af"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="8f39c4f"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1a29191"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="a9e096a"] {
         width: clamp(100px, 7.5vw, 108px) !important;
         min-width: clamp(100px, 7.5vw, 108px) !important;
     }
-
 }
+
+
+/* ======================================================
+   Breite Bildbereich Tablet Landscape
+   ====================================================== */
+
 @media (min-width: 1025px) and (max-width: 1280px) {
 
-    [data-id="22913af"],
-    [data-id="8f39c4f"],
-    [data-id="1a29191"],
-    [data-id="a9e096a"] {
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="22913af"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="8f39c4f"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="1a29191"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="a9e096a"] {
         width: 95px !important;
         min-width: 95px !important;
         min-height: 0 !important;
     }
-
 }
 
+
 /* ======================================================
-       Alle Kacheln im Menü immer gleich hoch
-       ====================================================== */
+   Alle Kacheln immer gleich hoch
+   ====================================================== */
 
 @media (min-width: 1025px) and (max-width: 2399px) {
 
-    /* Grid-Zeile immer auf Höhe der höchsten Kachel */
-    [data-id="d6ac921"] {
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="d6ac921"] {
         align-items: stretch !important;
         grid-auto-rows: 1fr !important;
     }
 
-    /* Alle vier äußeren Kacheln auf volle Zeilenhöhe */
-    [data-id="2e09a00"],
-    [data-id="5cee61d"],
-    [data-id="2fd2b91"],
-    [data-id="48a5fd3"] {
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2e09a00"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="5cee61d"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="2fd2b91"],
+    body:not(.elementor-editor-active):not(.elementor-editor-preview) [data-id="48a5fd3"] {
         height: 100% !important;
         align-self: stretch !important;
     }
-
 }
