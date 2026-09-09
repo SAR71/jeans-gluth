@@ -590,7 +590,7 @@
     [data-id="43494ad"] [data-id="dbf1750"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="c2f488e"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="dbfcef1"] .elementor-heading-title {
-        font-size: clamp(20px, 4.2w, 26px) !important;
+        font-size: clamp(20px, 5vw, 23px) !important;
         line-height: 1 !important;
     }
 
