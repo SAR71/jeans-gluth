@@ -636,4 +636,14 @@
     [data-id="43494ad"] [data-id="bdbf5dc"] {
         gap: clamp(5px, 0.8vw, 7px) !important;
     }
+
+    /* Damen Sale Prozentbereich */
+[data-id="43494ad"] [data-id="9b48f59"] {
+    height: clamp(100px, 15vw, 120px) !important;
+}
+
+/* Herren Neu Bildbereich etwas höher */
+[data-id="43494ad"] [data-id="f16dddf"] {
+    height: clamp(108px, 16vw, 130px) !important;
+}S
 }
