@@ -575,171 +575,46 @@
 }
 
 /* ==========================================================
-   MOBILE PORTRAIT – KATEGORIE BENTO
-   Container: 43494ad
-   ========================================================== */
-
-@media (max-width: 768px) {
-
-    /* ======================================================
-       ALLE NORMALEN HEADINGS
-       Titel + MEHR →
-       ====================================================== */
-
-    [data-id="43494ad"] [data-id="2242b75"] .elementor-heading-title,
-    [data-id="43494ad"] [data-id="1168739"] .elementor-heading-title,
-
-    [data-id="43494ad"] [data-id="99c4797"] .elementor-heading-title,
-    [data-id="43494ad"] [data-id="3a5f93f"] .elementor-heading-title,
-
-    [data-id="43494ad"] [data-id="e7dbd33"] .elementor-heading-title,
-    [data-id="43494ad"] [data-id="dbf1750"] .elementor-heading-title,
-
-    [data-id="43494ad"] [data-id="c2f488e"] .elementor-heading-title,
-    [data-id="43494ad"] [data-id="dbfcef1"] .elementor-heading-title {
-        font-size: clamp(17px, 2.65vw, 20px) !important;
-        line-height: 1 !important;
-    }
-
-
-    /* ======================================================
-       BESCHREIBUNGSTEXTE
-       max. 17px
-       ====================================================== */
-
-    [data-id="43494ad"] [data-id="e8d7d4e"],
-    [data-id="43494ad"] [data-id="e8d7d4e"] p,
-
-    [data-id="43494ad"] [data-id="137dcc9"],
-    [data-id="43494ad"] [data-id="137dcc9"] p,
-
-    [data-id="43494ad"] [data-id="ebc7a4e"],
-    [data-id="43494ad"] [data-id="ebc7a4e"] p,
-
-    [data-id="43494ad"] [data-id="25e1aa1"],
-    [data-id="43494ad"] [data-id="25e1aa1"] p {
-        font-size: clamp(14px, 2.25vw, 17px) !important;
-        line-height: 1.35 !important;
-    }
-
-
-    /* ======================================================
-       PROZENTZEICHEN
-       ====================================================== */
-
-    [data-id="43494ad"] [data-id="d3a7da7"] .elementor-heading-title,
-    [data-id="43494ad"] [data-id="0703452"] .elementor-heading-title {
-        font-size: clamp(72px, 13.4vw, 100px) !important;
-        line-height: 1 !important;
-    }
-
-
-    /* ======================================================
-       DAMEN SALE + HERREN NEU
-       Vertikale Abstände kompakter
-       ====================================================== */
-
-    [data-id="43494ad"] [data-id="223cec1"],
-    [data-id="43494ad"] [data-id="1e81c1d"] {
-        padding: clamp(10px, 1.6vw, 12px) !important;
-        gap: clamp(4px, 0.8vw, 7px) !important;
-    }
-
-
-    /* Prozent- bzw. Bildbereich */
-    [data-id="43494ad"] [data-id="9b48f59"],
-    [data-id="43494ad"] [data-id="f16dddf"] {
-        height: clamp(92px, 14.5vw, 110px) !important;
-        min-height: 0 !important;
-        flex: 0 0 auto !important;
-    }
-
-
-    /* Beschreibung + MEHR */
-    [data-id="43494ad"] [data-id="b8540ca"],
-    [data-id="43494ad"] [data-id="9a79bf2"] {
-        height: auto !important;
-        min-height: 0 !important;
-
-        justify-content: flex-start !important;
-
-        gap: clamp(10px, 2vw, 16px) !important;
-    }
-
-
-    /* ======================================================
-       OBERE + UNTERE BREITE KACHEL
-       ebenfalls kompakt halten
-       ====================================================== */
-
-    [data-id="43494ad"] [data-id="270ad3a"],
-    [data-id="43494ad"] [data-id="bdbf5dc"] {
-        gap: clamp(4px, 0.8vw, 7px) !important;
-    }
-}
-/* ==========================================================
    MOBILE PORTRAIT – nur größere Breiten
-   492px bleibt KOMPLETT unverändert
+   492px und kleiner bleiben KOMPLETT unverändert
    ========================================================== */
 
 @media (min-width: 493px) and (max-width: 768px) {
 
-    /* ======================================================
-       HEADINGS
-       20px bei ~493px → 26px bei 768px
-       ====================================================== */
-
+    /* HEADINGS */
     [data-id="43494ad"] [data-id="2242b75"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="1168739"] .elementor-heading-title,
-
     [data-id="43494ad"] [data-id="99c4797"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="3a5f93f"] .elementor-heading-title,
-
     [data-id="43494ad"] [data-id="e7dbd33"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="dbf1750"] .elementor-heading-title,
-
     [data-id="43494ad"] [data-id="c2f488e"] .elementor-heading-title,
     [data-id="43494ad"] [data-id="dbfcef1"] .elementor-heading-title {
         font-size: clamp(20px, 3.4vw, 26px) !important;
         line-height: 1 !important;
     }
 
-
-    /* ======================================================
-       TEXT EDITOR
-       15px → maximal 17px
-       ====================================================== */
-
+    /* TEXT */
     [data-id="43494ad"] [data-id="e8d7d4e"],
     [data-id="43494ad"] [data-id="e8d7d4e"] p,
-
     [data-id="43494ad"] [data-id="137dcc9"],
     [data-id="43494ad"] [data-id="137dcc9"] p,
-
     [data-id="43494ad"] [data-id="ebc7a4e"],
     [data-id="43494ad"] [data-id="ebc7a4e"] p,
-
     [data-id="43494ad"] [data-id="25e1aa1"],
     [data-id="43494ad"] [data-id="25e1aa1"] p {
         font-size: clamp(15px, 2.25vw, 17px) !important;
         line-height: 1.35 !important;
     }
 
-
-    /* ======================================================
-       DAMEN SALE + HERREN NEU
-       Inhalte dichter zusammenrücken
-       ====================================================== */
-
+    /* DAMEN SALE + HERREN NEU kompakter */
     [data-id="43494ad"] [data-id="223cec1"],
     [data-id="43494ad"] [data-id="1e81c1d"] {
         justify-content: flex-start !important;
-        gap: clamp(3px, 0.5vw, 4px) !important;
+        gap: 3px !important;
     }
 
-
-    /* Prozent-/Bildbereich:
-       wird bei größerem Viewport relativ kompakter */
+    /* Prozent-/Bildbereich etwas kompakter */
     [data-id="43494ad"] [data-id="9b48f59"],
     [data-id="43494ad"] [data-id="f16dddf"] {
         height: clamp(100px, 15vw, 120px) !important;
@@ -747,23 +622,16 @@
         flex: 0 0 auto !important;
     }
 
-
-    /* Beschreibung + MEHR nicht über freie Höhe verteilen */
+    /* Text + Mehr dichter */
     [data-id="43494ad"] [data-id="b8540ca"],
     [data-id="43494ad"] [data-id="9a79bf2"] {
         height: auto !important;
         min-height: 0 !important;
-
         justify-content: flex-start !important;
-        gap: clamp(10px, 1.5vw, 14px) !important;
+        gap: clamp(8px, 1.2vw, 12px) !important;
     }
 
-
-    /* ======================================================
-       OBERE + UNTERE KACHEL
-       ebenfalls etwas größere Typo, Abstände kompakt
-       ====================================================== */
-
+    /* Obere + untere breite Kachel */
     [data-id="43494ad"] [data-id="270ad3a"],
     [data-id="43494ad"] [data-id="bdbf5dc"] {
         gap: clamp(5px, 0.8vw, 7px) !important;
