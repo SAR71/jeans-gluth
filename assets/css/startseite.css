@@ -791,3 +791,26 @@
         line-height: 1.25 !important;
     }
 }
+
+/* ==========================================================
+    TRENNSTRICHE ZWISCHEN FEATURE-ITEMS
+   ========================================================== */
+
+.feature-item {
+    position: relative;
+}
+
+.feature-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+
+    right: -20px;
+    top: 50%;
+
+    width: 1px;
+    height: 35px;
+
+    background: rgba(255,255,255,0.4);
+
+    transform: translateY(-50%);
+}
