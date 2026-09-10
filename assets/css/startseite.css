@@ -798,19 +798,16 @@
 
 .feature-item {
     position: relative;
+    flex: 1 1 0;
+    min-width: 0;
 }
-
 .feature-item:not(:last-child)::after {
     content: "";
     position: absolute;
-
-    right: -20px;
     top: 50%;
-
+    right: -20px;
     width: 1px;
-    height: 35px;
-
+    height: 42px;
     background: rgba(255,255,255,0.4);
-
     transform: translateY(-50%);
 }
