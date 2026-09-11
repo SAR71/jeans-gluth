@@ -536,6 +536,18 @@ img {
     min-height: 0 !important;
 }
 
+/* =========================================================
+   WAITLIST AUSBLENDEN AUF SALE-PRODUKTEN
+   ========================================================= */
+
+body.jg-no-waitlist [class*="waitlist"],
+body.jg-no-waitlist [id*="waitlist"],
+body.jg-no-waitlist .yith-wcwtl-add-to-waitlist,
+body.jg-no-waitlist .back-in-stock-notifier,
+body.jg-no-waitlist .wd-wtl-form {
+    display: none !important;
+}
+
 
 /* Liste gestapelt */
 .product-benefits.product-benefits_stacked
