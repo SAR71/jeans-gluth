@@ -887,6 +887,7 @@ body.jg-sale-product-waitlist-block
 .wd-swatches-product
 .wd-swatch.jg-out-of-stock {
     cursor: not-allowed !important;
+    pointer-events: none !important;
 }
 
 /*********** POP Up ************/

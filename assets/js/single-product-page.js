@@ -2369,6 +2369,27 @@
         );
     }
 
+    function applyWaitlistBlockState(swatch, isBlocked) {
+        if (!swatch) {
+            return;
+        }
+
+        if (isBlocked) {
+            swatch.classList.add('jg-waitlist-blocked');
+            swatch.setAttribute('aria-disabled', 'true');
+            swatch.setAttribute('tabindex', '-1');
+            swatch.style.pointerEvents = 'none';
+            swatch.style.cursor = 'not-allowed';
+            return;
+        }
+
+        swatch.classList.remove('jg-waitlist-blocked');
+        swatch.removeAttribute('tabindex');
+        swatch.setAttribute('aria-disabled', 'false');
+        swatch.style.pointerEvents = '';
+        swatch.style.cursor = '';
+    }
+
     /**
      * Kennzeichnet verfügbare und ausverkaufte Größen.
      */
@@ -2449,7 +2470,15 @@
                 swatch.classList.remove('wd-disabled');
                 swatch.classList.add('wd-enabled');
                 swatch.removeAttribute('disabled');
-                swatch.setAttribute('aria-disabled', 'false');
+
+                if (WAITLIST_DISABLED) {
+                    applyWaitlistBlockState(swatch, true);
+                } else {
+                    applyWaitlistBlockState(swatch, false);
+                    swatch.setAttribute('aria-disabled', 'false');
+                }
+            } else {
+                applyWaitlistBlockState(swatch, false);
             }
         });
     }
@@ -2517,6 +2546,25 @@ function prepareOutOfStockSizeClick(event) {
     }
 }
 
+    function blockWaitlistEvents(event) {
+        const swatch = event.target.closest(
+            '.wd-swatch.jg-out-of-stock[data-value]'
+        );
+
+        if (!swatch || !WAITLIST_DISABLED) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+
+        return false;
+    }
+
 
 
     function initializeStockSwatches() {
@@ -2561,6 +2609,10 @@ function prepareOutOfStockSizeClick(event) {
         prepareOutOfStockSizeClick,
         true
     );
+
+    ['pointerdown', 'mousedown', 'touchstart', 'keydown'].forEach(function (eventName) {
+        document.addEventListener(eventName, blockWaitlistEvents, true);
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener(
