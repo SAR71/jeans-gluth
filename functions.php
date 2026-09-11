@@ -772,6 +772,79 @@ function jg_save_brand_manufacturer_fields( $term_id ) {
 }
 
 
+/**
+ * Einzelne Herstellerinformationen einer Marke ausgeben.
+ * Beispiele: [jg_brand_field field="manufacturer_name" brand="levis"]
+ *            [jg_brand_field field="manufacturer_address" brand="123"]
+ */
+function jg_brand_field_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array(
+			'field' => '',
+			'brand' => '',
+		),
+		$atts,
+		'jg_brand_field'
+	);
+
+	$meta_keys = array(
+		'manufacturer_name'        => 'jg_manufacturer_name',
+		'manufacturer_address'     => 'jg_manufacturer_address',
+		'manufacturer_email'       => 'jg_manufacturer_email',
+		'manufacturer_outside_eu'  => 'jg_manufacturer_outside_eu',
+		'eu_responsible_name'      => 'jg_eu_responsible_name',
+		'eu_responsible_address'   => 'jg_eu_responsible_address',
+		'eu_responsible_email'     => 'jg_eu_responsible_email',
+	);
+
+	if ( ! isset( $meta_keys[ $atts['field'] ] ) ) {
+		return '';
+	}
+
+	$brand = false;
+	if ( '' !== $atts['brand'] ) {
+		$brand = is_numeric( $atts['brand'] )
+			? get_term( (int) $atts['brand'], 'product_brand' )
+			: get_term_by( 'slug', sanitize_title( $atts['brand'] ), 'product_brand' );
+	} elseif ( is_tax( 'product_brand' ) ) {
+		$brand = get_queried_object();
+	} elseif ( function_exists( 'is_product' ) && is_product() ) {
+		$brands = get_the_terms( get_the_ID(), 'product_brand' );
+		if ( ! is_wp_error( $brands ) && ! empty( $brands ) ) {
+			$brand = reset( $brands );
+		}
+	}
+
+	if ( ! $brand instanceof WP_Term ) {
+		return '';
+	}
+
+	$value = get_term_meta( $brand->term_id, $meta_keys[ $atts['field'] ], true );
+	if ( '' === $value || ( 'manufacturer_outside_eu' === $atts['field'] && '1' !== $value ) ) {
+		return '';
+	}
+
+	if ( in_array( $atts['field'], array( 'manufacturer_address', 'eu_responsible_address' ), true ) ) {
+		return nl2br( esc_html( $value ) );
+	}
+
+	if ( in_array( $atts['field'], array( 'manufacturer_email', 'eu_responsible_email' ), true ) ) {
+		return sprintf(
+			'<a href="mailto:%1$s">%2$s</a>',
+			esc_attr( sanitize_email( $value ) ),
+			esc_html( $value )
+		);
+	}
+
+	if ( 'manufacturer_outside_eu' === $atts['field'] ) {
+		return 'Ja';
+	}
+
+	return esc_html( $value );
+}
+add_shortcode( 'jg_brand_field', 'jg_brand_field_shortcode' );
+
+
 /* ============================================================
  * 4. EU-FELDER AUTOMATISCH EIN-/AUSBLENDEN
  * ============================================================ */
