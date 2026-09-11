@@ -187,18 +187,14 @@ add_filter( 'woocommerce_product_tabs', function ( $tabs ) {
     );
 
     foreach ( $meta_keys as $meta_key ) {
-        if ( '' !== get_term_meta( $brand->term_id, $meta_key, true ) ) {
-            $tabs['jg_brand_information'] = array(
-                'title'    => 'Über die Marke',
-                'priority' => 25,
-                'callback' => 'jg_render_brand_information_tab',
-            );
+        if ( '' !== get_term_meta( $brand->term_id, $meta_key, true ) && isset( $tabs['brand_tab'] ) ) {
+            $tabs['brand_tab']['callback'] = 'jg_render_brand_information_tab';
             break;
         }
     }
 
     return $tabs;
-} );
+}, 99 );
 
 function jg_render_brand_information_tab() {
     global $product;
