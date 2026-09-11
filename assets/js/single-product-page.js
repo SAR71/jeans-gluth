@@ -2273,7 +2273,8 @@
 
     const SIZE_ATTRIBUTE = 'attribute_pa_groessen';
     const WAITLIST_DISABLED =
-        window.jgDisableWaitlist === true;
+        window.jgDisableWaitlist === true ||
+        document.body.classList.contains('jg-sale-product-waitlist-block');
 
     const SIZE_SWATCH_SELECTOR =
         '[data-id="pa_groessen"] .wd-swatch[data-value]';

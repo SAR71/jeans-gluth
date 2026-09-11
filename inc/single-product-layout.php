@@ -312,6 +312,71 @@ add_action( 'wp_enqueue_scripts', function () {
 }, 110 );
 
 /**
+ * Body-Klasse für Sale-Produkte setzen.
+ */
+add_filter( 'body_class', function ( $classes ) {
+    if ( is_product() && jg_is_sale_product_for_waitlist( get_the_ID() ) ) {
+        $classes[] = 'jg-sale-product-waitlist-block';
+    }
+
+    return $classes;
+} );
+
+/**
+ * Harte Frontend-Sperre: Auf Sale-Produktseiten keine Waitlist-Aktion zulassen.
+ */
+add_action( 'wp_footer', function () {
+    if ( ! is_product() || ! jg_is_sale_product_for_waitlist( get_the_ID() ) ) {
+        return;
+    }
+    ?>
+    <script>
+    document.addEventListener('click', function (event) {
+        var blocker = event.target.closest(
+            '.wd-swatch.jg-out-of-stock, .wd-swatch[data-jg-stock-status="out-of-stock"], .wd-wtl-btn, .wd-wtl-form, [class*="waitlist"], [id*="waitlist"]'
+        );
+
+        if (!blocker) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+
+        return false;
+    }, true);
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+
+        if (!form || !form.matches) {
+            return;
+        }
+
+        if (
+            form.matches('.wd-wtl-form') ||
+            (form.className && String(form.className).indexOf('waitlist') !== -1) ||
+            (form.id && String(form.id).indexOf('waitlist') !== -1)
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+
+            return false;
+        }
+    }, true);
+    </script>
+    <?php
+}, 1 );
+
+/**
  * Prüft, ob aktuelle Produktkategorie-Seite Damen-Sale / Herren-Sale
  * oder eine Unterkategorie davon ist.
  */

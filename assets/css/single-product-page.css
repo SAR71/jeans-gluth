@@ -882,6 +882,13 @@ img {
     pointer-events: auto !important;
 }
 
+/* Sale-Produkte: ausverkaufte Größen bleiben sichtbar, sind aber blockiert */
+body.jg-sale-product-waitlist-block
+.wd-swatches-product
+.wd-swatch.jg-out-of-stock {
+    cursor: not-allowed !important;
+}
+
 /*********** POP Up ************/
 
 /* WoodMart Waitlist niemals direkt auf der Produktseite anzeigen */
