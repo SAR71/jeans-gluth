@@ -157,6 +157,72 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
         );
     }
 
+    $brands = get_the_terms( $product->get_id(), 'product_brand' );
+    if ( ! is_wp_error( $brands ) && ! empty( $brands ) ) {
+        $brand = reset( $brands );
+
+        $manufacturer_name       = get_term_meta( $brand->term_id, 'jg_manufacturer_name', true );
+        $manufacturer_address    = get_term_meta( $brand->term_id, 'jg_manufacturer_address', true );
+        $manufacturer_email      = get_term_meta( $brand->term_id, 'jg_manufacturer_email', true );
+        $manufacturer_outside_eu = get_term_meta( $brand->term_id, 'jg_manufacturer_outside_eu', true );
+
+        if ( ! empty( $manufacturer_name ) ) {
+            $new_attributes['hersteller'] = array(
+                'label' => 'Hersteller',
+                'value' => esc_html( $manufacturer_name ),
+            );
+        }
+
+        if ( ! empty( $manufacturer_address ) ) {
+            $new_attributes['herstelleranschrift'] = array(
+                'label' => 'Herstelleranschrift',
+                'value' => nl2br( esc_html( $manufacturer_address ) ),
+            );
+        }
+
+        if ( ! empty( $manufacturer_email ) ) {
+            $new_attributes['hersteller_email'] = array(
+                'label' => 'E-Mail Hersteller',
+                'value' => sprintf(
+                    '<a href="mailto:%1$s">%2$s</a>',
+                    esc_attr( sanitize_email( $manufacturer_email ) ),
+                    esc_html( $manufacturer_email )
+                ),
+            );
+        }
+
+        if ( '1' === $manufacturer_outside_eu ) {
+            $eu_responsible_name    = get_term_meta( $brand->term_id, 'jg_eu_responsible_name', true );
+            $eu_responsible_address = get_term_meta( $brand->term_id, 'jg_eu_responsible_address', true );
+            $eu_responsible_email   = get_term_meta( $brand->term_id, 'jg_eu_responsible_email', true );
+
+            if ( ! empty( $eu_responsible_name ) ) {
+                $new_attributes['eu_verantwortliche_person'] = array(
+                    'label' => 'Verantwortliche Person in der EU',
+                    'value' => esc_html( $eu_responsible_name ),
+                );
+            }
+
+            if ( ! empty( $eu_responsible_address ) ) {
+                $new_attributes['eu_verantwortliche_anschrift'] = array(
+                    'label' => 'Anschrift verantwortliche Person',
+                    'value' => nl2br( esc_html( $eu_responsible_address ) ),
+                );
+            }
+
+            if ( ! empty( $eu_responsible_email ) ) {
+                $new_attributes['eu_verantwortliche_email'] = array(
+                    'label' => 'E-Mail verantwortliche Person',
+                    'value' => sprintf(
+                        '<a href="mailto:%1$s">%2$s</a>',
+                        esc_attr( sanitize_email( $eu_responsible_email ) ),
+                        esc_html( $eu_responsible_email )
+                    ),
+                );
+            }
+        }
+    }
+
     return $new_attributes + $attributes;
 
 }, 20, 2);
