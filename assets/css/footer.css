@@ -60,3 +60,84 @@
     outline: 3px solid #fbf0d8 !important;
     outline-offset: 3px !important;
 }
+
+
+/******** EINSTELLUNGEN FOOTER LAYOUT ********/
+.elementor-818,
+.elementor-818 p,
+.elementor-818 span,
+.elementor-818 li,
+.elementor-818 a,
+.elementor-818 .elementor-heading-title,
+.elementor-818 .elementor-icon-list-text,
+.elementor-818 .ue_business_hours_header_title,
+.elementor-818 .ue_business_hours_list_item_title,
+.elementor-818 .ue_business_hours_list_item_text {
+  color: #fbf0d8 !important;
+}
+
+.elementor-818 {
+  /*
+   * Container über die begrenzte Inhaltsbreite hinaus
+   * bis an beide Browserränder ziehen.
+   */
+  width: 100vw !important;
+  max-width: none !important;
+
+  position: relative;
+  left: 50%;
+  margin-left: -50vw !important;
+  margin-right: 0 !important;
+
+  /*
+   * Mögliche globale Elementor-Abstände entfernen.
+   */
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  box-sizing: border-box;
+}
+
+/*
+ * Der Elementor-Innencontainer nutzt ebenfalls
+ * die vollständige Breite.
+ */
+.elementor-818 > .e-con-inner {
+  width: 100% !important;
+  max-width: none !important;
+
+  /*
+   * Abstand der Inhalte zum Browserrand.
+   * Der Hintergrund reicht trotzdem komplett durch.
+   */
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+
+  box-sizing: border-box;
+}
+
+/*
+ * Schriftgröße:
+ * Mobile Landscape,
+ * Tablet Portrait und
+ * Tablet Landscape
+ */
+@media (min-width: 769px) and (max-width: 1280px) {
+
+  /* Normale Texte */
+  .elementor-818 p,
+  .elementor-818 a,
+  .elementor-818 li,
+  .elementor-818 span,
+  .elementor-818 .elementor-icon-list-text,
+  .elementor-818 .ue_business_hours_list_item_title,
+  .elementor-818 .ue_business_hours_list_item_text {
+    font-size: 14px !important;
+  }
+
+  /* Überschriften */
+  .elementor-818 .elementor-heading-title,
+  .elementor-818 .ue_business_hours_header_title {
+    font-size: 18px !important;
+  }
+}
