@@ -157,75 +157,99 @@ add_filter('woocommerce_display_product_attributes', function ($attributes, $pro
         );
     }
 
-    $brands = get_the_terms( $product->get_id(), 'product_brand' );
-    if ( ! is_wp_error( $brands ) && ! empty( $brands ) ) {
-        $brand = reset( $brands );
-
-        $manufacturer_name       = get_term_meta( $brand->term_id, 'jg_manufacturer_name', true );
-        $manufacturer_address    = get_term_meta( $brand->term_id, 'jg_manufacturer_address', true );
-        $manufacturer_email      = get_term_meta( $brand->term_id, 'jg_manufacturer_email', true );
-        $manufacturer_outside_eu = get_term_meta( $brand->term_id, 'jg_manufacturer_outside_eu', true );
-
-        if ( ! empty( $manufacturer_name ) ) {
-            $new_attributes['hersteller'] = array(
-                'label' => 'Hersteller',
-                'value' => esc_html( $manufacturer_name ),
-            );
-        }
-
-        if ( ! empty( $manufacturer_address ) ) {
-            $new_attributes['herstelleranschrift'] = array(
-                'label' => 'Herstelleranschrift',
-                'value' => nl2br( esc_html( $manufacturer_address ) ),
-            );
-        }
-
-        if ( ! empty( $manufacturer_email ) ) {
-            $new_attributes['hersteller_email'] = array(
-                'label' => 'E-Mail Hersteller',
-                'value' => sprintf(
-                    '<a href="mailto:%1$s">%2$s</a>',
-                    esc_attr( sanitize_email( $manufacturer_email ) ),
-                    esc_html( $manufacturer_email )
-                ),
-            );
-        }
-
-        if ( '1' === $manufacturer_outside_eu ) {
-            $eu_responsible_name    = get_term_meta( $brand->term_id, 'jg_eu_responsible_name', true );
-            $eu_responsible_address = get_term_meta( $brand->term_id, 'jg_eu_responsible_address', true );
-            $eu_responsible_email   = get_term_meta( $brand->term_id, 'jg_eu_responsible_email', true );
-
-            if ( ! empty( $eu_responsible_name ) ) {
-                $new_attributes['eu_verantwortliche_person'] = array(
-                    'label' => 'Verantwortliche Person in der EU',
-                    'value' => esc_html( $eu_responsible_name ),
-                );
-            }
-
-            if ( ! empty( $eu_responsible_address ) ) {
-                $new_attributes['eu_verantwortliche_anschrift'] = array(
-                    'label' => 'Anschrift verantwortliche Person',
-                    'value' => nl2br( esc_html( $eu_responsible_address ) ),
-                );
-            }
-
-            if ( ! empty( $eu_responsible_email ) ) {
-                $new_attributes['eu_verantwortliche_email'] = array(
-                    'label' => 'E-Mail verantwortliche Person',
-                    'value' => sprintf(
-                        '<a href="mailto:%1$s">%2$s</a>',
-                        esc_attr( sanitize_email( $eu_responsible_email ) ),
-                        esc_html( $eu_responsible_email )
-                    ),
-                );
-            }
-        }
-    }
-
     return $new_attributes + $attributes;
 
 }, 20, 2);
+
+/**
+ * Herstellerinformationen im Produkt-Tab "Über die Marke" ausgeben.
+ */
+add_filter( 'woocommerce_product_tabs', function ( $tabs ) {
+    global $product;
+
+    if ( ! $product instanceof WC_Product ) {
+        return $tabs;
+    }
+
+    $brands = get_the_terms( $product->get_id(), 'product_brand' );
+    if ( is_wp_error( $brands ) || empty( $brands ) ) {
+        return $tabs;
+    }
+
+    $brand = reset( $brands );
+    $meta_keys = array(
+        'jg_manufacturer_name',
+        'jg_manufacturer_address',
+        'jg_manufacturer_email',
+        'jg_eu_responsible_name',
+        'jg_eu_responsible_address',
+        'jg_eu_responsible_email',
+    );
+
+    foreach ( $meta_keys as $meta_key ) {
+        if ( '' !== get_term_meta( $brand->term_id, $meta_key, true ) ) {
+            $tabs['jg_brand_information'] = array(
+                'title'    => 'Über die Marke',
+                'priority' => 25,
+                'callback' => 'jg_render_brand_information_tab',
+            );
+            break;
+        }
+    }
+
+    return $tabs;
+} );
+
+function jg_render_brand_information_tab() {
+    global $product;
+
+    $brands = get_the_terms( $product->get_id(), 'product_brand' );
+    if ( is_wp_error( $brands ) || empty( $brands ) ) {
+        return;
+    }
+
+    $brand = reset( $brands );
+    $fields = array(
+        'Hersteller'               => 'jg_manufacturer_name',
+        'Herstelleranschrift'      => 'jg_manufacturer_address',
+        'E-Mail Hersteller'        => 'jg_manufacturer_email',
+    );
+
+    if ( '1' === get_term_meta( $brand->term_id, 'jg_manufacturer_outside_eu', true ) ) {
+        $fields += array(
+            'Verantwortliche Person in der EU' => 'jg_eu_responsible_name',
+            'Anschrift verantwortliche Person' => 'jg_eu_responsible_address',
+            'E-Mail verantwortliche Person'    => 'jg_eu_responsible_email',
+        );
+    }
+
+    echo '<table class="woocommerce-product-attributes shop_attributes">';
+    foreach ( $fields as $label => $meta_key ) {
+        $value = get_term_meta( $brand->term_id, $meta_key, true );
+        if ( '' === $value ) {
+            continue;
+        }
+
+        $is_address = false !== strpos( $meta_key, 'address' );
+        $is_email   = false !== strpos( $meta_key, 'email' );
+        $output     = $is_address ? nl2br( esc_html( $value ) ) : esc_html( $value );
+
+        if ( $is_email ) {
+            $output = sprintf(
+                '<a href="mailto:%1$s">%2$s</a>',
+                esc_attr( sanitize_email( $value ) ),
+                esc_html( $value )
+            );
+        }
+
+        printf(
+            '<tr class="woocommerce-product-attributes-item"><th class="woocommerce-product-attributes-item__label">%1$s</th><td class="woocommerce-product-attributes-item__value">%2$s</td></tr>',
+            esc_html( $label ),
+            $output
+        );
+    }
+    echo '</table>';
+}
 
 /**
  * SKU und EAN der Variation in die Variationsdaten aufnehmen,
