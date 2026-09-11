@@ -3,6 +3,24 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
+/* Autor-Archive und Autorensuche deaktivieren */
+add_action( 'template_redirect', function () {
+	if ( is_author() || isset( $_GET['author'] ) ) {
+		wp_safe_redirect( home_url( '/' ), 301 );
+		exit;
+	}
+} );
+
+/* Öffentliche WordPress-REST-Benutzerendpunkte deaktivieren */
+add_filter( 'rest_endpoints', function ( $endpoints ) {
+	if ( ! is_user_logged_in() ) {
+		unset( $endpoints['/wp/v2/users'] );
+		unset( $endpoints['/wp/v2/users/(?P<id>[\\d]+)'] );
+	}
+
+	return $endpoints;
+} );
+
 /**
  * Child Theme Styles
  * Dieser Block lädt zusätzlich deine modularen CSS-Dateien.
