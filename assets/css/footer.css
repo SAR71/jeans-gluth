@@ -29,11 +29,11 @@
     margin: 0 !important;
     padding: 8px 14px !important;
 
-    background: #02294e !important;
-    border: 1px solid #02294e !important;
-    border-radius: 0 !important;
+    background: #761611 !important;
+    border: 1px solid #761611 !important;
+    border-radius: 8px !important;
 
-    color: #ffffff !important;
+    color: #fbf0d8 !important;
 
     /* Schrift vom Footer übernehmen */
     font-family: inherit !important;
@@ -50,13 +50,13 @@
 
 .jg-widerruf-footer a:hover,
 .jg-widerruf-footer button:hover {
-    color: #ffffff !important;
+    color: #fbf0d8 !important;
     text-decoration: underline !important;
     text-underline-offset: 3px;
 }
 
 .jg-widerruf-footer a:focus-visible,
 .jg-widerruf-footer button:focus-visible {
-    outline: 3px solid #ffffff !important;
+    outline: 3px solid #fbf0d8 !important;
     outline-offset: 3px !important;
 }
