@@ -2272,6 +2272,9 @@
     'use strict';
 
     const SIZE_ATTRIBUTE = 'attribute_pa_groessen';
+    const WAITLIST_DISABLED =
+        window.jgDisableWaitlist === true;
+
     const SIZE_SWATCH_SELECTOR =
         '[data-id="pa_groessen"] .wd-swatch[data-value]';
 
@@ -2464,6 +2467,17 @@ function prepareOutOfStockSizeClick(event) {
     );
 
     if (!swatch) {
+        return;
+    }
+
+    if (WAITLIST_DISABLED) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+
         return;
     }
 
@@ -2781,6 +2795,10 @@ function prepareOutOfStockSizeClick(event) {
    ============================================================ */
 
 document.addEventListener('click', function (event) {
+    if (window.jgDisableWaitlist === true) {
+        return;
+    }
+
     const swatch = event.target.closest(
         '.wd-swatch[data-jg-stock-status="out-of-stock"]'
     );
