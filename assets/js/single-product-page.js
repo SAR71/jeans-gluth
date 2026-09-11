@@ -16,9 +16,6 @@
 (function () {
     'use strict';
 
-    const WAITLIST_DISABLED =
-        window.jgDisableWaitlist === true;
-
 
     /* =====================================================
        GEMEINSAME EINSTELLUNGEN
@@ -2440,7 +2437,7 @@
                 isInStock ? 'in-stock' : 'out-of-stock'
             );
 
-            if (!isInStock && !WAITLIST_DISABLED) {
+            if (!isInStock) {
                 /*
                  * Die Größe muss anklickbar bleiben, damit
                  * WoodMart ihre Waitlist anzeigen kann.
@@ -2462,10 +2459,6 @@
  * die Variante auswählt und die Waitlist aktualisiert.
  */
 function prepareOutOfStockSizeClick(event) {
-    if (WAITLIST_DISABLED) {
-        return;
-    }
-
     const swatch = event.target.closest(
         '.wd-swatch.jg-out-of-stock[data-value]'
     );
@@ -2548,13 +2541,11 @@ function prepareOutOfStockSizeClick(event) {
      * Capture-Modus ist erforderlich, damit der Klick auf eine
      * von WoodMart deaktivierte Größe zuerst verarbeitet wird.
      */
-    if (!WAITLIST_DISABLED) {
-        document.addEventListener(
-            'click',
-            prepareOutOfStockSizeClick,
-            true
-        );
-    }
+    document.addEventListener(
+        'click',
+        prepareOutOfStockSizeClick,
+        true
+    );
 
     if (document.readyState === 'loading') {
         document.addEventListener(
@@ -2790,10 +2781,6 @@ function prepareOutOfStockSizeClick(event) {
    ============================================================ */
 
 document.addEventListener('click', function (event) {
-    if (window.jgDisableWaitlist === true) {
-        return;
-    }
-
     const swatch = event.target.closest(
         '.wd-swatch[data-jg-stock-status="out-of-stock"]'
     );

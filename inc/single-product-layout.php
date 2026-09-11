@@ -247,54 +247,6 @@ add_filter(
 );
 
 /**
- * Prüft, ob ein Produkt in Damen-Sale oder Herren-Sale liegt
- * (inklusive Unterkategorien).
- */
-function jg_is_sale_product_for_waitlist( $product_id = 0 ) {
-    if ( ! $product_id ) {
-        $product_id = get_the_ID();
-    }
-
-    if ( ! $product_id ) {
-        return false;
-    }
-
-    $sale_slugs = array( 'damen-sale', 'herren-sale' );
-    $sale_ids   = array();
-
-    foreach ( $sale_slugs as $slug ) {
-        $term = get_term_by( 'slug', $slug, 'product_cat' );
-        if ( $term && ! is_wp_error( $term ) ) {
-            $sale_ids[] = (int) $term->term_id;
-        }
-    }
-
-    if ( empty( $sale_ids ) ) {
-        return false;
-    }
-
-    $product_term_ids = wp_get_post_terms( $product_id, 'product_cat', array( 'fields' => 'ids' ) );
-    if ( is_wp_error( $product_term_ids ) || empty( $product_term_ids ) ) {
-        return false;
-    }
-
-    foreach ( $product_term_ids as $term_id ) {
-        $term_id = (int) $term_id;
-
-        if ( in_array( $term_id, $sale_ids, true ) ) {
-            return true;
-        }
-
-        $ancestors = get_ancestors( $term_id, 'product_cat' );
-        if ( array_intersect( array_map( 'intval', $ancestors ), $sale_ids ) ) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
  * Prüft, ob aktuelle Produktkategorie-Seite Damen-Sale / Herren-Sale
  * oder eine Unterkategorie davon ist.
  */
@@ -334,30 +286,6 @@ function jg_is_sale_product_category_context() {
 
     return false;
 }
-
-/**
- * Klasse zur CSS-Steuerung setzen (Waitlist ausblenden auf Sale-Produkten).
- */
-add_filter( 'body_class', function ( $classes ) {
-    if ( is_product() && jg_is_sale_product_for_waitlist( get_the_ID() ) ) {
-        $classes[] = 'jg-no-waitlist';
-    }
-
-    return $classes;
-} );
-
-/**
- * JS-Flag setzen, damit Waitlist-spezifische Frontend-Logik deaktiviert wird.
- */
-add_action( 'wp_enqueue_scripts', function () {
-    if ( is_product() && jg_is_sale_product_for_waitlist( get_the_ID() ) ) {
-        wp_add_inline_script(
-            'jeans-gluth-single-product-page',
-            'window.jgDisableWaitlist = true;',
-            'before'
-        );
-    }
-}, 120 );
 
 /**
  * In Sale-Kategorie-Kontext: Klick auf ausverkaufte Produkte blockieren.
