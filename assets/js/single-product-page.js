@@ -2279,6 +2279,9 @@
     const SIZE_SWATCH_SELECTOR =
         '[data-id="pa_groessen"] .wd-swatch[data-value]';
 
+    const SIZE_SELECT_SELECTOR =
+        'select[name="' + SIZE_ATTRIBUTE + '"]';
+
     /**
      * Liefert die Variationsdaten eines WooCommerce-Formulars.
      */
@@ -2369,6 +2372,27 @@
         );
     }
 
+    function getSizeSwatch(form, sizeValue) {
+        if (!form || !sizeValue) {
+            return null;
+        }
+
+        return form.querySelector(
+            '[data-id="pa_groessen"] .wd-swatch[data-value="' +
+                CSS.escape(sizeValue) +
+                '"]'
+        );
+    }
+
+    function isOutOfStockSizeValue(form, sizeValue) {
+        const swatch = getSizeSwatch(form, sizeValue);
+
+        return Boolean(
+            swatch &&
+            swatch.getAttribute('data-jg-stock-status') === 'out-of-stock'
+        );
+    }
+
     function applyWaitlistBlockState(swatch, isBlocked) {
         if (!swatch) {
             return;
@@ -2388,6 +2412,77 @@
         swatch.setAttribute('aria-disabled', 'false');
         swatch.style.pointerEvents = '';
         swatch.style.cursor = '';
+    }
+
+    function shouldBlockWaitlistForSwatch(swatch) {
+        return Boolean(
+            WAITLIST_DISABLED &&
+            swatch &&
+            swatch.classList.contains('jg-out-of-stock')
+        );
+    }
+
+    function shouldBlockWaitlistForSelect(select) {
+        if (!WAITLIST_DISABLED || !select || !select.name) {
+            return false;
+        }
+
+        if (select.name !== SIZE_ATTRIBUTE) {
+            return false;
+        }
+
+        return isOutOfStockSizeValue(
+            select.closest('form.variations_form'),
+            select.value
+        );
+    }
+
+    function storePreviousSizeValue(event) {
+        const select = event.target;
+
+        if (!select || select.name !== SIZE_ATTRIBUTE) {
+            return;
+        }
+
+        select.dataset.jgPrevValue = select.value || '';
+    }
+
+    function blockSaleWaitlistEvent(event) {
+        const target = event.target;
+
+        if (!WAITLIST_DISABLED || !target) {
+            return;
+        }
+
+        const swatch = target.closest && target.closest('.wd-swatch.jg-out-of-stock[data-value]');
+        if (swatch && shouldBlockWaitlistForSwatch(swatch)) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+
+            return false;
+        }
+
+        const select = target.closest && target.closest(SIZE_SELECT_SELECTOR);
+        if (select && shouldBlockWaitlistForSelect(select)) {
+            const previousValue = select.dataset.jgPrevValue || '';
+
+            if (select.value !== previousValue) {
+                select.value = previousValue;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -2573,6 +2668,12 @@ function prepareOutOfStockSizeClick(event) {
             .forEach(function (form) {
                 updateSizeStockClasses(form);
 
+                form.querySelectorAll(SIZE_SELECT_SELECTOR).forEach(function (select) {
+                    select.addEventListener('focusin', storePreviousSizeValue, true);
+                    select.addEventListener('mousedown', storePreviousSizeValue, true);
+                    select.addEventListener('pointerdown', storePreviousSizeValue, true);
+                });
+
                 if (window.jQuery) {
                     window.jQuery(form).on(
                         [
@@ -2610,8 +2711,8 @@ function prepareOutOfStockSizeClick(event) {
         true
     );
 
-    ['pointerdown', 'mousedown', 'touchstart', 'keydown'].forEach(function (eventName) {
-        document.addEventListener(eventName, blockWaitlistEvents, true);
+    ['pointerdown', 'mousedown', 'touchstart', 'keydown', 'keyup', 'input', 'change'].forEach(function (eventName) {
+        document.addEventListener(eventName, blockSaleWaitlistEvent, true);
     });
 
     if (document.readyState === 'loading') {
