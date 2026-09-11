@@ -5,7 +5,7 @@
 
 :root{
   --jg-marquee-text-a: "Kostenloser Versand";
-  --jg-marquee-text-b: "Wir lieben Besuch! 10% zusätzlich auf alles bei Abholung vor Ort.";
+  --jg-marquee-text-b: "Wir lieben Besuch! 10% zusätzlich auf nicht reduzierte Ware bei Abholung vor Ort.";
   --jg-marquee-speed: 120s; /* je kleiner desto schneller */
 }
 
