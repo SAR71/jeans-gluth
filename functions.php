@@ -23,7 +23,7 @@ add_filter( 'rest_endpoints', function ( $endpoints ) {
 
 add_filter( 'gettext', function ( $translated_text, $text, $domain ) {
 	if ( 'woocommerce' === $domain && 'No products were found matching your selection.' === $text ) {
-		return 'Es wurde kein Produkt gefunden, das dem ausgewählten Filter entspricht.';
+		return 'Filterst du noch? Es wurde kein Produkt gefunden, das dem ausgewählten Filter entspricht.';
 	}
 
 	return $translated_text;
