@@ -648,6 +648,10 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
   display: inline-flex !important;
 }
 
+.jg-subcat-carousel--overflow{
+  padding-inline: calc(var(--jg-subcat-thumb-size) * 0.55 + 16px) !important;
+}
+
 .jg-subcat-nav.jg-prev{
   left: 8px !important;
 }
