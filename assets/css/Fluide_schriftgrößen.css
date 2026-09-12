@@ -100,7 +100,6 @@
 .services-heading .services-subheading,
 .services-heading .services-subheading p {
     font-size: clamp(20px, 1.35vw, 30px) !important;
-    line-height: 1.3 !important;
 }
 
 
@@ -146,7 +145,6 @@
     .services-heading .services-subheading,
     .services-heading .services-subheading p {
         font-size: clamp(15px, 4vw, 18px) !important;
-        line-height: 1.25 !important;
     }
 }
 
