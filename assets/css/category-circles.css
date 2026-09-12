@@ -649,7 +649,7 @@ Bei Overflow immer links starten, damit die erste Kategorie erreichbar bleibt
 }
 
 .jg-subcat-carousel--overflow{
-  padding-inline: calc(var(--jg-subcat-thumb-size) * 0.55 + 16px) !important;
+  padding-inline: 0 !important;
 }
 
 .jg-subcat-nav.jg-prev{
