@@ -255,11 +255,15 @@
    ELEMENTOR SPACER – GLOBAL FLUID
    100px → 18px
 
+Nur Startseite + alle Produktkategorien
+
+
    Ausnahme:
-   CSS-Klasse jg-spacer-exclude am Spacer eintragen
+   CSS-Klasse jg-spacer-exclude am Spacer in Elementor eintragen
    ========================================================== */
 
-.elementor-widget-spacer:not(.jg-spacer-exclude) {
+body.home .elementor-widget-spacer:not(.jg-spacer-exclude),
+body.tax-product_cat .elementor-widget-spacer:not(.jg-spacer-exclude) {
     --spacer-size: clamp(
         18px,
         calc(4.271vw - 2.5px),
@@ -267,6 +271,7 @@
     ) !important;
 }
 
-.elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inner {
+body.home .elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inner,
+body.tax-product_cat .elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inner {
     height: var(--spacer-size) !important;
 }
