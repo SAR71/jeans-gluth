@@ -319,7 +319,7 @@ body.single-product .wd-accordion-title-text {
 
 /* ==========================================================
    SINGLE PRODUCT – ICON BOX DESCRIPTION
-   + PRODUKT-CAROUSEL-ÜBERSCHRIFT
+   + "Das könnte dir auch gefallen ..."
    30px → 20px
    ========================================================== */
 
@@ -328,6 +328,9 @@ body.single-product
 .elementor-icon-box-description,
 
 body.single-product
-.wd-el-title {
+h4.wd-el-title.title.slider-title.element-title,
+
+body.single-product
+h4.wd-el-title.title.slider-title.element-title > span {
     font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
 }
