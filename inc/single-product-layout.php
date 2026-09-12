@@ -388,7 +388,7 @@ add_action( 'wp_footer', function () {
     <script>
     document.addEventListener('click', function (event) {
         var blocker = event.target.closest(
-            '.wd-swatch.jg-out-of-stock, .wd-swatch[data-jg-stock-status="out-of-stock"], .wd-wtl-btn, .wd-wtl-form, [class*="waitlist"], [id*="waitlist"]'
+            '.wd-swatch.jg-out-of-stock, .wd-swatch[data-jg-stock-status="out-of-stock"], .wd-wtl-btn, .wd-wtl-form, :not(body)[class*="waitlist"], :not(body)[id*="waitlist"]'
         );
 
         if (!blocker) {
