@@ -275,3 +275,25 @@ body.home .elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inn
 body.tax-product_cat .elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inner {
     height: var(--spacer-size) !important;
 }
+
+/* ************
+   SINGLE PRODUCT – FLUIDE SPACER
+   Maximal 30px, minimal 15px
+
+   Ausnahme:
+   jg-spacer-exclude
+   ************ */
+
+body.single-product .elementor-widget-spacer:not(.jg-spacer-exclude) {
+    --spacer-size: clamp(
+        15px,
+        calc(0.781vw + 11.25px),
+        30px
+    ) !important;
+}
+
+body.single-product
+.elementor-widget-spacer:not(.jg-spacer-exclude)
+.elementor-spacer-inner {
+    height: var(--spacer-size) !important;
+}
