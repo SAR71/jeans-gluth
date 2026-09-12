@@ -299,25 +299,32 @@ body.single-product
 }
 
 /* ==========================================================
-   SINGLE PRODUCT – ICON BOX TEXT
-   Fluides Größenverhalten
+   SINGLE PRODUCT – ICON BOX DESCRIPTION
+   Schriftart bleibt Bebas Neue
+   Größenverhalten wie services-subheading
    ========================================================== */
 
 /* DESKTOP / LAPTOP */
-body.single-product .elementor-widget-icon-box .elementor-icon-box-content {
+body.single-product
+.elementor-widget-icon-box
+.elementor-icon-box-description {
     font-size: clamp(20px, 1.35vw, 30px) !important;
 }
 
 /* TABLET */
 @media (max-width: 1024px) {
-    body.single-product .elementor-widget-icon-box .elementor-icon-box-content {
+    body.single-product
+    .elementor-widget-icon-box
+    .elementor-icon-box-description {
         font-size: clamp(20px, 2vw, 24px) !important;
     }
 }
 
 /* MOBILE */
 @media (max-width: 767px) {
-    body.single-product .elementor-widget-icon-box .elementor-icon-box-content {
+    body.single-product
+    .elementor-widget-icon-box
+    .elementor-icon-box-description {
         font-size: clamp(15px, 4vw, 18px) !important;
     }
 }
