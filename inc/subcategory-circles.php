@@ -98,6 +98,17 @@ $build_filter_link = function($key) use ($top_term) {
                 return '';
             }
 
+            $base_link = remove_query_arg([
+                'jg_filter_typ',
+                'jg_filter_marke',
+                'jg_filter_farben',
+                'jg_filter_groessen',
+                'jg_filter_laenge',
+                'jg_new',
+                'jg_sale',
+                'orderby',
+            ], $base_link);
+
             if ($key === 'jg_new') {
                 return trailingslashit($base_link) . 'neu/';
             }
