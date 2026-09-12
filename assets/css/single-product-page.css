@@ -908,3 +908,17 @@ body.jg-sale-product-waitlist-block
     border: none !important;
     box-shadow: none !important;
 }
+
+/* ==========================================================
+    Verbelndung Auservkauft Container
+   ========================================================== */
+.bild-verblendung::before {
+  background: linear-gradient(
+    90deg,
+    #FBF0D8 0%,
+    #FBF0D800 30%,
+    #FBF0D800 70%,
+    #FBF0D8 100%
+  ) !important;
+  opacity: 1 !important;
+}
