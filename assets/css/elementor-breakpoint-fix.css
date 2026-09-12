@@ -3,43 +3,43 @@
    Verhindert Doppel-Layouts an Breakpoint-Grenzen
    ========================================================== */
 
-/* 768.x px -> Mobile Landscape */
-@media (min-width: 768.01px) and (max-width: 769px) {
+/* 767.x px -> vor Mobile Landscape */
+@media (min-width: 767.01px) and (max-width: 767.99px) {
     .elementor-hidden-mobile_extra {
         display: none !important;
     }
 }
 
-/* 880.x px -> Tablet Portrait */
-@media (min-width: 880.01px) and (max-width: 881px) {
+/* 880.x px -> vor Tablet Portrait */
+@media (min-width: 880.01px) and (max-width: 880.99px) {
     .elementor-hidden-tablet {
         display: none !important;
     }
 }
 
-/* 1024.x px -> Tablet Landscape */
-@media (min-width: 1024.01px) and (max-width: 1025px) {
+/* 1024.x px -> vor Tablet Landscape */
+@media (min-width: 1024.01px) and (max-width: 1024.99px) {
     .elementor-hidden-tablet_extra {
         display: none !important;
     }
 }
 
-/* 1280.x px -> Laptop */
-@media (min-width: 1280.01px) and (max-width: 1281px) {
+/* 1280.x px -> vor Laptop */
+@media (min-width: 1280.01px) and (max-width: 1280.99px) {
     .elementor-hidden-laptop {
         display: none !important;
     }
 }
 
-/* 1439.x px -> Desktop */
-@media (min-width: 1439.01px) and (max-width: 1440px) {
+/* 1439.x px -> vor Desktop */
+@media (min-width: 1439.01px) and (max-width: 1439.99px) {
     .elementor-hidden-desktop {
         display: none !important;
     }
 }
 
-/* 2399.x px -> Widescreen */
-@media (min-width: 2399.01px) and (max-width: 2400px) {
+/* 2399.x px -> vor Widescreen */
+@media (min-width: 2399.01px) and (max-width: 2399.99px) {
     .elementor-hidden-widescreen {
         display: none !important;
     }
