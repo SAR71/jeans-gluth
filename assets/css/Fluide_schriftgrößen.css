@@ -250,3 +250,23 @@
     font-size: clamp(17px, calc(0.214vw + 14.86px), 20px) !important;
     line-height: 1.5 !important;
 }
+
+/* ==========================================================
+   ELEMENTOR SPACER – GLOBAL FLUID
+   100px → 18px
+
+   Ausnahme:
+   CSS-Klasse jg-spacer-exclude am Spacer eintragen
+   ========================================================== */
+
+.elementor-widget-spacer:not(.jg-spacer-exclude) {
+    --spacer-size: clamp(
+        18px,
+        calc(4.271vw - 2.5px),
+        100px
+    ) !important;
+}
+
+.elementor-widget-spacer:not(.jg-spacer-exclude) .elementor-spacer-inner {
+    height: var(--spacer-size) !important;
+}
