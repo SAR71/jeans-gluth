@@ -312,10 +312,9 @@ body.single-product
 
 /* ==========================================================
    SINGLE PRODUCT – PRODUCT TABS ÜBERSCHRIFTEN
-   gleiche Größe wie Icon-Box-Descriptions
-   30px → 20px
+   immer 30px
    ========================================================== */
 
 body.single-product .wd-accordion-title-text {
-    font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
+    font-size: 30px !important;
 }
