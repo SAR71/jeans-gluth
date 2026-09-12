@@ -190,7 +190,8 @@ if (
                href="<?php echo esc_url($new_link); ?>"
                     aria-label="<?php echo esc_attr( $new_active ? 'Neu Filter, aktiv' : 'Neu Filter' ); ?>"
                <?php echo $new_active ? 'aria-current="page"' : ''; ?>
-               data-has-thumb="1">
+                       data-has-thumb="1"
+                       data-jg-filter-circle="jg_new">
               <span class="jg-subcat-thumb">
                 <img
                     class="jg-subcat-img jg-subcat-filter-img"
@@ -223,7 +224,8 @@ if (
                href="<?php echo esc_url($sale_link); ?>"
                     aria-label="<?php echo esc_attr( $sale_active ? 'Sale Filter, aktiv' : 'Sale Filter' ); ?>"
                <?php echo $sale_active ? 'aria-current="page"' : ''; ?>
-               data-has-thumb="1">
+                       data-has-thumb="1"
+                       data-jg-filter-circle="jg_sale">
             <span class="jg-subcat-thumb">
             <img
                 class="jg-subcat-img jg-subcat-filter-img"

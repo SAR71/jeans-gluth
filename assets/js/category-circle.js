@@ -4,6 +4,35 @@
 (() => {
 const KEY = 'jgSubcatScrollLeft_v2';
 const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
+const FILTER_KEYS = [
+  'jg_filter_typ',
+  'jg_filter_marke',
+  'jg_filter_farben',
+  'jg_filter_groessen',
+  'jg_filter_laenge',
+  'jg_new',
+  'jg_sale',
+  'orderby'
+];
+
+  function syncFilterCircleLinks() {
+    document.querySelectorAll('.jg-subcat-item--filter[data-jg-filter-circle]').forEach((item) => {
+      const key = item.dataset.jgFilterCircle;
+      const sourceHref = item.getAttribute('data-jgfe-original-href') || item.href;
+
+      if (key !== 'jg_new' && key !== 'jg_sale') return;
+
+      try {
+        const url = new URL(sourceHref, window.location.href);
+
+        FILTER_KEYS.forEach((filterKey) => url.searchParams.delete(filterKey));
+        url.searchParams.set(key, '1');
+        item.href = url.toString();
+      } catch (error) {
+        // Ignore malformed URLs so the server-rendered href remains usable.
+      }
+    });
+  }
 
   function getScroller() {
     return document.querySelector('.jg-subcat-circles');
@@ -261,6 +290,7 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
   // Wir managen NUR die horizontale Kreisleiste.
 
   document.addEventListener('DOMContentLoaded', () => {
+    syncFilterCircleLinks();
     bindClicks();
     waitForCircleImages().then(() => {
       requestAnimationFrame(() => {
@@ -279,8 +309,11 @@ const KEY_CLICKED = 'jgSubcatClickedTerm_v2';
     }, { passive: true });
   });
 
+  document.addEventListener('jgfe:products-updated', syncFilterCircleLinks);
+
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
+    syncFilterCircleLinks();
     restoreScroller();
     syncOverflowAlignment();
   });
