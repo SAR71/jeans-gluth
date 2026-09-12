@@ -318,19 +318,37 @@ body.single-product .wd-accordion-title-text {
 }
 
 /* ==========================================================
-   SINGLE PRODUCT – ICON BOX DESCRIPTION
-   + "Das könnte dir auch gefallen ..."
-   30px → 20px
+   SINGLE PRODUCT – PRODUKT-CAROUSEL-ÜBERSCHRIFT
+   gleiches Verhalten wie services-main-heading
    ========================================================== */
 
-body.single-product
-.elementor-widget-icon-box
-.elementor-icon-box-description,
-
+/* DESKTOP / LAPTOP */
 body.single-product
 h4.wd-el-title.title.slider-title.element-title,
-
 body.single-product
 h4.wd-el-title.title.slider-title.element-title > span {
-    font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
+    font-size: clamp(34px, 3.2vw, 72px) !important;
+    line-height: 1.05 !important;
+}
+
+/* TABLET */
+@media (max-width: 1024px) {
+    body.single-product
+    h4.wd-el-title.title.slider-title.element-title,
+    body.single-product
+    h4.wd-el-title.title.slider-title.element-title > span {
+        font-size: clamp(34px, 4.2vw, 60px) !important;
+        line-height: 1.08 !important;
+    }
+}
+
+/* MOBILE */
+@media (max-width: 767px) {
+    body.single-product
+    h4.wd-el-title.title.slider-title.element-title,
+    body.single-product
+    h4.wd-el-title.title.slider-title.element-title > span {
+        font-size: clamp(24px, 7vw, 34px) !important;
+        line-height: 1.08 !important;
+    }
 }
