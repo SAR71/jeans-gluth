@@ -157,7 +157,7 @@
    aber maximal 55px
    ========================================================== */
 
-.jg-special-heading .elementor-heading-title {
+.jg-tile-title-special .elementor-heading-title {
     font-size: clamp(34px, 3.2vw, 55px) !important;
     line-height: 1.05 !important;
 }
@@ -166,7 +166,7 @@
 /* TABLET */
 @media (max-width: 1024px) {
 
-    .jg-special-heading .elementor-heading-title {
+    .jg-tile-title-special .elementor-heading-title {
         font-size: clamp(34px, 4.2vw, 60px) !important;
         line-height: 1.08 !important;
     }
@@ -177,7 +177,7 @@
 /* MOBILE */
 @media (max-width: 767px) {
 
-    .jg-special-heading .elementor-heading-title {
+    .jg-tile-title-special .elementor-heading-title {
         font-size: clamp(24px, 7vw, 34px) !important;
         line-height: 1.08 !important;
     }
