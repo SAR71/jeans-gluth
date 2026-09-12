@@ -233,17 +233,16 @@
    gleiche Fluid-Kurve wie jg-tile-text-bottom
    Content bleibt unverändert
    ========================================================== */
-
 /* Überschriften */
-.jg-faq-accordion .wd-accordion-title-text {
+.wd-accordion-title-text {
     font-size: clamp(18px, calc(0.286vw + 17.14px), 24px) !important;
     line-height: 1.35 !important;
 }
 
 
 /* Content */
-.jg-faq-accordion .wd-accordion-content,
-.jg-faq-accordion .wd-accordion-content p {
+.wd-accordion-content,
+.wd-accordion-content p {
     font-size: clamp(18px, calc(0.286vw + 17.14px), 24px) !important;
     line-height: 1.35 !important;
 }
