@@ -1,27 +1,67 @@
 :root {
+
   --jg-tile-title: clamp(20px, 1.05vw + 10px, 30px);
+
   --jg-tile-text: clamp(16px, 0.85vw + 8px, 24px);
+
   --jg-tile-link: clamp(15px, 0.55vw + 9px, 20px);
+
 }
 
-/* Kachel-Überschrift */
+
+/* Normale Kachel-Überschrift */
+
 .jg-tile-title,
 .jg-tile-title .elementor-heading-title {
+
   font-size: var(--jg-tile-title) !important;
+
 }
+
+
+/* Sonder-Überschriften:
+   Damen Neu
+   Damen Sale
+   Herren Neu
+   Herren Sale
+
+   Auf sehr großen Screens bis 55px,
+   danach schnelle Annäherung an die normale
+   jg-tile-title-Kurve.
+*/
+
+.jg-tile-title-special,
+.jg-tile-title-special .elementor-heading-title {
+
+  font-size: max(
+    var(--jg-tile-title),
+    min(55px, calc(2.73vw - 22.4px))
+  ) !important;
+
+}
+
 
 /* Beschreibung */
+
 .jg-tile-text,
 .jg-tile-text p {
+
   font-size: var(--jg-tile-text) !important;
+
   line-height: 1.35 !important;
+
 }
+
 
 /* MEHR → */
+
 .jg-tile-link,
 .jg-tile-link .elementor-heading-title {
-  font-size: var(--jg-tile-link) !important;
-  line-height: 1.2 !important;
-  white-space: nowrap;
-}
 
+  font-size: var(--jg-tile-link) !important;
+
+  line-height: 1.2 !important;
+
+  white-space: nowrap;
+
+}
