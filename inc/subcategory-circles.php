@@ -595,7 +595,7 @@ add_action('template_redirect', function () {
     ) {
         wp_safe_redirect(
             trailingslashit($base_link) . 'neu/',
-            301
+            302
         );
         exit;
     }
@@ -610,7 +610,7 @@ add_action('template_redirect', function () {
     ) {
         wp_safe_redirect(
             trailingslashit($base_link) . 'sale/',
-            301
+            302
         );
         exit;
     }
