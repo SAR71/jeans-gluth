@@ -218,12 +218,12 @@
 }
 
 /* ==========================================================
-   TEXTFELDER FAMILIENGESCHICHTE
-   Start bei 24px, runter bis 18px
+   UNTERE TEXT-EDITOR-FELDER
+   Sehr flach von 24px auf 18px
    ========================================================== */
 
 .jg-tile-text-bottom,
 .jg-tile-text-bottom p {
-    font-size: clamp(18px, 1.2vw, 30px) !important;
+    font-size: clamp(18px, calc(0.368vw + 15.17px), 30px) !important;
     line-height: 1.35 !important;
 }
