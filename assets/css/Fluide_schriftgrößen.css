@@ -316,3 +316,18 @@ body.single-product
 body.single-product .wd-accordion-title-text {
     font-size: 30px !important;
 }
+
+/* ==========================================================
+   SINGLE PRODUCT – ICON BOX DESCRIPTION
+   + PRODUKT-CAROUSEL-ÜBERSCHRIFT
+   30px → 20px
+   ========================================================== */
+
+body.single-product
+.elementor-widget-icon-box
+.elementor-icon-box-description,
+
+body.single-product
+.wd-el-title {
+    font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
+}
