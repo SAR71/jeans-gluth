@@ -309,3 +309,13 @@ body.single-product
 .elementor-icon-box-description {
     font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
 }
+
+/* ==========================================================
+   SINGLE PRODUCT – PRODUCT TABS ÜBERSCHRIFTEN
+   gleiche Größe wie Icon-Box-Descriptions
+   30px → 20px
+   ========================================================== */
+
+body.single-product .wd-accordion-title-text {
+    font-size: clamp(20px, calc(0.521vw + 17.5px), 30px) !important;
+}
