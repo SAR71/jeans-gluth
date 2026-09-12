@@ -18,7 +18,22 @@
 .jg-subcat-carousel{
   position: relative;
   --jg-subcat-thumb-size: 88px;
+  --jg-subcat-item-size: 110px;
   --jg-subcat-chevron-center-y: calc(8px + (var(--jg-subcat-thumb-size) / 2));
+}
+
+@media (min-width: 1440px) and (max-width: 2399px){
+  .jg-subcat-carousel{
+    --jg-subcat-thumb-size: clamp(96px, 5vw, 116px);
+    --jg-subcat-item-size: clamp(118px, 6vw, 138px);
+  }
+}
+
+@media (min-width: 2400px){
+  .jg-subcat-carousel{
+    --jg-subcat-thumb-size: 124px;
+    --jg-subcat-item-size: 146px;
+  }
 }
 
 
@@ -57,8 +72,8 @@
    Einzelnes Item (Link)
    ============================= */
 .jg-subcat-item{
-  flex: 0 0 110px;
-  max-width: 110px;
+  flex: 0 0 var(--jg-subcat-item-size);
+  max-width: var(--jg-subcat-item-size);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,11 +86,12 @@
 @media (max-width: 1023px){
   .jg-subcat-carousel{
     --jg-subcat-thumb-size: 75px;
+    --jg-subcat-item-size: 95px;
   }
 
   .jg-subcat-item{
-    flex: 0 0 95px;
-    max-width: 95px;
+    flex: 0 0 var(--jg-subcat-item-size);
+    max-width: var(--jg-subcat-item-size);
   }
 }
 
@@ -83,11 +99,12 @@
 @media (max-width: 576px){
   .jg-subcat-carousel{
     --jg-subcat-thumb-size: 60px;
+    --jg-subcat-item-size: 75px;
   }
 
   .jg-subcat-item{
-    flex: 0 0 75px;
-    max-width: 75px;
+    flex: 0 0 var(--jg-subcat-item-size);
+    max-width: var(--jg-subcat-item-size);
   }
 }
 
@@ -108,8 +125,8 @@
    Kreis (Thumb / Hintergrund)
    ============================= */
 .jg-subcat-thumb{
-  width: 88px;
-  height: 88px;
+  width: var(--jg-subcat-thumb-size);
+  height: var(--jg-subcat-thumb-size);
   border-radius: 50%;
   background: rgba(0,0,0,0.04);
   display: flex;
@@ -123,16 +140,16 @@
 /* Responsive: Tablet */
 @media (max-width: 1023px){
   .jg-subcat-thumb{
-    width: 75px;
-    height: 75px;
+    width: var(--jg-subcat-thumb-size);
+    height: var(--jg-subcat-thumb-size);
   }
 }
 
 /* Responsive: Kleine Handys */
 @media (max-width: 576px){
   .jg-subcat-thumb{
-    width: 60px;
-    height: 60px;
+    width: var(--jg-subcat-thumb-size);
+    height: var(--jg-subcat-thumb-size);
   }
 }
 
