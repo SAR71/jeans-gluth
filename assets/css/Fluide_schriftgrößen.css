@@ -300,13 +300,13 @@ body.single-product
 
 /* ==========================================================
    SINGLE PRODUCT – ICON BOX TITEL
-   Gleiches Verhalten wie services-subheading
+   Gleiches Größenverhalten wie services-subheading
+   Schriftart bleibt Bebas Neue Regular
    ========================================================== */
 
 /* DESKTOP / LAPTOP */
 body.single-product .elementor-icon-box-title {
     font-size: clamp(20px, 1.35vw, 30px) !important;
-    line-height: 1.3 !important;
 }
 
 /* TABLET */
@@ -320,6 +320,5 @@ body.single-product .elementor-icon-box-title {
 @media (max-width: 767px) {
     body.single-product .elementor-icon-box-title {
         font-size: clamp(15px, 4vw, 18px) !important;
-        line-height: 1.25 !important;
     }
 }
