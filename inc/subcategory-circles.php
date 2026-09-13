@@ -1,10 +1,18 @@
 <?php
-// LastChanged: 2026-06-24 00:00:00
+// LastChanged: 2026-09-13 00:00:00
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_shortcode('jg_top_subcats', function($atts) {
+add_shortcode( 'jg_top_subcats', static function () {
+	if ( class_exists( '\JGFE\Renderer\CategoryNavigation' ) ) {
+		return \JGFE\Renderer\CategoryNavigation::shortcode();
+	}
+
+	return '';
+} );
+
+function jg_top_subcats_legacy_shortcode( $atts = [] ) {
 
     if (!function_exists('is_product_category') || !is_product_category()) {
         return '';
@@ -249,57 +257,61 @@ if (
           <?php endif; ?>
         <?php endif; ?>
 
-        <?php foreach ($children as $child):
-          $link = get_term_link($child);
-          if (is_wp_error($link)) continue;
+        <?php if ( class_exists( '\JGFE\Renderer\CategoryNavigation' ) ) : ?>
+            <?php echo \JGFE\Renderer\CategoryNavigation::shortcode(); ?>
+        <?php else : ?>
+            <?php foreach ($children as $child):
+              $link = get_term_link($child);
+              if (is_wp_error($link)) continue;
 
-                    // Echte Unterkategorien sollen immer ohne aktive Filter aufrufen.
-                    $link = remove_query_arg([
-                            'jg_filter_typ',
-                            'jg_filter_marke',
-                            'jg_filter_farben',
-                            'jg_filter_groessen',
-                            'jg_filter_laenge',
-                            'jg_new',
-                            'jg_sale',
-                            'orderby',
-                    ], $link);
+                        // Echte Unterkategorien sollen immer ohne aktive Filter aufrufen.
+                        $link = remove_query_arg([
+                                'jg_filter_typ',
+                                'jg_filter_marke',
+                                'jg_filter_farben',
+                                'jg_filter_groessen',
+                                'jg_filter_laenge',
+                                'jg_new',
+                                'jg_sale',
+                                'orderby',
+                        ], $link);
 
-          $thumb_id = get_term_meta($child->term_id, 'thumbnail_id', true);
-          $img = $thumb_id ? wp_get_attachment_image($thumb_id, 'woocommerce_thumbnail', false, [
-              'class' => 'jg-subcat-img',
-              'alt'   => $child->name
-          ]) : '';
+              $thumb_id = get_term_meta($child->term_id, 'thumbnail_id', true);
+              $img = $thumb_id ? wp_get_attachment_image($thumb_id, 'woocommerce_thumbnail', false, [
+                  'class' => 'jg-subcat-img',
+                  'alt'   => $child->name
+              ]) : '';
 
-          $is_active = ((int)$child->term_id === (int)$active_subcat_id);
-          ?>
-          <a class="jg-subcat-item<?php echo $is_active ? ' is-active' : ''; ?>"
-             href="<?php echo esc_url($link); ?>"
-                 aria-label="<?php echo esc_attr( $is_active ? ( $child->name . ', aktuell ausgewählt' ) : $child->name ); ?>"
-             <?php echo $is_active ? 'aria-current="page"' : ''; ?>
-             data-term-id="<?php echo (int) $child->term_id; ?>"
-             data-has-thumb="<?php echo $thumb_id ? '1' : '0'; ?>">
-            <span class="jg-subcat-thumb"><?php echo $img; ?></span>
-                    <?php
-            $title_tag = $is_active ? 'h1' : 'span';
-            ?>
+              $is_active = ((int)$child->term_id === (int)$active_subcat_id);
+              ?>
+              <a class="jg-subcat-item<?php echo $is_active ? ' is-active' : ''; ?>"
+                 href="<?php echo esc_url($link); ?>"
+                     aria-label="<?php echo esc_attr( $is_active ? ( $child->name . ', aktuell ausgewählt' ) : $child->name ); ?>"
+                 <?php echo $is_active ? 'aria-current="page"' : ''; ?>
+                 data-term-id="<?php echo (int) $child->term_id; ?>"
+                 data-has-thumb="<?php echo $thumb_id ? '1' : '0'; ?>">
+                <span class="jg-subcat-thumb"><?php echo $img; ?></span>
+                        <?php
+                $title_tag = $is_active ? 'h1' : 'span';
+                ?>
 
-            <<?php echo $title_tag; ?> class="jg-subcat-title"><?php
-                echo str_replace(
-                    ' &amp; ',
-                    '<br>&amp;&nbsp;',
-                    esc_html($child->name)
-                );
-            ?></<?php echo $title_tag; ?>>
-          </a>
-        <?php endforeach; ?>
+                <<?php echo $title_tag; ?> class="jg-subcat-title"><?php
+                    echo str_replace(
+                        ' &amp; ',
+                        '<br>&amp;&nbsp;',
+                        esc_html($child->name)
+                    );
+                ?></<?php echo $title_tag; ?>>
+              </a>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
       </div>
             <button type="button" class="jg-subcat-nav jg-next" aria-label="Nach rechts scrollen" hidden></button>
     </div>
     <?php
     return ob_get_clean();
-});
+}
 
 /* Hauptmenü Damen/Herren aktiv setzen, wenn Unterkategorie aktiv ist */
 add_filter('nav_menu_css_class', function($classes, $item) {
