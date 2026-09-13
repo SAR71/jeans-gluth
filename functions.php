@@ -249,6 +249,7 @@ $child_modules = array(
 	'account',
 	'category-pills',
 	'checkout',
+	'mobile-menu',
 	'single-product-layout',
 	'subcategory-circles',
 );
