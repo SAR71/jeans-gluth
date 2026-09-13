@@ -16,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Filterzustand bleibt erhalten, auch über Produktdetailseite / Breadcrumbs
  */
 
+if ( ! function_exists( 'jg_filter_engine_owns_product_query' ) ) {
+	function jg_filter_engine_owns_product_query() {
+		return class_exists( '\\JGFE\\WooCommerce\\ProductQueryIntegration' )
+			&& \JGFE\WooCommerce\ProductQueryIntegration::enabled();
+	}
+}
+
 if ( ! function_exists( 'jg_get_filter_args_from_request' ) ) {
 	function jg_get_filter_args_from_request() {
 		$allowed = [
@@ -793,7 +800,7 @@ if ( ! function_exists( 'jg_get_size_terms_for_filtered_products' ) ) {
 
 if ( ! function_exists( 'jg_filterbar_pre_get_posts' ) ) {
 	function jg_filterbar_pre_get_posts( $q ) {
-		if ( is_admin() || ! $q->is_main_query() ) {
+		if ( is_admin() || ! $q->is_main_query() || jg_filter_engine_owns_product_query() ) {
 			return;
 		}
 

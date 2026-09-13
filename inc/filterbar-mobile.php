@@ -907,7 +907,7 @@ if ( ! function_exists( 'jg_filterbar_mobile_shortcode' ) ) {
 
 if ( ! function_exists( 'jg_filterbar_mobile_typ_pre_get_posts' ) ) {
 	function jg_filterbar_mobile_typ_pre_get_posts( $q ) {
-		if ( is_admin() || ! $q->is_main_query() ) {
+		if ( is_admin() || ! $q->is_main_query() || ( function_exists( 'jg_filter_engine_owns_product_query' ) && jg_filter_engine_owns_product_query() ) ) {
 			return;
 		}
 
