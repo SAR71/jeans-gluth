@@ -417,6 +417,8 @@ add_action('parse_request', function ($wp) {
     ) {
         $_GET['jg_new']     = '1';
         $_REQUEST['jg_new'] = '1';
+    } else {
+        unset($_GET['jg_new'], $_REQUEST['jg_new']);
     }
 
     if (
@@ -425,6 +427,8 @@ add_action('parse_request', function ($wp) {
     ) {
         $_GET['jg_sale']     = '1';
         $_REQUEST['jg_sale'] = '1';
+    } else {
+        unset($_GET['jg_sale'], $_REQUEST['jg_sale']);
     }
 
 }, 1);
