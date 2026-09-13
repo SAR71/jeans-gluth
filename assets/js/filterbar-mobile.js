@@ -9,7 +9,7 @@
 	}
 
 	function initSingleMobileFilterbar(bar) {
-		if (!bar || bar.dataset.jgmBound === '1') return;
+		if (!bar || bar.dataset.jgfeFilterbar === '1' || bar.dataset.jgmBound === '1') return;
 		bar.dataset.jgmBound = '1';
 
 		var panels = Array.from(bar.querySelectorAll('.jgm-panel'));

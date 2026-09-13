@@ -2,7 +2,7 @@
 (function () {
   function initFilterbar() {
     var bar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
-    if (!bar) return;
+    if (!bar || bar.dataset.jgfeDesktopFilter === '1') return;
 
     var buttons = Array.prototype.slice.call(
       bar.querySelectorAll('.jg-filterbtn[data-jg-panel]')
@@ -601,7 +601,7 @@
     var desktopBar = document.querySelector('.jg-filterbar[data-jg-filterbar="1"]');
     var mobileBar = document.querySelector('.jgm-filterbar[data-jgm-filterbar="1"]');
 
-    if (!desktopBar || !mobileBar) return;
+    if (!desktopBar || !mobileBar || desktopBar.dataset.jgfeDesktopFilter === '1' || mobileBar.dataset.jgfeFilterbar === '1') return;
 
     var body = document.body;
     var ticking = false;
