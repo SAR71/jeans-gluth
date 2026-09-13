@@ -229,7 +229,7 @@ function woodmart_child_scripts() {
 		wp_enqueue_script(
 			$handle,
 			get_stylesheet_directory_uri() . '/' . $path,
-			array(),
+			array( 'jquery' ),
 			$asset_version,
 			true
 		);
