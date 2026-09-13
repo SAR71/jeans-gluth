@@ -246,6 +246,18 @@ if (
           $link = get_term_link($child);
           if (is_wp_error($link)) continue;
 
+                    // Echte Unterkategorien sollen immer ohne aktive Filter aufrufen.
+                    $link = remove_query_arg([
+                            'jg_filter_typ',
+                            'jg_filter_marke',
+                            'jg_filter_farben',
+                            'jg_filter_groessen',
+                            'jg_filter_laenge',
+                            'jg_new',
+                            'jg_sale',
+                            'orderby',
+                    ], $link);
+
           $thumb_id = get_term_meta($child->term_id, 'thumbnail_id', true);
           $img = $thumb_id ? wp_get_attachment_image($thumb_id, 'woocommerce_thumbnail', false, [
               'class' => 'jg-subcat-img',
