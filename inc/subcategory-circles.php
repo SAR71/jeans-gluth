@@ -389,6 +389,21 @@ add_filter('query_vars', function ($vars) {
  */
 add_action('parse_request', function ($wp) {
 
+    $is_top_gender_category_request = false;
+
+    if (!empty($wp->query_vars['product_cat'])) {
+        $request_slug = sanitize_title((string) $wp->query_vars['product_cat']);
+        $is_top_gender_category_request = in_array($request_slug, ['damen', 'herren'], true);
+    }
+
+    if (!$is_top_gender_category_request) {
+        unset($wp->query_vars['jg_new']);
+        unset($wp->query_vars['jg_sale']);
+        unset($_GET['jg_new'], $_GET['jg_sale']);
+        unset($_REQUEST['jg_new'], $_REQUEST['jg_sale']);
+        return;
+    }
+
     if (
         isset($wp->query_vars['jg_new']) &&
         (string) $wp->query_vars['jg_new'] === '1'
