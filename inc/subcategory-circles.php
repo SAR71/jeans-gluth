@@ -109,12 +109,19 @@ $build_filter_link = function($key) use ($top_term) {
                 'orderby',
             ], $base_link);
 
+            $base_path = wp_parse_url($base_link, PHP_URL_PATH);
+            if (!is_string($base_path) || $base_path === '') {
+                return '';
+            }
+
+            $base_path = trailingslashit($base_path);
+
             if ($key === 'jg_new') {
-                return add_query_arg('jg_new', '1', $base_link);
+                return home_url($base_path . 'neu/');
             }
 
             if ($key === 'jg_sale') {
-                return add_query_arg('jg_sale', '1', $base_link);
+                return home_url($base_path . 'sale/');
             }
 
             return $base_link;
@@ -421,6 +428,66 @@ add_action('parse_request', function ($wp) {
     }
 
 }, 1);
+
+/*
+ * Auf der reinen Top-Kategorie (Damen/Herren) dürfen NEU/SALE nicht
+ * über Query-Parameter vorausgewählt bleiben.
+ */
+add_action('template_redirect', function () {
+
+    if (!function_exists('is_product_category') || !is_product_category()) {
+        return;
+    }
+
+    $term = get_queried_object();
+
+    if (
+        !$term ||
+        !($term instanceof WP_Term) ||
+        $term->taxonomy !== 'product_cat' ||
+        !in_array($term->slug, ['damen', 'herren'], true)
+    ) {
+        return;
+    }
+
+    $has_virtual_filter =
+        (string) get_query_var('jg_new') === '1' ||
+        (string) get_query_var('jg_sale') === '1' ||
+        (!empty($_GET['jg_new']) && $_GET['jg_new'] === '1') ||
+        (!empty($_GET['jg_sale']) && $_GET['jg_sale'] === '1');
+
+    if (!$has_virtual_filter) {
+        return;
+    }
+
+    $current_path = '/';
+    if (!empty($_SERVER['REQUEST_URI'])) {
+        $parsed_path = wp_parse_url(wp_unslash($_SERVER['REQUEST_URI']), PHP_URL_PATH);
+        if (is_string($parsed_path) && $parsed_path !== '') {
+            $current_path = $parsed_path;
+        }
+    }
+
+    $top_link = get_term_link($term);
+    if (is_wp_error($top_link)) {
+        return;
+    }
+
+    $top_path = wp_parse_url($top_link, PHP_URL_PATH);
+    if (!is_string($top_path) || $top_path === '') {
+        return;
+    }
+
+    if (untrailingslashit($current_path) !== untrailingslashit($top_path)) {
+        return;
+    }
+
+    $target = remove_query_arg(['jg_new', 'jg_sale']);
+
+    wp_safe_redirect($target, 302);
+    exit;
+
+}, 2);
 
 /**
  * =========================================================
