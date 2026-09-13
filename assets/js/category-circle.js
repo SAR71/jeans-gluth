@@ -47,6 +47,35 @@ const FILTER_KEYS = [
     }
   }
 
+  function unwrapCategoryCircleImages() {
+    document.querySelectorAll('.jg-subcat-img').forEach((image) => {
+      image.classList.remove('wd-lazy-fade', 'wd-lazy-load');
+      image.loading = 'eager';
+      image.decoding = 'async';
+
+      if (image.dataset && image.dataset.src) {
+        image.src = image.dataset.src;
+        delete image.dataset.src;
+      }
+
+      if (image.dataset && image.dataset.lazySrc) {
+        image.src = image.dataset.lazySrc;
+        delete image.dataset.lazySrc;
+      }
+
+      if (image.srcset) {
+        image.srcset = '';
+      }
+
+      if (image.src && image.src.includes('/lazy.svg')) {
+        const fallbackSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src');
+        if (fallbackSrc) {
+          image.src = fallbackSrc;
+        }
+      }
+    });
+  }
+
   function syncCategoryCircleLinks() {
     document.querySelectorAll('.jg-subcat-item').forEach(clearSpecialFilterFromCategoryLink);
   }
@@ -309,6 +338,7 @@ const FILTER_KEYS = [
   // Wir managen NUR die horizontale Kreisleiste.
 
   document.addEventListener('DOMContentLoaded', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
     bindClicks();
@@ -330,12 +360,14 @@ const FILTER_KEYS = [
   });
 
   document.addEventListener('jgfe:products-updated', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
   });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
     restoreScroller();

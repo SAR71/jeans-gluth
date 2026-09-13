@@ -277,10 +277,7 @@ if (
                         ], $link);
 
               $thumb_id = get_term_meta($child->term_id, 'thumbnail_id', true);
-              $img = $thumb_id ? wp_get_attachment_image($thumb_id, 'woocommerce_thumbnail', false, [
-                  'class' => 'jg-subcat-img',
-                  'alt'   => $child->name
-              ]) : '';
+              $image_url = $thumb_id ? wp_get_attachment_image_url($thumb_id, 'woocommerce_thumbnail') : '';
 
               $is_active = ((int)$child->term_id === (int)$active_subcat_id);
               ?>
@@ -290,7 +287,11 @@ if (
                  <?php echo $is_active ? 'aria-current="page"' : ''; ?>
                  data-term-id="<?php echo (int) $child->term_id; ?>"
                  data-has-thumb="<?php echo $thumb_id ? '1' : '0'; ?>">
-                <span class="jg-subcat-thumb"><?php echo $img; ?></span>
+                <span class="jg-subcat-thumb">
+                    <?php if ($image_url): ?>
+                        <img class="jg-subcat-img" src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($child->name); ?>" loading="eager" decoding="async">
+                    <?php endif; ?>
+                </span>
                         <?php
                 $title_tag = $is_active ? 'h1' : 'span';
                 ?>
