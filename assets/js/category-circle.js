@@ -34,6 +34,23 @@ const FILTER_KEYS = [
     });
   }
 
+  function clearSpecialFilterFromCategoryLink(item) {
+    if (item.classList.contains('jg-subcat-item--filter')) return;
+
+    try {
+      const url = new URL(item.href, window.location.href);
+      url.searchParams.delete('jg_new');
+      url.searchParams.delete('jg_sale');
+      item.href = url.toString();
+    } catch (error) {
+      // Keep the original link when its URL cannot be parsed.
+    }
+  }
+
+  function syncCategoryCircleLinks() {
+    document.querySelectorAll('.jg-subcat-item').forEach(clearSpecialFilterFromCategoryLink);
+  }
+
   function getScroller() {
     return document.querySelector('.jg-subcat-circles');
   }
@@ -191,6 +208,7 @@ const FILTER_KEYS = [
       const item = e.target.closest('.jg-subcat-item');
       if (!item) return;
 
+      clearSpecialFilterFromCategoryLink(item);
       lastPointerdownItem = item;
       rememberSelection(item);
     }, { passive: true });
@@ -203,6 +221,7 @@ const FILTER_KEYS = [
         lastPointerdownItem = null;
         return;
       }
+      clearSpecialFilterFromCategoryLink(item);
       rememberSelection(item);
     });
 
@@ -291,6 +310,7 @@ const FILTER_KEYS = [
 
   document.addEventListener('DOMContentLoaded', () => {
     syncFilterCircleLinks();
+    syncCategoryCircleLinks();
     bindClicks();
     waitForCircleImages().then(() => {
       requestAnimationFrame(() => {
@@ -309,11 +329,15 @@ const FILTER_KEYS = [
     }, { passive: true });
   });
 
-  document.addEventListener('jgfe:products-updated', syncFilterCircleLinks);
+  document.addEventListener('jgfe:products-updated', () => {
+    syncFilterCircleLinks();
+    syncCategoryCircleLinks();
+  });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
     syncFilterCircleLinks();
+    syncCategoryCircleLinks();
     restoreScroller();
     syncOverflowAlignment();
   });
