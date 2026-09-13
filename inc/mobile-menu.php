@@ -117,26 +117,26 @@ add_filter( 'wp_nav_menu_objects', function ( $items, $args ) {
 	$menu_definitions = array(
 		'damen' => array(
 			array(
-				'label' => 'Sale',
-				'path'  => '/product-category/damen/sale/',
-				'class' => 'jg-mobile-damen-sale',
-			),
-			array(
 				'label' => 'Neu',
 				'path'  => '/product-category/damen/neu/',
 				'class' => 'jg-mobile-damen-neu',
 			),
-		),
-		'herren' => array(
 			array(
 				'label' => 'Sale',
-				'path'  => '/product-category/herren/sale/',
-				'class' => 'jg-mobile-herren-sale',
+				'path'  => '/product-category/damen/sale/',
+				'class' => 'jg-mobile-damen-sale',
 			),
+		),
+		'herren' => array(
 			array(
 				'label' => 'Neu',
 				'path'  => '/product-category/herren/neu/',
 				'class' => 'jg-mobile-herren-neu',
+			),
+			array(
+				'label' => 'Sale',
+				'path'  => '/product-category/herren/sale/',
+				'class' => 'jg-mobile-herren-sale',
 			),
 		),
 	);
