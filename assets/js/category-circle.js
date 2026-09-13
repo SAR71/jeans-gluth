@@ -1,4 +1,4 @@
-// LastChanged: 2026-08-27 00:00:00
+// LastChanged: 2026-09-13 00:00:00 +02:00
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -48,19 +48,18 @@ const FILTER_KEYS = [
   }
 
   function unwrapCategoryCircleImages() {
-    document.querySelectorAll('.jg-subcat-img').forEach((image) => {
-      image.classList.remove('wd-lazy-fade', 'wd-lazy-load');
+    document.querySelectorAll('.jg-subcat-img, img[data-src], img[data-lazy-src], img[src*="/lazy.svg"]').forEach((image) => {
+      const fallbackSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src') || image.getAttribute('data-srcset');
+
+      image.classList.remove('wd-lazy-fade', 'wd-lazy-load', 'lazy-loaded');
       image.loading = 'eager';
       image.decoding = 'async';
 
-      if (image.dataset && image.dataset.src) {
-        image.src = image.dataset.src;
-        delete image.dataset.src;
-      }
-
-      if (image.dataset && image.dataset.lazySrc) {
-        image.src = image.dataset.lazySrc;
-        delete image.dataset.lazySrc;
+      if (fallbackSrc && fallbackSrc.indexOf('/lazy.svg') === -1) {
+        image.src = fallbackSrc;
+        image.setAttribute('src', fallbackSrc);
+        image.removeAttribute('data-src');
+        image.removeAttribute('data-lazy-src');
       }
 
       if (image.srcset) {
@@ -68,9 +67,9 @@ const FILTER_KEYS = [
       }
 
       if (image.src && image.src.includes('/lazy.svg')) {
-        const fallbackSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src');
-        if (fallbackSrc) {
-          image.src = fallbackSrc;
+        const realSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src');
+        if (realSrc) {
+          image.src = realSrc;
         }
       }
     });
@@ -363,6 +362,7 @@ const FILTER_KEYS = [
     unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
+    window.requestAnimationFrame(() => unwrapCategoryCircleImages());
   });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
