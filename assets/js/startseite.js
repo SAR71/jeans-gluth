@@ -1,5 +1,5 @@
 /* =========================================================
-   Hero-Kacheln komplett klickbar
+   Hero-Kacheln komplett klickbar 
    ========================================================= */
  document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.hero-clickable').forEach(hero => {
