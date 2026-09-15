@@ -685,23 +685,37 @@
 /* ==================================================
    KOMPLETTER HERO KLICKBAR
    ================================================== */
-/* Großer Hero-Container = Bezugspunkt */
+/* =========================================================
+   Hero-Kacheln komplett klickbar
+   ========================================================= */
+
 .hero-clickable {
     position: relative !important;
     cursor: pointer;
 }
 
-/* Alle Zwischenebenen dürfen kein Positionierungs-Bezugspunkt sein */
+/*
+ * Alle DIREKTEN Untercontainer dürfen nicht der
+ * Bezugspunkt für die absolute Klickfläche sein.
+ */
+.hero-clickable > .e-con {
+    position: static !important;
+}
+
+/* Auch Elementor Button-Widget + Link nicht als Bezugspunkt */
 .hero-clickable .elementor-widget-button,
 .hero-clickable .elementor-button {
     position: static !important;
 }
 
-/* Unsichtbare Klickfläche über den kompletten Hero */
+/*
+ * Der Link des vorhandenen Buttons wird über
+ * den kompletten Hero gespannt.
+ */
 .hero-clickable .elementor-button::after {
     content: "";
     position: absolute !important;
     inset: 0 !important;
-    z-index: 20 !important;
+    z-index: 999 !important;
     display: block !important;
 }
