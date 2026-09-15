@@ -681,3 +681,22 @@
     background: rgba(255,255,255,0.4);
     transform: translateY(-50%);
 }
+
+/* =========================================================
+   Hero-Kacheln klickbar
+   ========================================================= */
+.hero-clickable {
+    position: relative;
+    cursor: pointer;
+}
+
+.hero-clickable .elementor-button {
+    position: static !important;
+}
+
+.hero-clickable .elementor-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+}
