@@ -682,21 +682,53 @@
     transform: translateY(-50%);
 }
 
-/* =========================================================
-   Hero-Kacheln klickbar
-   ========================================================= */
-.hero-clickable {
-    position: relative;
+/* ==================================================
+   KOMPLETTER HERO KLICKBAR
+   ================================================== */
+
+/* Große Hero-Container */
+.elementor-element-d7fd218,
+.elementor-element-f0f724f {
+    position: relative !important;
     cursor: pointer;
 }
 
-.hero-clickable .elementor-button {
+
+/* ==================================================
+   DAMEN
+   Button-Container + Button-Widget dürfen NICHT
+   Bezugspunkt für die absolute Fläche sein
+   ================================================== */
+
+.elementor-element-d7fd218 .elementor-element-21ce160,
+.elementor-element-d7fd218 .elementor-element-78453ac,
+.elementor-element-d7fd218 .elementor-button {
     position: static !important;
 }
 
-.hero-clickable .elementor-button::after {
+
+/* ==================================================
+   HERREN
+   ================================================== */
+
+.elementor-element-f0f724f .elementor-element-98bbb63,
+.elementor-element-f0f724f .elementor-element-82dd7b1,
+.elementor-element-f0f724f .elementor-button {
+    position: static !important;
+}
+
+
+/* ==================================================
+   KLICKFLÄCHE
+   ================================================== */
+
+.elementor-element-d7fd218 .elementor-button::before,
+.elementor-element-f0f724f .elementor-button::before {
     content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 10;
+    position: absolute !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    z-index: 50 !important;
+    display: block !important;
 }
