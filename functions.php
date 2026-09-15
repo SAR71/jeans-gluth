@@ -211,11 +211,13 @@ function woodmart_child_scripts() {
 	$scripts = array(
 		'woodmart-child-category-circle' => 'assets/js/category-circle.js',
 		'woodmart-child-product-gallery' => 'assets/js/product-gallery.js',
+		'woodmart-child-startseite'        => 'assets/js/startseite.js',
 	);
 
 	$should_load = array(
 		'woodmart-child-category-circle' => true,
 		'woodmart-child-product-gallery' => function_exists( 'is_product' ) && is_product(),
+		'woodmart-child-startseite'       => is_front_page(),
 	);
 
 	foreach ( $scripts as $handle => $path ) {
