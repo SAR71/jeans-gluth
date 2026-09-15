@@ -196,6 +196,17 @@
       }
     }
 
+    function normalizeSpecialState(url) {
+      var newValue = url.searchParams.get('jg_new');
+      var saleValue = url.searchParams.get('jg_sale');
+
+      if (newValue === '1' && saleValue === '1') {
+        url.searchParams.delete('jg_sale');
+      }
+
+      return url;
+    }
+
     function applyListParam(key, selectedSet) {
       var url = new URL(window.location.href);
       var out = Array.from(selectedSet);
@@ -342,7 +353,7 @@
 
       if (t.matches('[data-jg-toggle-query]')) {
         var key = t.getAttribute('data-jg-toggle-query');
-        var url = new URL(window.location.href);
+        var url = normalizeSpecialState(new URL(window.location.href));
 
         if (t.checked && key === 'jg_sale') {
           setQueryParam(url, 'jg_new', null);
@@ -353,6 +364,7 @@
         }
 
         setQueryParam(url, key, t.checked ? '1' : null);
+        normalizeSpecialState(url);
         url.searchParams.delete('paged');
         removeLegacyWooFilterParams(url);
         window.location.href = url.toString();

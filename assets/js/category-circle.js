@@ -1,4 +1,4 @@
-// LastChanged: 2026-08-27 00:00:00
+// LastChanged: 2026-09-13 00:00:00 +02:00
 /* ******************** Sub-Kategorien als Kreise ***********************/
 
 (() => {
@@ -45,6 +45,34 @@ const FILTER_KEYS = [
     } catch (error) {
       // Keep the original link when its URL cannot be parsed.
     }
+  }
+
+  function unwrapCategoryCircleImages() {
+    document.querySelectorAll('.jg-subcat-img, img[data-src], img[data-lazy-src], img[src*="/lazy.svg"]').forEach((image) => {
+      const fallbackSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src') || image.getAttribute('data-srcset');
+
+      image.classList.remove('wd-lazy-fade', 'wd-lazy-load', 'lazy-loaded');
+      image.loading = 'eager';
+      image.decoding = 'async';
+
+      if (fallbackSrc && fallbackSrc.indexOf('/lazy.svg') === -1) {
+        image.src = fallbackSrc;
+        image.setAttribute('src', fallbackSrc);
+        image.removeAttribute('data-src');
+        image.removeAttribute('data-lazy-src');
+      }
+
+      if (image.srcset) {
+        image.srcset = '';
+      }
+
+      if (image.src && image.src.includes('/lazy.svg')) {
+        const realSrc = image.getAttribute('data-src') || image.getAttribute('data-lazy-src');
+        if (realSrc) {
+          image.src = realSrc;
+        }
+      }
+    });
   }
 
   function syncCategoryCircleLinks() {
@@ -309,6 +337,7 @@ const FILTER_KEYS = [
   // Wir managen NUR die horizontale Kreisleiste.
 
   document.addEventListener('DOMContentLoaded', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
     bindClicks();
@@ -330,12 +359,15 @@ const FILTER_KEYS = [
   });
 
   document.addEventListener('jgfe:products-updated', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
+    window.requestAnimationFrame(() => unwrapCategoryCircleImages());
   });
 
   // Wenn Seite aus bfcache zurückkommt (Back/Forward)
   window.addEventListener('pageshow', () => {
+    unwrapCategoryCircleImages();
     syncFilterCircleLinks();
     syncCategoryCircleLinks();
     restoreScroller();
