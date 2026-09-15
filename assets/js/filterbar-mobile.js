@@ -281,10 +281,17 @@
 			return '';
 		}
 
+		function normalizeSpecialState(url) {
+			if (url.searchParams.get('jg_new') === '1' && url.searchParams.get('jg_sale') === '1') {
+				url.searchParams.delete('jg_sale');
+			}
+			return url;
+		}
+
 		function applyFilter() {
 			var typValues = getCheckedValues('jg_filter_typ');
 			var typUrl = getSelectedTypUrl();
-			var url = typUrl ? new URL(typUrl, window.location.origin) : new URL(window.location.href);
+			var url = normalizeSpecialState(typUrl ? new URL(typUrl, window.location.origin) : new URL(window.location.href));
 
 			var markeValues = getCheckedValues('jg_filter_marke');
 
@@ -293,6 +300,7 @@
 			setQueryParam(url, 'jg_filter_groessen', state.jg_filter_groessen.size ? Array.from(state.jg_filter_groessen).join(',') : null);
 			setQueryParam(url, 'jg_sale', state.jg_sale ? '1' : null);
 			setQueryParam(url, 'jg_new', state.jg_new ? '1' : null);
+			normalizeSpecialState(url);
 
 			/*
 			 * Typ zusätzlich immer als Query-Parameter behalten.

@@ -54,6 +54,10 @@ if ( ! function_exists( 'jg_get_filter_args_from_request' ) ) {
 			}
 		}
 
+		if ( ! empty( $out['jg_new'] ) && ! empty( $out['jg_sale'] ) ) {
+			unset( $out['jg_sale'] );
+		}
+
 		return $out;
 	}
 }
