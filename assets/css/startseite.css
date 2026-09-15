@@ -686,46 +686,6 @@
 /* =========================================================
    Hero-Kacheln komplett klickbar
    ========================================================= */
-/* Hero als Bezugspunkt */
 .hero-clickable {
-    position: relative !important;
     cursor: pointer;
-}
-
-/* Button-Widget bleibt an seiner normalen Stelle */
-.hero-clickable .elementor-widget-button {
-    position: relative !important;
-    z-index: 20;
-}
-
-/* Der echte <a>-Link spannt sich über den kompletten Hero */
-.hero-clickable .elementor-button {
-    position: absolute !important;
-    inset: 0 !important;
-
-    width: 100% !important;
-    height: 100% !important;
-
-    max-width: none !important;
-
-    z-index: 10 !important;
-
-    /* wichtig: der große Link selbst soll unsichtbar sein */
-    background: transparent !important;
-    border: 0 !important;
-    padding: 0 !important;
-
-    display: block !important;
-}
-
-/* sichtbaren Button-Inhalt wieder an die ursprüngliche Buttonposition setzen */
-.hero-clickable .elementor-button-content-wrapper {
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    display: inline-flex;
-
-    /* Buttonoptik */
-    padding: 15px 30px;
 }
